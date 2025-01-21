@@ -1,0 +1,212 @@
+body {
+    font-family: Arial;
+    /* background-image: url(/Imagens/fundoAvaliacoes.jpg); 
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: right; */
+    background-color: rgb(243, 243, 243);
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: top;
+    min-height: calc(100vh - 200px);
+    margin: 100px auto 0;
+}
+
+.card {
+    background-color: rgba(255, 255, 255, 0.842);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+}
+
+h3 {
+    text-align: center;
+    margin-bottom: 5%;
+    margin-top: 0px;
+    color: #000000;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    font-family: Arial;
+}
+
+
+.form-group label {
+    font-family: Arial;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+input {
+    font-family: Arial;
+    width: 96%;
+}
+
+select,
+input[type="text"],
+input[type="date"] {
+    width: 96%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.primary-button,
+.secondary-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.primary-button {
+    background-color: #78f8e1;
+}
+
+.primary-button:hover {
+    background-color: #6fdfca;
+}
+
+
+.hidden {
+    display: none;
+}
+
+
+#lista-avaliacoes {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+#lista-avaliacoes li {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #f1f1f1;
+    border-radius: 6px;
+}
+
+textarea {
+    width: 96%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    resize: vertical;
+    /* Permite redimensionar verticalmente */
+    font-family: Arial;
+}
+
+/* Estilo do Cabeçalho */
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #78f8e18e;
+    padding: 10px 10px;
+    color: white;
+    position: fixed;  /* Fixa no topo */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    height: 80px;
+}
+
+select {
+    width: 100%;
+}
+
+/* Logo e Foto do Usuário */
+.logo {
+    width: 120px;
+    height: auto;
+}
+
+.user-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; /* Imagem circular */
+}
+
+.user-photo:hover {
+    transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
+    transition: all 0.3s ease;  /* Transição suave */
+}
+
+/* Ajusta a largura dos elementos de forma responsiva */
+@media (max-width: 768px) {
+    .header {
+        flex-wrap: wrap;
+        padding: 15px;
+        height: auto;
+    }
+
+    .logo {
+        width: 100px;
+    }
+
+    .user-photo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .container {
+        width: 75%;
+        padding: 10px;
+        padding-bottom: 0px;
+        margin: 120px auto 0;  
+    }
+}
+
+
+
+.mensagem-sucesso {
+    position: relative;
+    z-index: 10;
+    margin-top: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.mensagem-feedback {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #d4edda;  /* Verde para sucesso */
+    color: #155724;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.mensagem-feedback.erro {
+    background-color: #f8d7da;  /* Vermelho claro para erro */
+    color: #721c24;
+}
+
+footer {
+    color: rgb(0, 0, 0);
+}

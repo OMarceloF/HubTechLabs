@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Notas</title>
+    <link rel="stylesheet" href="editarDiario.css">
+</head>
+
+<body>
+    <!-- Cabeçalho -->
+    <header class="header">
+        <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
+        <div class="logo-container">
+            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo"></a>
+        </div>
+        <div class="user-info">
+            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo">
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <div class="container">
+        <h2>Editar Diário</h2>
+        <div class="form-group">
+            <label for="turma-select">Turma:</label>
+            <select id="turma-select" onchange="carregarDatas()">
+                <option value="" disabled selected>Escolha uma turma</option>
+            </select>
+            <label for="data-chamada">Data:</label>
+            <select id="data-chamada">
+                <option value="" disabled selected>Escolha a data</option>
+            </select>
+        </div>
+
+        <button id="carregar-btn" onclick="carregarNotas()">Carregar Notas</button>
+
+        <h2 id="turma-selecionada" class="hidden">Selecione uma turma e data</h2>
+        <div id="alunos-container" class="hidden">
+            <table id="alunos-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Presença</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>                
+                <tbody id="alunos-list"></tbody>
+            </table>
+            
+            <div id="mensagem-feedback" class="mensagem-feedback hidden"></div>
+            <button id="salvar-btn" class="hidden" onclick="salvarNotas()">Salvar Alterações</button>
+            
+        </div>
+    </div>
+
+    <script src="editarDiario.js"></script>
+
+</body>
+<footer class="footer">
+    <p>&copy; 2025 Hub Tech Labs. Todos os direitos reservados.</p>
+</footer>
+
+</html>

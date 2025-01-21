@@ -1,0 +1,180 @@
+body {
+    font-family: Arial, sans-serif;
+    /* background-image: url(/Imagens/fundoRelatorio.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center; */
+    background-color: rgb(243, 243, 243);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 40px;
+    background-color: rgba(255, 255, 255, 0.842);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    margin-top: 15vh;
+}
+
+h2{
+    font-family: arial;
+    text-align: center;
+    margin-top: 0px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input,
+select {
+    padding: 10px;
+    border: 1px solid #29dabb;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+button {
+    background-color: #29dabb;
+    color: rgb(0, 0, 0);
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #02d7ba;
+}
+
+.btn-primary {
+    margin-bottom: 20px;
+}
+
+.btn-secondary {
+    margin-top: 20px;
+}
+
+
+.card {
+    border: 2px solid #29dabb;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+}
+
+
+
+#grafico-notas-aluno,
+#grafico-presenca-aula,
+#grafico-desempenho-aula {
+    max-width: 100%; /* Ajusta o gráfico para caber no card */
+    height: auto; /* Mantém a proporção */
+}
+
+ul {
+    padding-left: 20px;
+}
+
+/* Estilo do Cabeçalho */
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #78f8e18e;
+    padding: 10px 10px;
+    color: white;
+    position: fixed;  /* Fixa no topo */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    height: 80px;
+}
+
+select {
+    width: 100%;
+}
+
+/* Logo e Foto do Usuário */
+.logo {
+    width: 120px;
+    height: auto;
+}
+
+.user-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; /* Imagem circular */
+}
+
+.user-photo:hover {
+    transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
+    transition: all 0.3s ease;  /* Transição suave */
+}
+
+/* Ajusta a largura dos elementos de forma responsiva */
+@media (max-width: 1024px) {
+    .header {
+        flex-wrap: wrap;
+        padding: 15px;
+        height: auto;
+    }
+
+    .logo {
+        width: 100px;
+    }
+
+    .user-photo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .container {
+        width: 85%; /* Aumenta a largura do card para quase ocupar a tela */
+        padding: 10px; /* Ajusta o espaçamento interno */
+        margin: 120px auto 0;  
+        
+    }
+
+    .card {
+        background-color: rgba(255, 255, 255, 0.842);
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        width: 90%;
+        margin: 10px auto;
+        align-items: center;
+        
+    }
+
+
+    #grafico-notas-aluno,
+    #grafico-presenca-aula,
+    #grafico-desempenho-aula {
+        max-width: 100%; /* Ajusta os gráficos para responsividade */
+        height: auto;
+    }
+
+}
+
+footer {
+    color: rgb(0, 0, 0);
+}
+
+#grafico-presenca-aula {
+    height: 100px; /* Define a altura fixa do gráfico */
+}

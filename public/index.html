@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>HUB tech labs</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+
+    <body>
+
+        
+        <div class="imagemOculos">
+            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" width="15%" class="imagem-direita" onclick="toggleMudarPerfil()">
+        </div>
+
+        <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
+            <a href="/Perfil/perfil.html">Editar Perfil</a><br>
+            <a href="http://localhost:3000/Login/login.html">Sair</a>
+        </div>
+
+        <main class="content">
+            <section class="main-section">
+                <div class="card">
+                    <div class="linhas">
+                        <div class="colunas">
+                            
+                            <a href="/Diario/indexDiario.html" class="access-link dev-only"><img src="/Imagens/simboloDiario.png" width="25%">Diário</a>
+                        </div>
+                        <div class="colunas">
+                            <a href="/EditarDiario/editarDiario.html" class="access-link dev-only"><img src="/Imagens/simboloEditarDiario.png" width="25%">Editar Diário</a>
+                        </div>
+                        <div class="colunas">
+                            <a href="/CriarTurmas/criarTurmas.html" class="access-link dev-only"><img src="/Imagens/simboloCriarTurma.png" width="25%">Criar Turma</a>
+                        </div>
+                        <div class="colunas">
+                            <a href="/EditarTurmas/editarTurmas.html" class="access-link dev-only"><img src="/Imagens/simboloEditarTurma.png" width="25%">Editar Turma</a>
+                        </div>
+                    </div>
+                
+                    <div class="linhas">
+                        <div class="colunas">
+                            <a href="/Avaliacoes/avaliacao.html" class="access-link dev-only"><img src="/Imagens/simboloAvaliacao.png" width="25%">Avaliação</a>
+                        </div>
+                        <div class="colunas">
+                            <a href="/NotasAvaliacoes/notasAvaliacoes.html" class="access-link dev-only"><img src="/Imagens/simboloAdicionaNotas.png" width="25%">Adicionar Notas para Avaliação</a>
+                        </div> 
+                        <div class="colunas">
+                            <a href="/VisualizarAvaliacao/visualizarAvaliacao.html" class="access-link dev-only"><img src="/Imagens/simboloVisualizarNotas.png" width="25%">Visualizar Notas da Avaliação</a>
+                        </div>
+                        <div class="colunas">
+                            <a href="/Relatorio/relatorio.html" class="access-link dev-only"><img src="/Imagens/simboloRelatorio.png" width="25%">Relatório</a>
+                        </div> 
+                    </div>
+                    
+                </div>
+            </section>
+        </main>
+        <!-- <div class="citacao">
+            <h2>"Quando pequenos, buscamos ser grandes.<br>Até que erramos, não por buscarmos, mas, sim, por aprendermos."</h2>
+            <h3>Caique Baron</h3>
+        </div> -->
+        <script src="script.js"></script>
+    </body>
+
+</html>

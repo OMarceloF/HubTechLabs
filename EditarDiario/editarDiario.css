@@ -1,0 +1,239 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    /* background-image: url(/Imagens/fundoEditarDiario.png); 
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: top; */
+    background-color: rgb(243, 243, 243);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Garante que a página ocupe a altura total da tela */
+    margin: 0;
+}
+
+.container {
+    /* margin: 100px auto;  */
+    min-height: calc(100vh - 200px);  /* Altura mínima da tela menos a altura do cabeçalho */
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.76);
+    border-radius: 15px;
+    /* padding: 30px 15px 30px;   */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 60%;
+    max-width: 800px;  /* Evita que a largura seja muito grande */
+    margin-bottom: 0px;
+
+    flex: 1;
+    padding: 20px;
+    margin: 100px auto 0;  /* Remove o espaçamento inferior */
+    overflow-y: auto;
+
+}
+
+h2 {
+    margin-top: 0px;
+    margin-bottom: 20px;
+    color: #000000;
+}
+
+.form-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#turma-select,
+#data-chamada {
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #005b9f;
+    border-radius: 10px;
+    background-color: #f0f8ff;
+}
+
+#carregar-btn, #salvar-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #78f8e1;
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+#carregar-btn {
+    margin-top: 0px;
+}
+
+#carregar-btn:hover, #salvar-btn:hover {
+    background-color: #003f6d;
+}
+
+#alunos-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#alunos-table th,
+#alunos-table td {
+    border: 1px solid #b3d9ff;
+    padding: 15px;
+    text-align: center;
+}
+
+#alunos-table th {
+    background-color: #b3d9ff;
+    color: #003366;
+}
+
+#alunos-table tr:nth-child(even) {
+    background-color: #f0f8ff;
+}
+
+#alunos-table th:nth-child(2), #alunos-table td:nth-child(2) {
+    text-align: center;
+    width: 100px;
+}
+
+#alunos-container {
+    margin-top: 20px;
+    max-height: 300px;  /* Define a altura máxima do container */
+    overflow-y: auto;  /* Adiciona a barra de rolagem vertical */
+    text-align: center;
+}
+
+
+/* Estilo do Cabeçalho */
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #78f8e18e;
+    padding: 10px 10px;
+    color: white;
+    position: fixed;  /* Fixa no topo */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    height: 80px;
+}
+
+select {
+    width: 100%;
+}
+
+/* Logo e Foto do Usuário */
+.logo {
+    width: 120px;
+    height: auto;
+}
+
+.user-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; /* Imagem circular */
+}
+
+.user-photo:hover {
+    transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
+    transition: all 0.3s ease;  /* Transição suave */
+}
+
+/* Ajusta a largura dos elementos de forma responsiva */
+@media (max-width: 1024px) {
+    .header {
+        flex-wrap: wrap;
+        padding: 15px;
+        height: auto;
+    }
+
+    .logo {
+        width: 100px;
+    }
+
+    .user-photo {
+        width: 60px;
+        height: 60px;
+    }
+
+    #carregar-btn:hover, #salvar-btn:hover {
+        background-color: #78f8e1;
+    }
+
+    #carregar-btn{
+        background-color: #78f8e1;
+        margin-top: 10px; /* Ajusta o botão para não ficar colado nos campos */
+    }
+    .container {
+        width: 90%;
+        padding: 15px;
+        margin: 120px auto 0;  
+    }
+    
+
+    .form-group {
+        flex-direction: column; /* Alinha os elementos em coluna */
+        align-items: flex-start; /* Alinha os itens à esquerda */
+        gap: 15px; /* Reduz o espaçamento entre os elementos */
+    }
+    
+    .form-group label {
+        margin-bottom: 0px; /* Espaço menor abaixo do texto do label */
+        font-weight: bold; /* Torna o texto mais destacado, se necessário */
+        
+    }    
+
+    #turma-select{
+        width: 100%; /* Garante que os campos ocupem toda a largura */
+        text-align: left;
+        margin: 0px;
+    }
+    #data-chamada {
+        width: 100%; /* Garante que os campos ocupem toda a largura */
+        text-align: left; /* Alinha o texto à esquerda */
+        margin: 0px;
+
+    }
+
+}
+
+.mensagem-feedback {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #d4edda;  /* Verde para sucesso */
+    color: #155724;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.mensagem-feedback.erro {
+    background-color: #f8d7da;  /* Vermelho claro para erro */
+    color: #721c24;
+}
+
+.hidden {
+    display: none;
+}
+
+.footer {
+    text-align: left;
+    padding: 0px 0;
+    color: #000000;
+    font-size: 14px;
+    width: 100%;
+    margin-top: 0;  /* Remove espaçamento adicional */
+    margin-bottom: 0px;
+}

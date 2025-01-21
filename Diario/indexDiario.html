@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Alunos</title>
+    <link rel="stylesheet" href="stylesDiario.css">
+</head>
+
+<body>
+
+    <!-- Cabeçalho -->
+    <header class="header">
+        <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
+        <div class="logo-container">
+            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo"></a>
+        </div>
+        <div class="user-info">
+            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo">
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <div class="container">
+        <h2>Chamada da Turma</h2>
+        <div class="form-group">
+            <label for="turma-select">Turma:</label>
+            <select id="turma-select" onchange="mostrarAlunosSelecionados()">
+                <option value="" disabled selected>Escolha uma turma</option>
+            </select>
+
+            <label for="data-chamada">Data:</label>
+            <input type="date" id="data-chamada" required>
+        </div>
+
+        <h2 id="turma-selecionada" class="hidden">Selecione uma turma</h2>
+        <div id="alunos-container" class="hidden">
+            <table id="alunos-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Presença</th>
+                        <th>Nota</th>
+                    </tr>
+                </thead>
+                <tbody id="alunos-list"></tbody>
+            </table>
+            <div id="mensagem-feedback" class="mensagem-feedback hidden"></div>
+            <button id="salvar-btn" class="hidden" onclick="salvarDados()">Salvar</button>
+            
+
+        </div>
+    </div>
+
+    <script src="scriptDiario.js"></script>
+</body>
+
+<footer class="footer">
+    <p>&copy; 2025 Hub Tech Labs. Todos os direitos reservados.</p>
+</footer>
+
+</html>

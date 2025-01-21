@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Turma</title>
+    <link rel="stylesheet" href="criarTurmas.css.css">
+</head>
+<body>
+    <header class="header">
+        <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
+        <div class="logo-container">
+            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo"></a>
+        </div>
+        <div class="user-info">
+            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo">
+        </div>
+    </header>
+    
+    <div class="container">
+        
+        <div class="card"> 
+            <h2>Criar Turma</h2>
+            <!-- Seção do Nome da Turma -->
+            <div class="section">
+                <label for="nome-turma"><strong>Nome da Turma</strong></label>
+                <input type="text" id="nome-turma" placeholder="Digite o nome da Turma" class="input-turma">
+            </div>
+
+            <!-- Seção do Nome do Instrutor -->
+            <div class="section">
+                <label for="nome-instrutor"><strong>Nome do Instrutor</strong></label>
+                <input type="text" id="nome-instrutor" placeholder="Digite o nome do Instrutor" class="input-turma">
+            </div>
+            <!-- Seção dos Inputs de Alunos -->
+            <div class="section">
+                <label><strong>Alunos da Turma</strong></label>
+                <div class="scroll-box">
+                    <div id="inputs-alunos">
+                        <div class="input-group">
+                            <input type="text" class="input-aluno" placeholder="Nome do Aluno">
+                            <button class="add-button green-button" onclick="adicionarInput()">+</button>
+                            <button style="display: none" class="remove-button red-button" onclick="removerInput(this)">x</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campo de texto para colar lista de alunos -->
+            <div class="section">
+                <label><strong>Opção de Colar Lista de Alunos</strong></label>
+                <textarea id="lista-alunos-textarea" placeholder="Cole os nomes dos alunos aqui, um por linha..." rows="5" class="input-turma"></textarea>
+                <br><br>
+                <button class="save-button" onclick="adicionarListaAlunos()">Adicionar Lista</button>
+            </div>
+
+            <button class="save-button" onclick="salvarTurma()">Salvar Turma</button>
+            <div id="mensagem-sucesso" class="mensagem-sucesso hidden">Turma salva com sucesso!</div>
+
+        </div>
+
+        <!-- Lista de Turmas -->
+        <div id="lista-turmas" class="lista-turmas"></div>
+    </div>
+
+    <script src="criarTurmas.js"></script>
+</body>
+<footer class="footer">
+    <p>&copy; 2025 Hub Tech Labs. Todos os direitos reservados.</p>
+</footer>
+
+</html>

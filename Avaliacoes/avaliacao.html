@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Avaliações</title>
+    <link rel="stylesheet" href="avaliacao.css">
+</head>
+
+<body>
+    <header class="header">
+        <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
+        <div class="logo-container">
+            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo"></a>
+        </div>
+        <div class="user-info">
+            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo">
+        </div>
+    </header>
+    <div class="container">
+        <div class="card">
+            <h3>Criação de Avaliações</h3>
+            <form id="form-avaliacao">
+                <div class="form-group">
+                    <label for="turma">Turma:</label>
+                    <select id="turma" required>
+                        <option value="">Carregando turmas...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="nome-avaliacao">Nome da Avaliação:</label>
+                    <input type="text" id="nome-avaliacao" placeholder="Digite o nome da avaliação" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="conteudo-avaliacao">Conteúdo:</label>
+                    <textarea id="conteudo-avaliacao" placeholder="Descreva o conteúdo aplicado" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="data-avaliacao">Data:</label>
+                    <input type="date" id="data-avaliacao" required>
+                </div>
+                <div id="mensagem-feedback" class="mensagem-feedback hidden"></div>
+                <br>
+                <button type="submit" class="primary-button">Criar Avaliação</button>
+            </form>
+        </div>
+        <script src="avaliacao.js"></script>
+    </div>
+    <footer class="footer">
+        <p>&copy; 2025 Hub Tech Labs. Todos os direitos reservados.</p>
+    </footer>
+</body>
+
+</html>

@@ -1,0 +1,350 @@
+/* Estilos gerais */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    
+}
+
+.imagemOculos {
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    height: 60vh;
+    transition: background-image 1s ease-in-out;
+}
+
+.carousel-controls {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+}
+
+.carousel-controls button {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.carousel-controls button:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.textoMaquina {
+    position: absolute;
+    top: 65vh;  /* Mantém a imagem na parte inferior */
+    left: 30px;  /* Mantém a imagem à direita do bloco */
+    width: 32px;
+    animation: typing 2s steps(14, end), blinking 0.5s infinite step-end alternate;
+}
+
+span {
+    font-family: monospace;
+    font-size: 20px;
+    color: #333;
+    border-right: 4px solid;  /* Cursor em forma de linha vertical */
+    width: 14ch;
+    white-space: nowrap;
+    overflow: hidden;
+    display: inline-block;  /* Evita comportamentos inesperados de inline text */
+    animation: typing 2s steps(14, end), blinking 0.5s infinite step-end alternate;
+}
+
+@keyframes typing {
+    from {
+        width: 0;
+    }
+    to {
+        width: 14ch;  /* Define o tamanho máximo para o texto */
+    }
+}
+
+@keyframes blinking {
+    50% {
+        border-color: transparent;  /* Faz o cursor piscar */
+    }
+}
+
+.logo-placeholder {
+    font-weight: bold;
+    font-size: 18px;
+    text-align: center;
+    
+}
+
+
+/* Cabeçalho */
+.imagem-direita {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    height: 70px;
+    width: 70px;
+    cursor: pointer;
+    border-radius: 50%; /* Imagem circular */
+}
+
+.imagem-direita:hover {
+    transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
+    transition: all 0.3s ease;  /* Transição suave */
+}
+
+/* Conteúdo */
+
+.content {
+    margin-top: 0; /* Remove margens superiores */
+    padding-top: 0;
+}
+
+.main-section .card {
+    background-color: #3c7c6c00;
+    
+    
+}
+
+.card h3 {
+    margin-top: 0;
+}
+
+/*Citação*/
+.citacao {
+    text-align: center;
+}
+
+/* Links de acesso rápido */
+
+.access-link {
+    display: flex;
+    width: 250px;
+    background-color: #edf4fa2f;
+    text-align: center;
+    border-radius: 35px;
+    text-decoration: none;
+    color: #333;
+    font-size: 19px;
+    cursor: pointer;
+    height: 250px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px; /* Reduz o espaço superior */
+    margin-bottom: 15px;  /* Adiciona espaçamento inferior */
+    padding: 8px; /* Ajuste de preenchimento */
+    flex-direction: column;  /* Alinha os elementos na vertical */
+
+}
+
+.access-link img {
+    margin-bottom: 10px;  /* Adiciona espaço entre a imagem e o texto */
+    width: 150px;  /* Ajuste do tamanho da imagem */
+    height: 150px;  /* Ajuste do tamanho da imagem */
+}
+
+.access-link:hover {
+    background-color: #d3e7f7;
+}
+
+.access-link:hover img {
+    transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
+    transition: all 0.3s ease;  /* Transição suave */
+}
+
+
+.linhas {
+    display: flex;
+    gap: 30px;  /* Espaçamento entre as colunas */
+    align-items: center;
+    justify-content: center;
+}
+
+.colunas {
+    align-items: center;
+    justify-content: center; 
+    
+}
+
+/* Citação */
+
+h2 {
+    font-weight: 200;
+    font-family:Arial;
+    font-size: 20px;
+    color: #333;
+}
+
+h3 {
+    font-weight: 200;
+    font-family:Arial;
+    font-size: 15px;
+    color: #333;
+}
+
+.citacao {
+    background-color: rgba(127, 255, 212, 0.247);
+    padding: 10px;
+}
+
+.mudarPerfil {
+    position: absolute;
+    right: 55px;
+    top: 110px;
+    background-color: white;
+    width: 120px;
+    height: 160px;
+    display: flex; /* Configura Flexbox */
+    flex-direction: column; /* Coloca os links em coluna */
+    justify-content: center; /* Centraliza verticalmente */
+    align-items: center; /* Centraliza horizontalmente */
+    text-align: center; /* Centraliza o texto */
+    border-radius: 8px; /* Deixa os cantos arredondados */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.mudarPerfil a {
+    margin: 0; /* Remove qualquer espaçamento adicional */
+    padding: 5px 0; /* Espaçamento interno, se necessário */
+    text-decoration: none; /* Remove o sublinhado dos links */
+    color: #5a5a5a; /* Define a cor do texto */
+    font-weight: bold; /* Deixa o texto em negrito */
+    width: 100%; /* Garante que o texto ocupa toda a largura */
+    text-align: center; /* Centraliza o texto dos links */
+}
+
+/* Ajusta a largura dos elementos de forma responsiva */
+@media (max-width: 425px) {
+    .imagem-direita {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        height: 60px;
+        width: 60px;
+        cursor: pointer;
+        border-radius: 50%; /* Imagem circular */
+    }
+
+    .imagemOculos {
+        background-size: cover;
+        background-position: center;
+        width: 100%;
+        height: calc(100vh * 0.2);;
+        transition: background-image 1s ease-in-out;
+    }
+
+    .access-link {
+        display: flex;
+        width: 100%;
+        height: calc((100vh - (100vh * 0.2)) / 4);
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        background-color: #edf4fa2f;
+        border-radius: 20px; /* Deixe os cantos arredondados */
+        padding: 5px; /* Ajuste interno */
+        font-size: 15px;
+    }
+    
+    .access-link img {
+        margin-bottom: 5px;  /* Adiciona espaço entre a imagem e o texto */
+        width: 65px;  /* Ajuste do tamanho da imagem */
+        height: 65px;  /* Ajuste do tamanho da imagem */
+    }
+    
+    .access-link:hover {
+        background-color: #d3e7f700;
+    }
+    
+    .access-link:hover img {
+        transform: none; /* Aumenta a imagem ao passar o mouse */
+        transition: none;  /* Transição suave */
+    }
+
+    .linhas {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Duas colunas */
+        gap: 15px; /*Espaçamento entre os itens */
+        justify-content: center; /* Centraliza os itens horizontalmente */
+        text-align: center;         
+        align-items: center;
+        margin: 10px;
+
+    }
+
+    .colunas {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        width: 100%; /* Largura fixa */
+        height: 80%; /* Altura fixa */
+        box-sizing: border-box; /* Inclui padding e bordas na largura/altura */
+        
+    }
+}
+
+@media (min-width: 425px) and (max-width: 1024px) {
+    
+    .imagemOculos {
+        background-size: cover;
+        background-position: center;
+        width: 100%;
+        height: calc(100vh * 0.4);;
+        transition: background-image 1s ease-in-out;
+    }
+
+    .access-link {
+        display: flex;
+        width: 100%;
+        height: calc((100vh - (100vh * 0.4)) / 4);
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        background-color: #edf4fa2f;
+        border-radius: 20px; /* Deixe os cantos arredondados */
+        padding: 5px; /* Ajuste interno */
+        font-size: 17px;
+    }
+    
+    .access-link img {
+        margin-bottom: 5px;  /* Adiciona espaço entre a imagem e o texto */
+        width: 80px;  /* Ajuste do tamanho da imagem */
+        height: 80px;  /* Ajuste do tamanho da imagem */
+    }
+    
+    .access-link:hover {
+        background-color: #d3e7f700;
+    }
+    
+    .access-link:hover img {
+        transform: none; /* Aumenta a imagem ao passar o mouse */
+        transition: none;  /* Transição suave */
+    }
+
+    .linhas {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Duas colunas */
+        gap: 15px; /*Espaçamento entre os itens */
+        justify-content: center; /* Centraliza os itens horizontalmente */
+        text-align: center;         
+        align-items: center;
+        margin: 10px;
+
+    }
+
+    .colunas {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        width: 100%; /* Largura fixa */
+        height: 80%; /* Altura fixa */
+        box-sizing: border-box; /* Inclui padding e bordas na largura/altura */
+        
+    }
+}

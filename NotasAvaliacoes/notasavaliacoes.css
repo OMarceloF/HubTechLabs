@@ -1,0 +1,231 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    /* background-image: url(/Imagens/fundoNotasAvaliacoes.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center; */
+    background-color: rgb(243, 243, 243);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 100px;  /* Adiciona espaço para o cabeçalho */
+    flex: 1;  /* Faz o container ocupar o espaço restante */
+    min-height: calc(50vh - 200px);
+}
+
+#alunos-container {
+    margin-top: 20px;
+    max-height: 250px;  /* Altura máxima da lista de alunos */
+    overflow-y: auto;  /* Adiciona barra de rolagem vertical */
+    width: 100%;
+    margin-bottom: 0px;
+}
+
+
+.card {
+    background-color: rgba(255, 255, 255, 0.842);
+    padding: 30px;
+    padding-top: 10px;
+    padding-bottom: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+    align-items: center;
+    justify-content: center;    
+}
+
+h2, h3 {
+    text-align: center;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    color: #000000;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+select, input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Tabela de notas */
+
+.tabela-notas tr:hover {
+    background-color: #f0fdfb;
+}
+
+.tabela-notas td select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+.tabela-notas {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabela-notas th,
+.tabela-notas td {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid #ccc;
+}
+
+.tabela-notas th {
+    background-color: #03f6d0;
+    color: white;
+    font-weight: bold;
+}
+
+.tabela-notas tr:nth-child(even) {
+    background-color: #f0fdfb;
+}
+
+.primary-button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    background-color: #03f6d0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.primary-button:hover {
+    background-color: #02d7ba;
+}
+
+ 
+
+.mensagem-sucesso {
+    position: relative;
+    z-index: 10;
+    margin-top: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.mensagem-feedback {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #d4edda;  /* Verde para sucesso */
+    color: #155724;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.mensagem-feedback.erro {
+    background-color: #f8d7da;  /* Vermelho claro para erro */
+    color: #721c24;
+}
+
+/* Estilo do Cabeçalho */
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #78f8e18e;
+    padding: 10px 10px;
+    color: white;
+    position: fixed;  /* Fixa no topo */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    height: 80px;
+}
+
+select {
+    width: 100%;
+}
+
+/* Logo e Foto do Usuário */
+.logo {
+    width: 120px;
+    height: auto;
+}
+
+.user-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; /* Imagem circular */
+}
+
+.user-photo:hover {
+    transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
+    transition: all 0.3s ease;  /* Transição suave */
+}
+
+/* Ajusta a largura dos elementos de forma responsiva */
+@media (max-width: 1024px) {
+    .header {
+        flex-wrap: wrap;
+        padding: 15px;
+        height: auto;
+    }
+
+    .logo {
+        width: 100px;
+    }
+
+    .user-photo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .container {
+        width: 75%;
+        padding: 15px;
+        margin: 120px auto 0;  
+    }
+}
+
+footer {
+    color: rgb(0, 0, 0);
+}

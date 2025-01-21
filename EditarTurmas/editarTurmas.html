@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Turma</title>
+    <link rel="stylesheet" href="editarTurmas.css">
+</head>
+
+<body>
+    <header class="header">
+        <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
+        <div class="logo-container">
+            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo"></a>
+        </div>
+        <div class="user-info">
+            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo">
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Editar Turmas</h2>
+            <div class="form-group">
+                <label for="turma-select">Turma:</label>
+                <select id="turma-select" required>
+                    <option value="">Carregando turmas...</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="turma-details">
+                <h3>Editar Alunos da Turma</h3>
+                <ul id="alunos-list" class="alunos-list"></ul>
+                <button type="button" class="primary-button" id="adicionar-aluno">Adicionar Aluno</button>
+                <br><br>
+                <button type="button" class="danger-button" id="excluir-turma">Excluir Turma</button>
+                <br><br>
+                <div id="confirmacao-exclusao" class="hidden">
+                    <p>Tem certeza que deseja excluir esta turma?</p>
+                    <button id="confirmar-exclusao" class="danger-button1">Sim</button>
+                    <button id="cancelar-exclusao" class="primary-button">Não</button>
+                </div>                
+                <button type="button" class="primary-button" id="salvar-turma">Salvar Alterações</button>
+                <div id="mensagem-atualizacao" class="mensagem-sucesso hidden">Atualizações salvas com sucesso!</div>
+
+            </div>
+        </div>
+
+        <script src="editarTurmas.js"></script>
+    </div>
+    <footer class="footer">
+        <p>&copy; 2025 Hub Tech Labs. Todos os direitos reservados.</p>
+    </footer>
+</body>
+
+</html>

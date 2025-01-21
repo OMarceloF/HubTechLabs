@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil do Usuário</title>
+    <link rel="stylesheet" href="perfil.css">
+</head>
+
+<body>
+    <header class="header">
+        <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
+        <div class="logo-container">
+            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo"></a>
+        </div>
+        <div class="user-info">
+            <img id="profile-photo1" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo">
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Perfil do Usuário</h2>
+        <div class="profile-section">
+            <div class="photo-container">
+                <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil">
+                <label for="upload-photo" class="custom-upload-button">Alterar foto</label>
+                <input id="upload-photo" type="file" accept="image/*" style="display: none;">
+            </div>          
+            <div class="details-container">
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="name">Nome Completo:</label>
+                        <input type="text" id="name" placeholder="Digite seu nome">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-mail:</label>
+                        <input type="email" id="email" placeholder="Digite seu e-mail" readonly>
+                    </div>                    
+                    <div class="form-group">
+                        <label for="phone">Telefone de Contato:</label>
+                        <input type="tel" id="phone" placeholder="Digite seu telefone">
+                    </div>
+                    <div class="form-group">
+                        <label for="city">Cidade:</label>
+                        <input type="text" id="city" placeholder="Digite sua cidade">
+                    </div>
+                    <div class="form-group">
+                        <label for="state">Estado:</label>
+                        <input type="text" id="state" placeholder="Digite seu estado">
+                    </div>
+                    <div class="form-group">
+                        <label for="unit">Unidade:</label>
+                        <input type="text" id="unit" placeholder="Digite a unidade atendida">
+                    </div>
+                    <div class="form-group">
+                        <label for="senha">Alterar Senha:</label>
+                        <input type="senha" id="senha" placeholder="Nova senha">
+                    </div>
+                    <button type="submit" class="save-button" herf="http://localhost:3000/projeto/public/index.html">Salvar Alterações</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="perfil.js"></script>
+</body>
+
+</html>

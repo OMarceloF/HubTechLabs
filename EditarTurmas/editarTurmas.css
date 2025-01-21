@@ -1,0 +1,265 @@
+body {
+    font-family: Arial, sans-serif;
+    /* background-image: url(/Imagens/fundoEditarTurma.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center; */
+    background-color: rgb(243, 243, 243);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    padding-top: 100px;  /* Adiciona espaço para o cabeçalho */
+    flex: 1;  /* Faz o container ocupar o espaço restante */
+
+}
+
+
+.header h1 {
+    color: white;
+    margin: 0;
+}
+
+.card {
+    background-color: rgba(255, 255, 255, 0.842);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+}
+
+h2, h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #000000;
+    margin-top: 0px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+select, input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.primary-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    background-color: #78f8e1;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.primary-button:hover {
+    background-color: #02d7ba;
+}
+
+.danger-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    background-color: #f14e4e;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.danger-button1 {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    background-color: #f14e4e;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.danger-button:hover {
+    background-color: #d43b3b;
+}
+
+.danger-button1:hover {
+    background-color: #d43b3b;
+}
+
+#alunos-list {
+    max-height: 300px;  /* Altura máxima do bloco */
+    overflow-y: auto;  /* Adiciona barra de rolagem vertical */
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.alunos-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.alunos-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.alunos-list li input {
+    width: calc(70%);
+}
+
+.alunos-list li button {
+    background-color: #f14e4e;
+    color: rgb(0, 0, 0);
+    border: none;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.alunos-list li button:hover {
+    background-color: #d43b3b;
+}
+
+
+
+#confirmacao-exclusao {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 15px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* Estilo do Cabeçalho */
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #78f8e18e;
+    padding: 10px 10px;
+    color: white;
+    position: fixed;  /* Fixa no topo */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    height: 80px;
+}
+
+select {
+    width: 100%;
+}
+
+/* Logo e Foto do Usuário */
+.logo {
+    width: 120px;
+    height: auto;
+}
+
+.user-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; /* Imagem circular */
+}
+
+.user-photo:hover {
+    transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
+    transition: all 0.3s ease;  /* Transição suave */
+}
+
+/* Ajusta a largura dos elementos de forma responsiva */
+@media (max-width: 1024px) {
+    .header {
+        flex-wrap: wrap;
+        padding: 15px;
+        height: auto;
+    }
+
+    .logo {
+        width: 100px;
+    }
+
+    .user-photo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .container {
+        width: 75%;
+        padding: 15px;
+        margin: 120px auto 0;  
+    }
+}
+
+.footer {
+    margin-top: auto;
+    color: rgb(0, 0, 0);
+}
+
+.mensagem-sucesso {
+    position: relative;
+    z-index: 10;
+    margin-top: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    transition: opacity 0.2s ease-in-out;
+}
+
+
+@keyframes fade-out {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.hidden {
+    display: none;
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Usuário</title>
+    <link rel="stylesheet" href="cadastro.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="container">
+            <img src="/Imagens/hubTechLabsTES.png" width="65%">
+            <br>
+            <!-- <h2>Cadastro de Usuário</h2> -->
+            <form id="form-cadastro">
+                <div class="form-group">
+                    <!-- <label for="email">E-mail:</label> -->
+                    <input type="email" id="email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <!-- <label for="senha">Senha:</label> -->
+                    <input type="password" id="senha" placeholder="Senha" required>
+                </div>
+                <div class="form-group">
+                    <!-- <label for="tipo">Tipo de Usuário:</label> -->
+                    <select id="tipo" required>
+                        <option value="">Selecione o Tipo de Usuário</option>
+                        <option value="DEV">DEV (Administrador)</option>
+                        <option value="Diretor/Coordenador">Diretor/Coordenador</option>
+                        <option value="Instrutor/Professor">Instrutor/Professor</option>
+                    </select>
+                </div>
+                <button type="submit" class="primary-button">Cadastrar</button>
+            </form>
+            <p>Já tem uma conta? <a href="/Login/login.html">Faça login</a></p>
+        </div>
+    </div>
+    <img src="/Imagens/weAreTheFuture.png" class="imagemCanto" alt="We Are The Future">
+    
+    <script src="cadastro.js"></script>
+</body>
+
+</html>

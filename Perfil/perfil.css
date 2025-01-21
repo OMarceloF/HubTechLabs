@@ -1,0 +1,210 @@
+body {
+    font-family: Arial, sans-serif;
+    /* background-image: url(/Imagens/fundoCriarTurma.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center; */
+    background-color: rgb(243, 243, 243);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+    padding: 20px;
+    margin: 100px auto 0;  /* Remove o espaçamento inferior */
+    width: 60%;
+    max-width: 600px;
+    min-height: calc(100vh - 200px);  /* Altura mínima sem espaços extras */
+    overflow-y: auto;
+    background-color: rgba(255, 255, 255, 0.76);
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    background-color: rgba(255, 255, 255, 0.842);
+    padding: 25px 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 0px;
+    /* Remove margem inferior extra */
+    vertical-align: middle;
+}
+
+footer {
+    padding-top: 0px;
+}
+
+h2 {
+    text-align: center;
+    margin-top: 0px;
+}
+
+.section {
+    margin-bottom: 20px;
+}
+
+.section label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="senha"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    align-items: right;
+    box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+}
+
+button {
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    align-items: center;
+    width: 100%;
+}
+
+.save-button {
+    background-color: #78f8e1;
+    color: rgb(0, 0, 0);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.save-button:hover {
+    opacity: 0.9;
+}
+
+.photo-container {
+    display: flex;
+    flex-direction: column; /* Organiza os itens em coluna */
+    align-items: center; /* Centraliza horizontalmente */
+    justify-content: center; /* Centraliza verticalmente */
+    gap: 10px; /* Espaço entre a imagem e o botão */
+    margin: 0 auto; /* Garante que o container seja centralizado */
+}
+
+
+.photo-container img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+}
+
+.custom-upload-button {
+    background-color: #78f8e1;
+    color: rgb(0, 0, 0);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px 15px;
+}
+
+.custom-upload-button:hover {
+    opacity: 0.9;
+}
+
+
+/* input[type="senha"] {
+
+} */
+
+.mensagem-sucesso {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 15px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Estilo do Cabeçalho */
+
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #78f8e18e;
+    padding: 10px 10px;
+    color: white;
+    position: fixed;  /* Fixa no topo */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    height: 80px;
+    
+}
+
+/* Logo e Foto do Usuário */
+.logo {
+    width: 120px;
+    height: auto;
+}
+
+.user-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; /* Imagem circular */
+}
+
+/* Ajusta a largura dos elementos de forma responsiva */
+@media (max-width: 768px) {
+    .header {
+        flex-wrap: wrap;
+        padding: 15px;
+        height: auto;
+    }
+
+    .logo {
+        width: 100px;
+    }
+
+    .user-photo {
+        width: 75px;
+        height: 75px;
+    }
+
+    .container {
+        width: 90%;
+    }
+}
