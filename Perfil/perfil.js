@@ -51,8 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Erro ao carregar os dados do perfil.");
         }
     }
-    
-    
+
     // Atualizar a visualização da foto no upload
     uploadPhotoInput.addEventListener("change", async (event) => {
         const file = event.target.files[0];
@@ -80,9 +79,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     });
-
-    
-    
 
     // Atualizar perfil
     profileForm.addEventListener("submit", async (event) => {
@@ -120,46 +116,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    function atualizarPerfil() {
-        const token = localStorage.getItem("token");
-        const formData = new FormData();
-        const photoInput = document.getElementById("photo"); // ID do campo de upload
-        const otherData = {
-            name: document.getElementById("name").value,
-            phone: document.getElementById("phone").value,
-            city: document.getElementById("city").value,
-            state: document.getElementById("state").value,
-            unit: document.getElementById("unit").value
-        };
-    
-        for (let key in otherData) {
-            formData.append(key, otherData[key]);
-        }
-        if (photoInput.files.length > 0) {
-            formData.append("photo", photoInput.files[0]);
-        }
-    
-        fetch('/atualizar-perfil', {
-            method: 'POST',
-            headers: {
-                'Authorization': token
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message) {
-                alert("Perfil atualizado com sucesso!");
-                location.reload();
-            }
-        })
-        .catch(error => {
-            console.error("Erro ao atualizar perfil:", error);
-        });
-    }
-    
-
-    carregarPerfil(); // Carrega o perfil ao carregar a página
-
-
+    // Carregar o perfil ao carregar a página
+    carregarPerfil(); 
 });

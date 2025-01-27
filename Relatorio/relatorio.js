@@ -1,4 +1,3 @@
-// Função para carregar turmas ao abrir a página
 async function carregarTurmas() {
     try {
         const response = await fetch('/dados');
@@ -17,8 +16,6 @@ async function carregarTurmas() {
         console.error('Erro ao carregar as turmas:', error);
     }
 }
-
-
 
 // Evento ao selecionar uma turma
 document.getElementById('turma-select').addEventListener('change', async function() {
@@ -52,82 +49,75 @@ document.getElementById('turma-select').addEventListener('change', async functio
 });
 
 // Evento ao selecionar um aluno
-document.getElementById('aluno-select').addEventListener('change', async function() {
+// Evento ao selecionar um aluno
+document.getElementById('aluno-select').addEventListener('change', async function () {
     const turmaSelecionada = document.getElementById('turma-select').value;
     const alunoSelecionado = this.value;
 
     try {
         const notasResponse = await fetch('/notasavaliacoes');
         const presencaResponse = await fetch('/dados-presenca');
+
         if (!notasResponse.ok || !presencaResponse.ok) throw new Error("Erro ao buscar dados de notas ou presença.");
 
         const notasData = await notasResponse.json();
         const presencaData = await presencaResponse.json();
 
-        // Filtrar os dados de notas e presença
-        const notasAluno = notasData
-            .filter(n => n.turma === turmaSelecionada)
-            .flatMap(avaliacao => avaliacao.notas.filter(n => n.aluno === alunoSelecionado).map(n => n.nota || 0));
+        // Filtrar as notas do aluno para a turma selecionada
+        const notasAluno = notasData[turmaSelecionada]
+            .filter(avaliacao => avaliacao.aluno === alunoSelecionado)
+            .map(avaliacao => parseFloat(avaliacao.nota) || 0);
 
-        const presencasAluno = presencaData
-            .filter(p => p.turma === turmaSelecionada)
-            .flatMap(chamada => chamada.alunos.filter(a => a.nome === alunoSelecionado));
+        // Filtrar as presenças do aluno para a turma selecionada
+        const presencasTurma = presencaData[turmaSelecionada];
+        const presencasAluno = presencasTurma.filter(p => p.aluno === alunoSelecionado);
 
-        const datasAulas = presencasAluno.map(p => p.data || "Data Desconhecida");
+        const datasAulas = presencasAluno.map(p => {
+            const data = new Date(p.data);
+            return `${data.getDate().toString().padStart(2, '0')}/${(data.getMonth() + 1).toString().padStart(2, '0')}/${data.getFullYear()}`;
+        });
+
         const statusPresencas = presencasAluno.map(p => (p.presenca === 'Presente' ? 1 : 0));
+        const notasPresencas = presencasAluno.map(p => parseFloat(p.nota) || 0);
 
         criarGraficoNotasAluno(notasAluno);
-        // criarGraficoPresencas(datasAulas, statusPresencas);
+        criarGraficoPresencaData(datasAulas, statusPresencas);
+        criarGraficoNotasTodasAulas(presencasAluno, alunoSelecionado);
 
         document.getElementById('graficos-aluno-container').classList.remove('hidden');
-
-        // Carregar as aulas e notas por presença para o gráfico
-        const aulasAluno = presencaData.filter(p => p.turma === turmaSelecionada)
-            .map(p => {
-                const alunoData = p.alunos.find(a => a.nome === alunoSelecionado);
-                return {
-                    data: p.data,
-                    nota: alunoData ? parseFloat(alunoData.nota) || 0 : 0,
-                    totalNotasPresenca: alunoData ? parseFloat(alunoData.totalNotasPresenca) || 0 : 0 // Notas vindas da presença
-                };
-            });
-
-        criarGraficoNotasTodasAulas(aulasAluno, alunoSelecionado);
-        criarGraficoPresencaData(aulasAluno);
-
-
     } catch (error) {
         console.error('Erro ao carregar os gráficos do aluno:', error);
     }
 });
 
+
 // Função para criar gráfico com todas as notas do aluno (incluindo somaNotasPresenca)
-function criarGraficoNotasTodasAulas(aulasAluno, alunoSelecionado) {
+function criarGraficoNotasTodasAulas(presencasAluno, alunoSelecionado) {
     const ctxDesempenhoAula = document.getElementById('grafico-desempenho-aula').getContext('2d');
 
-    const labels = aulasAluno.map(aula => {
-        if (!aula.data || aula.data === "Data Desconhecida") return "Data Desconhecida";
-        const [ano, mes, dia] = aula.data.split('-').map(Number);
-        const dataObj = new Date(ano, mes - 1, dia); // Cria a data local sem fuso horário
-        return `${dataObj.getDate().toString().padStart(2, '0')}/${(dataObj.getMonth() + 1).toString().padStart(2, '0')}/${dataObj.getFullYear()}`;
+    const labels = presencasAluno.map(aula => {
+        const data = new Date(aula.data);
+        return `${data.getDate().toString().padStart(2, '0')}/${(data.getMonth() + 1).toString().padStart(2, '0')}/${data.getFullYear()}`;
     });
-    const notas = aulasAluno.map(aula => aula.nota); // Notas das aulas
-    const somaNotasPresenca = aulasAluno.map(aula => aula.totalNotasPresenca); // Notas vindas da presença
+
+    const notas = presencasAluno.map(aula => parseFloat(aula.nota) || 0);
+    const presencas = presencasAluno.map(aula => (aula.presenca === 'Presente' ? 1 : 0));
+    const cores = presencas.map(p => (p === 1 ? 'rgb(0, 123, 255)' : 'rgb(255, 0, 55)'));
 
     if (window.graficoDesempenhoAula) window.graficoDesempenhoAula.destroy();
+
     window.graficoDesempenhoAula = new Chart(ctxDesempenhoAula, {
         type: 'bar',
         data: {
             labels: labels,
-            datasets: [{
-                    label: `Notas de ${alunoSelecionado} em todas as aulas`,
+            datasets: [
+                {
+                    label: `Notas de ${alunoSelecionado} nas Aulas`,
                     data: notas,
-                    backgroundColor: 'rgb(243, 24, 24)',
-                    borderColor: '#4bc0c0',
+                    backgroundColor: 'rgba(0, 142, 237, 0.7)',
+                    borderColor: '#36a2eb',
                     borderWidth: 2
-                },
-
-
+                }
             ]
         },
         options: {
@@ -139,18 +129,12 @@ function criarGraficoNotasTodasAulas(aulasAluno, alunoSelecionado) {
     });
 }
 
-function criarGraficoPresencaData(aulasAluno) {
+// Função para criar gráfico de presença por data
+function criarGraficoPresencaData(labels, presencas) {
     const ctxPresencaAula = document.getElementById('grafico-presenca-aula').getContext('2d');
 
-    const labels = aulasAluno.map(aula => {
-        if (!aula.data || aula.data === "Data Desconhecida") return "Data Desconhecida";
-        const [ano, mes, dia] = aula.data.split('-').map(Number);
-        const dataObj = new Date(ano, mes - 1, dia);
-        return `${dataObj.getDate().toString().padStart(2, '0')}/${(dataObj.getMonth() + 1).toString().padStart(2, '0')}/${dataObj.getFullYear()}`;
-    });
-
-    const presencas = aulasAluno.map(() => 1); // Todas as barras terão o valor 1
-    const cores = aulasAluno.map(aula => aula.nota > 0 ? 'rgb(0, 123, 255)' : 'rgb(255, 0, 55)');
+    // Configura as cores com base no status de presença
+    const cores = presencas.map(p => (p === 1 ? 'rgb(0, 123, 255)' : 'rgb(255, 0, 55)'));
 
     if (window.graficoPresencaAula) window.graficoPresencaAula.destroy();
 
@@ -158,18 +142,18 @@ function criarGraficoPresencaData(aulasAluno) {
         type: 'bar',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Presença / Falta',
-                data: presencas,
-                backgroundColor: cores,
-                borderColor: cores,
-                borderWidth: 1,
-                barThickness: 'flex', // Mantém uma espessura automática proporcional
-            }]
+            datasets: [
+                {
+                    label: 'Presença e Ausência',
+                    data: presencas.map(() => 1), // Todas as barras terão o mesmo valor (1)
+                    backgroundColor: cores, // Define as cores para cada barra
+                    borderColor: cores,
+                    borderWidth: 1
+                }
+            ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true, // Mantém o gráfico proporcional
             scales: {
                 x: {
                     title: {
@@ -183,22 +167,24 @@ function criarGraficoPresencaData(aulasAluno) {
                 },
                 y: {
                     min: 0,
-                    max: 1, // Limita a altura das barras a 1
+                    max: 1, // Mantém o eixo Y de 0 a 1
                     ticks: {
-                        stepSize: 1,
-                        callback: () => "Aula"
+                        display: false // Remove os números do eixo Y, já que todas as barras têm o mesmo tamanho
                     }
                 }
             },
             plugins: {
                 legend: {
-                    display: true
+                    display: true // Mostra o rótulo da legenda
                 },
                 tooltip: {
                     callbacks: {
-                        label: context => context.raw === 1
-                            ? (context.dataset.backgroundColor[context.dataIndex] === 'rgb(0, 123, 255)' ? "Presente" : "Faltou")
-                            : ""
+                        label: context =>
+                            context.raw === 1
+                                ? (context.dataset.backgroundColor[context.dataIndex] === 'rgb(0, 123, 255)'
+                                    ? 'Presente'
+                                    : 'Ausente')
+                                : ''
                     }
                 }
             }
@@ -233,7 +219,7 @@ function criarGraficoNotasAluno(notas) {
     });
 }
 
-
+// Função para exportar relatório em PDF
 async function exportarRelatorioPDF() {
     const turmaNome = document.getElementById('turma-select').value.trim();
     const alunoSelecionado = document.getElementById('aluno-select').value.trim();
@@ -252,158 +238,151 @@ async function exportarRelatorioPDF() {
 
     let yOffset = 40;
 
-    // **Carregar dados do arquivo presenca_dados.json**
-    const response = await fetch('/output/presenca_dados.json');
-    const dadosPresenca = await response.json();
+    try {
+        // **Buscar dados diretamente do backend**
+        const [presencaResponse, notasResponse] = await Promise.all([
+            fetch(`/dados-presenca?turma=${encodeURIComponent(turmaNome)}&aluno=${encodeURIComponent(alunoSelecionado)}`),
+            fetch(`/notasavaliacoes?turma=${encodeURIComponent(turmaNome)}&aluno=${encodeURIComponent(alunoSelecionado)}`)
+        ]);
 
-    // **Filtrar os dados correspondentes à turma e ao aluno selecionado**
-    const registrosFiltrados = dadosPresenca.filter(
-        (registro) => registro.turma === turmaNome && registro.alunos.some(aluno => aluno.nome === alunoSelecionado)
-    );
-
-    if (registrosFiltrados.length === 0) {
-        alert("Nenhum registro encontrado para essa turma e aluno.");
-        return;
-    }
-
-    // **Cálculos de Resumo**
-    let totalPresencas = 0;
-    let totalFaltas = 0;
-    let somaNotasAulasPresentes = 0;
-    let quantidadeNotasPresentes = 0;
-
-    registrosFiltrados.forEach(registro => {
-        const aluno = registro.alunos.find(a => a.nome === alunoSelecionado);
-        if (aluno.presenca === 'Presente') {
-            totalPresencas++;
-            if (aluno.nota) {
-                somaNotasAulasPresentes += parseFloat(aluno.nota);
-                quantidadeNotasPresentes++;
-            }
-        } else {
-            totalFaltas++;
+        if (!presencaResponse.ok || !notasResponse.ok) {
+            throw new Error("Erro ao buscar os dados do backend.");
         }
-    });
 
-    const notasGrafico = window.graficoNotasAluno?.data?.datasets[0]?.data || [];
-    const mediaNotasAvaliacoes = notasGrafico.length ? notasGrafico.reduce((acc, nota) => acc + nota, 0) / notasGrafico.length : 0; // Média das avaliações
-    const mediaNotasAulasPresentes = somaNotasAulasPresentes / (quantidadeNotasPresentes || 1);  // Média das aulas com presença
+        const presencaData = await presencaResponse.json();
+        const notasData = await notasResponse.json();
 
-    // **Tabela de Resumo**
-    doc.setFontSize(12);
-    doc.text("Resumo do Desempenho:", 10, yOffset);
-    yOffset += 10;
+        // **Filtrar registros válidos**
+        const registrosFiltradosPresenca = presencaData[turmaNome]?.filter(registro => registro.aluno === alunoSelecionado) || [];
+        const registrosFiltradosNotas = notasData[turmaNome]?.filter(registro => registro.aluno === alunoSelecionado) || [];
 
-    doc.autoTable({
-        startY: yOffset,
-        head: [['Indicador', 'Valor']],
-        body: [
-            ['Média das Avaliações', mediaNotasAvaliacoes.toFixed(2)],
-            ['Total de Presenças', totalPresencas],
-            ['Total de Faltas', totalFaltas],
-            ['Média das Notas nas Aulas Presentes', mediaNotasAulasPresentes.toFixed(2)],
-        ],
-        theme: 'grid',
-    });
+        if (registrosFiltradosPresenca.length === 0) {
+            alert("Nenhum registro de presença encontrado para esse aluno.");
+        }
 
-    yOffset = doc.previousAutoTable.finalY + 10;
+        if (registrosFiltradosNotas.length === 0) {
+            alert("Nenhum registro de notas encontrado para esse aluno.");
+        }
 
-    // **Tabela de Presenças e Notas por Aula**
-    const tabelaPresencaDesempenho = registrosFiltrados.map(registro => {
-        const aluno = registro.alunos.find(aluno => aluno.nome === alunoSelecionado);
-        return [
-            new Date(registro.data).toLocaleDateString('pt-BR'),
-            aluno.presenca,
-            aluno.nota || "-"
-        ];
-    });
+        // **Tabela de Notas das Avaliações**
+        if (registrosFiltradosNotas.length > 0) {
+            doc.setFontSize(12);
+            doc.text("Notas das Avaliações:", 10, yOffset);
+            yOffset += 10;
 
-    doc.setFontSize(12);
-    doc.text("Presenças e Desempenho por Aula:", 10, yOffset);
-    yOffset += 10;
+            const tabelaNotasAvaliacao = registrosFiltradosNotas.map(nota => [
+                nota.nomeAvaliacao,
+                nota.nota
+            ]);
 
-    doc.autoTable({
-        startY: yOffset,
-        head: [['Data', 'Presença', 'Nota']],
-        body: tabelaPresencaDesempenho,
-        theme: 'grid',
-    });
+            doc.autoTable({
+                startY: yOffset,
+                head: [['Avaliação', 'Nota']],
+                body: tabelaNotasAvaliacao,
+                theme: 'grid',
+            });
 
-    // **Adicionar imagens dos gráficos**
-    const graficoNotasCanvas = document.getElementById('grafico-notas-aluno');
-    const graficoPresencaCanvas = document.getElementById('grafico-presenca-aula');
-    const graficoDesempenhoCanvas = document.getElementById('grafico-desempenho-aula');
+            yOffset = doc.previousAutoTable.finalY + 10;
+        }
 
-    const graficoNotasImg = graficoNotasCanvas.toDataURL('image/png', 1.0);
-    const graficoPresencaImg = graficoPresencaCanvas.toDataURL('image/png', 1.0);
-    const graficoDesempenhoImg = graficoDesempenhoCanvas.toDataURL('image/png', 1.0);
+        // **Tabela de Resumo de Presenças**
+        if (registrosFiltradosPresenca.length > 0) {
+            let totalPresencas = 0;
+            let totalFaltas = 0;
+            let somaNotasAulasPresentes = 0;
 
-    // **Página com gráficos de Notas e Presenças**
-    doc.addPage();
-    doc.setFontSize(16);
-    doc.text("Gráficos de Desempenho", 10, 20);
+            registrosFiltradosPresenca.forEach(registro => {
+                if (registro.presenca === 'Presente') {
+                    totalPresencas++;
+                    somaNotasAulasPresentes += parseFloat(registro.nota) || 0;
+                } else {
+                    totalFaltas++;
+                }
+            });
 
-    doc.setFontSize(14);
-    doc.text("Gráfico de Notas das Avaliações:", 10, 30);
-    doc.addImage(graficoNotasImg, 'PNG', 10, 35, 190, 90);
+            const mediaNotasAulasPresentes = somaNotasAulasPresentes / (totalPresencas || 1);
 
-    doc.text("Gráfico de Presenças:", 10, 130);
-    doc.addImage(graficoPresencaImg, 'PNG', 10, 135, 190, 90);
+            doc.setFontSize(12);
+            doc.text("Resumo do Desempenho:", 10, yOffset);
+            yOffset += 10;
 
-    // **Nova página para o Gráfico de Desempenho por Aula**
-    doc.addPage();
-    doc.setFontSize(14);
-    doc.text("Gráfico de Desempenho por Aula:", 10, 20);
-    doc.addImage(graficoDesempenhoImg, 'PNG', 10, 30, 190, 90);
+            doc.autoTable({
+                startY: yOffset,
+                head: [['Indicador', 'Valor']],
+                body: [
+                    ['Total de Presenças', totalPresencas],
+                    ['Total de Faltas', totalFaltas],
+                    ['Média das Notas nas Aulas Presentes', mediaNotasAulasPresentes.toFixed(2)],
+                ],
+                theme: 'grid',
+            });
 
-    // **Salvar PDF**
-    doc.save(`Relatorio_Turma_${turmaNome}_${alunoSelecionado}.pdf`);
+            yOffset = doc.previousAutoTable.finalY + 10;
+        }
+
+        // **Tabela de Presenças e Notas por Aula**
+        if (registrosFiltradosPresenca.length > 0) {
+            const tabelaPresencaDesempenho = registrosFiltradosPresenca.map(registro => [
+                new Date(registro.data).toLocaleDateString('pt-BR'),
+                registro.presenca,
+                registro.nota || "-"
+            ]);
+
+            doc.setFontSize(12);
+            doc.text("Presenças e Desempenho por Aula:", 10, yOffset);
+            yOffset += 10;
+
+            doc.autoTable({
+                startY: yOffset,
+                head: [['Data', 'Presença', 'Nota']],
+                body: tabelaPresencaDesempenho,
+                theme: 'grid',
+            });
+
+            yOffset = doc.previousAutoTable.finalY + 10;
+        }
+
+        // **Incluir gráficos no PDF**
+        const graficoNotasCanvas = document.getElementById('grafico-notas-aluno');
+        const graficoPresencaCanvas = document.getElementById('grafico-presenca-aula');
+        const graficoDesempenhoCanvas = document.getElementById('grafico-desempenho-aula');
+
+        if (graficoNotasCanvas) {
+            const graficoNotasImg = graficoNotasCanvas.toDataURL('image/png', 1.0);
+            doc.addPage();
+            doc.setFontSize(14);
+            doc.text("Gráfico de Notas das Avaliações:", 10, 20);
+            doc.addImage(graficoNotasImg, 'PNG', 10, 30, 190, 90);
+        }
+
+        if (graficoPresencaCanvas) {
+            const graficoPresencaImg = graficoPresencaCanvas.toDataURL('image/png', 1.0);
+            doc.addPage();
+            doc.setFontSize(14);
+            doc.text("Gráfico de Presenças:", 10, 20);
+            doc.addImage(graficoPresencaImg, 'PNG', 10, 30, 190, 90);
+        }
+
+        if (graficoDesempenhoCanvas) {
+            const graficoDesempenhoImg = graficoDesempenhoCanvas.toDataURL('image/png', 1.0);
+            doc.addPage();
+            doc.setFontSize(14);
+            doc.text("Gráfico de Desempenho por Aula:", 10, 20);
+            doc.addImage(graficoDesempenhoImg, 'PNG', 10, 30, 190, 90);
+        }
+
+        // **Salvar PDF**
+        doc.save(`Relatorio_Turma_${turmaNome}_${alunoSelecionado}.pdf`);
+    } catch (error) {
+        console.error('Erro ao gerar o relatório:', error);
+        alert("Erro ao gerar o relatório. Por favor, tente novamente.");
+    }
 }
 
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Pega a foto de usuário logado
-    // Função para obter token do cookie
-    function getTokenFromCookie() {
-        const cookies = document.cookie.split("; ");
-        for (const cookie of cookies) {
-            const [key, value] = cookie.split("=");
-            if (key === "token") {
-                return value;
-            }
-        }
-        return null;
-    }
 
-    const token = getTokenFromCookie();
-    if (!token) {
-        alert("Você precisa estar logado para acessar esta página.");
-        window.location.href = "/Login/login.html";
-        return;
-    }
-
-    async function carregarPerfil() {
-        try {
-            const response = await fetch('http://localhost:3000/perfil', {
-                headers: { Authorization: token }
-            });
-
-            if (!response.ok) {
-                throw new Error("Erro ao carregar os dados do perfil");
-            }
-
-            const data = await response.json();
-
-            // Atualiza os elementos do HTML com os dados do usuário
-            document.getElementById("profile-photo").src = data.photo || "/projeto/Imagens/perfil.png";
-        } catch (error) {
-            console.error("Erro ao carregar perfil:", error);
-            alert("Erro ao carregar os dados do perfil.");
-        }
-    }
-
-    carregarPerfil();
-});
-
-window.onload = carregarTurmas;
+// Adiciona evento de clique no botão de exportação
 document.getElementById('exportar-relatorio').addEventListener('click', exportarRelatorioPDF);
+
+// Carregar as turmas ao abrir a página
+window.onload = carregarTurmas;

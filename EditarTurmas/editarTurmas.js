@@ -9,17 +9,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmarExclusaoBtn = document.getElementById("confirmar-exclusao");
     const cancelarExclusaoBtn = document.getElementById("cancelar-exclusao");
 
-    // Função para carregar as turmas
+    // Função para carregar as turmas do backend
     async function carregarTurmas() {
         try {
-            const response = await fetch('http://localhost:3000/dados');
-            const dados = await response.json();
+            const response = await fetch('http://localhost:3000/dados'); // Rota para listar turmas
+            const turmas = await response.json();
 
-            turmaSelect.innerHTML = '<option value="">Selecione uma turma</option>';
-            Object.keys(dados).forEach(turma => {
+            turmaSelect.innerHTML = '<option value="" disabled selected>Escolha uma turma</option>';
+            // Aqui, precisamos garantir que estamos manipulando o nome da turma corretamente
+            Object.keys(turmas).forEach(nomeTurma => {
                 const option = document.createElement('option');
-                option.value = turma;
-                option.textContent = turma;
+                option.value = nomeTurma;
+                option.textContent = nomeTurma;  // O nome da turma é a chave
                 turmaSelect.appendChild(option);
             });
         } catch (error) {
@@ -27,34 +28,43 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Mostrar detalhes após seleção da turma
-    turmaSelect.addEventListener("change", () => {
+    // Evento de seleção de turma
+    turmaSelect.addEventListener("change", async () => {
         const turmaSelecionada = turmaSelect.value;
+        
+        if (!turmaSelecionada) return;
 
-        if (!turmaSelecionada) {
-            turmaDetails.classList.add("hidden");
-            return;
+        // Carregar os alunos dessa turma
+        try {
+            const response = await fetch('http://localhost:3000/dados'); // Rota para buscar os dados da turma
+            const dados = await response.json();
+
+            // Acessa os dados da turma selecionada corretamente
+            const turma = dados[turmaSelecionada];
+
+            if (!turma || !turma.alunos) {
+                alunosList.innerHTML = "<p>Não há alunos cadastrados para esta turma.</p>";
+                turmaDetails.classList.add("hidden");
+                return;
+            }
+
+            // Exibe os detalhes da turma
+            turmaDetails.classList.remove("hidden");
+            alunosList.innerHTML = ""; // Limpa a lista de alunos
+
+            turma.alunos.forEach(aluno => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <input type="text" value="${aluno}" readonly>
+                    <button class="remover-aluno">Remover</button>
+                `;
+                alunosList.appendChild(li);
+            });
+        } catch (error) {
+            console.error('Erro ao carregar dados da turma:', error);
         }
-
-        fetch(`http://localhost:3000/dados`)
-            .then(response => response.json())
-            .then(dados => {
-                const alunos = dados[turmaSelecionada]?.alunos || [];
-                alunosList.innerHTML = '';  // Limpa lista anterior
-
-                alunos.forEach(aluno => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <input type="text" value="${aluno}" readonly>
-                        <button class="remover-aluno">Remover</button>
-                    `;
-                    alunosList.appendChild(li);
-                });
-
-                turmaDetails.classList.remove("hidden");  // Exibe a seção de detalhes
-            })
-            .catch(error => console.error('Erro ao carregar alunos:', error));
     });
+
 
     // Adicionar aluno
     adicionarAlunoBtn.addEventListener("click", () => {
@@ -85,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Ordenar os nomes dos alunos em ordem alfabética
+        // Ordena os nomes dos alunos em ordem alfabética
         alunos = alunos.sort((a, b) => a.localeCompare(b));
 
         const dadosAtualizados = { turma, alunos };
@@ -117,7 +127,6 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Erro ao salvar a turma:", error);
         }
     });
-    
 
     // Exibir a confirmação ao clicar em "Excluir Turma"
     excluirTurmaBtn.addEventListener("click", () => {
@@ -150,9 +159,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Cancelar exclusão
     cancelarExclusaoBtn.addEventListener("click", () => {
         confirmacaoExclusao.classList.add("hidden");  // Oculta a confirmação
-    });    
+    });
 
-    // Pega a foto de usuário logado
     // Função para obter token do cookie
     function getTokenFromCookie() {
         const cookies = document.cookie.split("; ");

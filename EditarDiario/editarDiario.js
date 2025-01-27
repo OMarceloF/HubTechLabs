@@ -1,7 +1,7 @@
-// Carrega as turmas disponíveis no carregamento da página
+// Carrega as turmas do servidor (agora usando o backend)
 async function carregarTurmas() {
     try {
-        const response = await fetch('http://localhost:3000/dados'); // Requisição ao servidor Node.js
+        const response = await fetch('http://localhost:3000/dados'); // Requisição ao backend
         if (!response.ok) {
             throw new Error("Erro ao buscar as turmas");
         }
@@ -10,19 +10,29 @@ async function carregarTurmas() {
         const selectElement = document.getElementById("turma-select");
 
         // Preenche o dropdown com as turmas recebidas
-        for (const turma in turmas) {
+        for (const nomeTurma in turmas) {  // Acessando as turmas corretamente
             const option = document.createElement("option");
-            option.value = turma;
-            option.textContent = turma;
+            option.value = nomeTurma;
+            option.textContent = nomeTurma;
             selectElement.appendChild(option);
         }
 
         // Armazena os dados das turmas globalmente
         window.turmas = turmas;
-        window.presencaDados = [];
     } catch (error) {
         console.error("Erro ao carregar as turmas:", error);
     }
+}
+
+// Função para resetar os campos
+function resetarCampos() {
+    document.getElementById("turma-select").value = "";
+    document.getElementById("data-chamada").value = "";
+    document.getElementById("alunos-list").innerHTML = ""; // Limpa a lista de alunos
+    document.getElementById("alunos-container").classList.add("hidden");
+    document.getElementById("salvar-btn").classList.add("hidden");
+    document.getElementById("turma-selecionada").innerText = "Selecione uma turma";
+    document.getElementById("turma-selecionada").classList.add("hidden");
 }
 
 // Carrega as datas da turma selecionada
@@ -39,25 +49,31 @@ async function carregarDatas() {
         if (!response.ok) throw new Error("Erro ao buscar as datas");
 
         const presencas = await response.json();
-        const datasDaTurma = presencas.filter(p => p.turma === turmaSelecionada);
 
-        if (datasDaTurma.length === 0) {
+        // Acessar os dados da turma selecionada
+        const presencasDaTurma = presencas[turmaSelecionada];  // Acesse os dados de presença pela turma selecionada
+
+        if (!presencasDaTurma || presencasDaTurma.length === 0) {
             alert(`Nenhuma chamada encontrada para a turma ${turmaSelecionada}.`);
             return;
         }
 
+        // Obter datas únicas para a turma
+        const datasUnicas = [...new Set(presencasDaTurma.map(p => p.data))];  // Remove datas duplicadas
+
         const dataSelect = document.getElementById("data-chamada");
         dataSelect.innerHTML = `<option value="" disabled selected>Escolha a data</option>`;
 
-        datasDaTurma.forEach(p => {
-            const dataObj = new Date(p.data);
+        // Preenche o dropdown com as datas únicas
+        datasUnicas.forEach(data => {
+            const dataObj = new Date(data);
             const dia = String(dataObj.getUTCDate()).padStart(2, '0');
             const mes = String(dataObj.getUTCMonth() + 1).padStart(2, '0');
             const ano = dataObj.getUTCFullYear();
             const dataFormatada = `${dia}/${mes}/${ano}`;
 
             const option = document.createElement("option");
-            option.value = p.data; // Mantém o formato ISO para busca
+            option.value = data; // Mantém o formato ISO para busca
             option.textContent = dataFormatada;
             dataSelect.appendChild(option);
         });
@@ -68,19 +84,9 @@ async function carregarDatas() {
     }
 }
 
-function formatarData() {
-    const inputData = document.getElementById("data-chamada");
-    const dataSelecionada = new Date(inputData.value);
-
-    if (!isNaN(dataSelecionada.getTime())) {
-        const dia = String(dataSelecionada.getUTCDate()).padStart(2, '0');
-        const mes = String(dataSelecionada.getUTCMonth() + 1).padStart(2, '0');
-        const ano = dataSelecionada.getUTCFullYear();
-        inputData.value = `${ano}-${mes}-${dia}`; // Mantém o formato ISO para submissão
-        console.log(`Data formatada para exibição: ${dia}/${mes}/${ano}`);
-    }
-}
-
+// Carrega as notas dos alunos na data escolhida
+// Carrega as notas dos alunos na data escolhida
+// Carrega as notas dos alunos na data escolhida
 // Carrega as notas dos alunos na data escolhida
 async function carregarNotas() {
     const turmaSelecionada = document.getElementById("turma-select").value;
@@ -91,41 +97,63 @@ async function carregarNotas() {
         return;
     }
 
-    const response = await fetch('http://localhost:3000/dados-presenca');
-    const presencas = await response.json();
-    const chamada = presencas.find(p => p.turma === turmaSelecionada && p.data === dataSelecionada);
+    try {
+        const response = await fetch('http://localhost:3000/dados-presenca');
+        if (!response.ok) {
+            throw new Error("Erro ao buscar as presenças");
+        }
 
-    if (!chamada) {
-        alert("Não foram encontrados registros para essa data.");
-        return;
+        const presencas = await response.json();
+        
+        // Verifica se os dados de presença da turma e a data selecionada existem
+        const chamada = presencas[turmaSelecionada]?.filter(p => p.data === dataSelecionada);  // Usa filter para garantir que todas as presenças da data sejam selecionadas
+
+        if (!chamada || chamada.length === 0) {
+            alert("Não foram encontrados registros para essa data.");
+            return;
+        }
+
+        const alunosList = document.getElementById("alunos-list");
+        alunosList.innerHTML = ""; // Limpa a lista de alunos antes de preenchê-la
+
+        // Itera sobre os alunos da chamada e preenche a tabela
+        chamada.forEach(p => {
+            // Verifica se o aluno já tem nota atribuída
+            const notaAluno = p.nota !== undefined ? p.nota : 0; // Se não tiver nota, usa 0 como valor padrão
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${p.aluno}</td>
+                <td>${p.presenca}</td>
+                <td>
+                    <select class="nota-select">
+                        <option value="0" ${notaAluno === 0 ? "selected" : ""}>0</option>
+                        <option value="1" ${notaAluno === 1 ? "selected" : ""}>1</option>
+                        <option value="2" ${notaAluno === 2 ? "selected" : ""}>2</option>
+                        <option value="3" ${notaAluno === 3 ? "selected" : ""}>3</option>
+                        <option value="4" ${notaAluno === 4 ? "selected" : ""}>4</option>
+                        <option value="5" ${notaAluno === 5 ? "selected" : ""}>5</option>
+                    </select>
+                </td>
+            `;
+            alunosList.appendChild(row);
+        });
+
+        document.getElementById("alunos-container").classList.remove("hidden");
+        document.getElementById("salvar-btn").classList.remove("hidden");
+
+    } catch (error) {
+        console.error("Erro ao carregar as notas:", error);
+        alert("Erro ao carregar as notas.");
     }
-
-    const alunosList = document.getElementById("alunos-list");
-    alunosList.innerHTML = "";
-
-    chamada.alunos.forEach(aluno => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${aluno.nome}</td>
-            <td>${aluno.presenca}</td>
-            <td>
-                <select class="nota-select">
-                    <option value="0" ${aluno.nota === "0" ? "selected" : ""}>0</option>
-                    <option value="1" ${aluno.nota === "1" ? "selected" : ""}>1</option>
-                    <option value="2" ${aluno.nota === "2" ? "selected" : ""}>2</option>
-                    <option value="3" ${aluno.nota === "3" ? "selected" : ""}>3</option>
-                    <option value="4" ${aluno.nota === "4" ? "selected" : ""}>4</option>
-                    <option value="5" ${aluno.nota === "5" ? "selected" : ""}>5</option>
-                </select>
-            </td>
-        `;
-        alunosList.appendChild(row);
-    });
-
-    document.getElementById("alunos-container").classList.remove("hidden");
-    document.getElementById("salvar-btn").classList.remove("hidden");
 }
 
+
+
+
+// Função para salvar as notas
+// Função para salvar as notas
+// Função para salvar as notas
 async function salvarNotas() {
     const turmaSelecionada = document.getElementById("turma-select").value;
     const dataSelecionada = document.getElementById("data-chamada").value;
@@ -138,18 +166,19 @@ async function salvarNotas() {
     const alunos = document.querySelectorAll("#alunos-list tr");
     const novosDados = [];
 
+    // Itera sobre os alunos e captura as notas
     alunos.forEach(aluno => {
-        const nome = aluno.querySelector("td:first-child").textContent;
-        const nota = aluno.querySelector(".nota-select").value;
-        novosDados.push({ nome, nota });
+        const nome = aluno.querySelector("td:first-child").textContent; // Nome do aluno
+        const nota = aluno.querySelector(".nota-select").value; // Nota selecionada
+        novosDados.push({ nome, nota }); // Adiciona a nota ao array de novos dados
     });
 
-    // Buscar os dados atuais para manter o campo `dataSalvo`
+    // Busca os dados atuais para manter o campo `dataSalvo`
     let chamadas = [];
     try {
         const response = await fetch('http://localhost:3000/dados-presenca');
         if (response.ok) {
-            chamadas = await response.json();
+            chamadas = await response.json(); // Carrega os dados de presença
         } else {
             throw new Error("Erro ao buscar dados de presença.");
         }
@@ -159,8 +188,8 @@ async function salvarNotas() {
         return;
     }
 
-    // Encontra o registro original
-    const chamadaOriginal = chamadas.find(p => p.turma === turmaSelecionada && p.data === dataSelecionada);
+    // Encontra o registro original para a turma e data selecionadas
+    const chamadaOriginal = chamadas[turmaSelecionada]?.find(p => p.data === dataSelecionada);
     if (!chamadaOriginal) {
         alert("Registro original não encontrado.");
         return;
@@ -171,11 +200,16 @@ async function salvarNotas() {
         turma: turmaSelecionada,
         data: dataSelecionada,
         dataSalvo: chamadaOriginal.dataSalvo || new Date().toISOString().split('T')[0],
-        alunos: novosDados.map(aluno => ({
-            nome: aluno.nome,
-            presenca: chamadaOriginal.alunos.find(a => a.nome === aluno.nome)?.presenca || "Ausente",
-            nota: aluno.nota
-        }))
+        alunos: novosDados.map(aluno => {
+            // Encontrar o aluno na chamadaOriginal
+            const alunoPresenca = chamadaOriginal.alunos?.find(a => a.aluno === aluno.nome);
+
+            return {
+                nome: aluno.nome,
+                presenca: alunoPresenca ? alunoPresenca.presenca : "Ausente", // Se o aluno não existir, "Ausente"
+                nota: aluno.nota
+            };
+        })
     };
 
     // Envia os dados atualizados ao backend
@@ -183,7 +217,7 @@ async function salvarNotas() {
         const response = await fetch('http://localhost:3000/atualizar-notas', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dadosAtualizados)
+            body: JSON.stringify(dadosAtualizados) // Envia os dados atualizados
         });
 
         if (response.ok) {
@@ -195,6 +229,7 @@ async function salvarNotas() {
         console.error("Erro ao salvar as notas:", error);
     }
 }
+
 
 function exibirMensagem(mensagem, isError, callback) {
     const mensagemFeedback = document.getElementById("mensagem-feedback");
@@ -210,151 +245,7 @@ function exibirMensagem(mensagem, isError, callback) {
     }, 2000);  // 2 segundos
 }
 
-function obterListaDeAlunos(turmaSelecionada) {
-    const turma = window.turmas[turmaSelecionada];
-    if (Array.isArray(turma)) {
-        // Caso a turma seja um array simples
-        return turma;
-    } else if (typeof turma === "object" && turma.alunos) {
-        // Caso a turma tenha a estrutura com "instrutor" e "alunos"
-        return turma.alunos;
-    } else {
-        return [];
-    }
-}
-
-function mostrarAlunosSelecionados() {
-    const turmaSelecionada = document.getElementById("turma-select").value;
-    const alunosList = document.getElementById("alunos-list");
-    alunosList.innerHTML = "";
-
-    document.getElementById("turma-selecionada").innerText = `Turma: ${turmaSelecionada}`;
-    document.getElementById("turma-selecionada").classList.remove("hidden");
-    document.getElementById("alunos-container").classList.remove("hidden");
-    document.getElementById("salvar-btn").classList.remove("hidden");
-
-    const alunos = obterListaDeAlunos(turmaSelecionada);
-
-    if (alunos.length === 0) {
-        alert("Nenhum aluno encontrado para esta turma.");
-        return;
-    }
-
-    alunos.forEach(aluno => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${aluno}</td>
-            <td>
-                <label>
-                    <input type="checkbox" class="presenca-check"> Presente
-                </label>
-            </td>
-            <td>
-                <select class="nota-select">
-                    <option value="0">Nota</option>
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
-            </td>
-        `;
-        alunosList.appendChild(row);
-    });
-}
-
-function resetarCampos() {
-    document.getElementById("turma-select").value = "";
-    document.getElementById("data-chamada").value = "";
-    document.getElementById("alunos-container").classList.add("hidden");
-    document.getElementById("salvar-btn").classList.add("hidden");
-    document.getElementById("turma-selecionada").innerText = "Selecione uma turma";
-    document.getElementById("turma-selecionada").classList.add("hidden");
-}
-
-async function carregarPresencas() {
-    try {
-        const response = await fetch('http://localhost:3000/dados-presenca');
-        if (!response.ok) {
-            throw new Error("Erro ao buscar as presenças.");
-        }
-
-        const presencas = await response.json();
-
-        // Preencher a tabela com os dados organizados
-        const tabela = document.getElementById("alunos-table");
-        tabela.innerHTML = ''; // Limpa a tabela
-
-        presencas.forEach((chamada) => {
-            chamada.alunos.forEach((aluno) => {
-                const linha = document.createElement('tr');
-                linha.innerHTML = `
-                    <td>${aluno.nome}</td>
-                    <td>${chamada.data}</td>
-                    <td>${aluno.presenca}</td>
-                    <td>${aluno.nota}</td>
-                `;
-                tabela.appendChild(linha);
-            });
-        });
-    } catch (error) {
-        console.error("Erro ao carregar as presenças:", error);
-    }
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-    // Pega a foto de usuário logado
-    // Função para obter token do cookie
-    function getTokenFromCookie() {
-        const cookies = document.cookie.split("; ");
-        for (const cookie of cookies) {
-            const [key, value] = cookie.split("=");
-            if (key === "token") {
-                return value;
-            }
-        }
-        return null;
-    }
-
-    const token = getTokenFromCookie();
-    if (!token) {
-        alert("Você precisa estar logado para acessar esta página.");
-        window.location.href = "/Login/login.html";
-        return;
-    }
-
-    async function carregarPerfil() {
-        try {
-            const response = await fetch('http://localhost:3000/perfil', {
-                headers: { Authorization: token }
-            });
-
-            if (!response.ok) {
-                throw new Error("Erro ao carregar os dados do perfil");
-            }
-
-            const data = await response.json();
-
-            // Atualiza os elementos do HTML com os dados do usuário
-            document.getElementById("profile-photo").src = data.photo || "/projeto/Imagens/perfil.png";
-        } catch (error) {
-            console.error("Erro ao carregar perfil:", error);
-            alert("Erro ao carregar os dados do perfil.");
-        }
-    }
-
-    carregarPerfil();
-
+    // Carrega as turmas ao abrir a página
+    carregarTurmas();
 });
-
-
-
-// Chamada inicial
-window.onload = () => {
-    carregarPresencas();
-};
-
-// Carrega as turmas ao abrir a página
-window.onload = carregarTurmas;

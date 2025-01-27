@@ -4,24 +4,24 @@ document.addEventListener("DOMContentLoaded", () => {
     // Função para carregar as turmas do servidor
     async function carregarTurmas() {
         try {
-            const response = await fetch('http://localhost:3000/dados'); // Requisição ao backend
+            const response = await fetch('http://localhost:3000/listar-turmas'); // Requisição ao backend
             if (!response.ok) {
                 throw new Error("Erro ao buscar as turmas");
             }
             const turmas = await response.json();
-        
-            const selectElement = document.getElementById("turma"); // Atualizado para o ID correto
-        
+
+            const selectElement = document.getElementById("turma"); // ID correto
+
             // Limpa o dropdown antes de preenchê-lo
             selectElement.innerHTML = '<option value="" disabled selected>Escolha uma turma</option>';
-    
+
             // Preenche o dropdown com as turmas recebidas
-            for (const turma in turmas) {
+            turmas.forEach(turma => {
                 const option = document.createElement("option");
-                option.value = turma;
-                option.textContent = turma;
+                option.value = turma; // Valor da turma
+                option.textContent = turma; // Exibe o nome da turma corretamente
                 selectElement.appendChild(option);
-            }
+            });
         } catch (error) {
             console.error("Erro ao carregar as turmas:", error);
         }
@@ -29,6 +29,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Carregar turmas ao abrir a página
     carregarTurmas();
+
+    function exibirMensagem(mensagem, isError, callback) {
+        const mensagemFeedback = document.getElementById("mensagem-feedback");
+        mensagemFeedback.textContent = mensagem;
+        mensagemFeedback.classList.remove("hidden");
+        mensagemFeedback.classList.toggle("erro", isError);
+
+        setTimeout(() => {
+            mensagemFeedback.classList.add("hidden");
+            if (callback) {
+                callback();  // Chama a função de reset após a mensagem desaparecer
+            }
+        }, 2000);  // 2 segundos
+    }
 
     // Função para enviar avaliação ao backend
     formAvaliacao.addEventListener("submit", async (event) => {
@@ -60,7 +74,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (response.ok) {
                 exibirMensagem("Avaliação salva com sucesso!", false, () => formAvaliacao.reset());
-                
             } else {
                 const errorData = await response.json();
                 alert(`Erro ao salvar a avaliação: ${errorData.message}`);
@@ -69,11 +82,8 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Erro ao enviar os dados:", error);
             alert("Erro ao enviar os dados ao servidor.");
         }
-
-        
     });
 
-    // Pega a foto de usuário logado
     // Função para obter token do cookie
     function getTokenFromCookie() {
         const cookies = document.cookie.split("; ");
@@ -93,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    // Função para carregar perfil do usuário logado
     async function carregarPerfil() {
         try {
             const response = await fetch('http://localhost:3000/perfil', {
@@ -116,73 +127,81 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarPerfil();
 });
 
-function exibirMensagem(mensagem, isError, callback) {
-    const mensagemFeedback = document.getElementById("mensagem-feedback");
-    mensagemFeedback.textContent = mensagem;
-    mensagemFeedback.classList.remove("hidden");
-    mensagemFeedback.classList.toggle("erro", isError);
-
-    setTimeout(() => {
-        mensagemFeedback.classList.add("hidden");
-        if (callback) {
-            callback();  // Chama a função de reset após a mensagem desaparecer
+async function obterListaDeAlunos(turmaSelecionada) {
+    try {
+        // Requisição ao servidor para obter as turmas
+        const response = await fetch('http://localhost:3000/dados'); // Ou o endpoint correspondente
+        if (!response.ok) {
+            throw new Error("Erro ao buscar turmas");
         }
-    }, 2000);  // 2 segundos
-}
 
-function obterListaDeAlunos(turmaSelecionada) {
-    const turma = window.turmas[turmaSelecionada];
-    if (Array.isArray(turma)) {
-        // Caso a turma seja um array simples
-        return turma;
-    } else if (typeof turma === "object" && turma.alunos) {
+        const turmas = await response.json();
+
+        // Verifica se a turma selecionada existe no retorno do servidor
+        const turma = turmas[turmaSelecionada];
+        if (!turma) {
+            return []; // Retorna uma lista vazia caso a turma não exista
+        }
+
         // Caso a turma tenha a estrutura com "instrutor" e "alunos"
-        return turma.alunos;
-    } else {
-        return [];
+        if (Array.isArray(turma.alunos)) {
+            return turma.alunos;
+        } else {
+            return []; // Caso não haja lista de alunos
+        }
+    } catch (error) {
+        console.error("Erro ao obter lista de alunos:", error);
+        return []; // Retorna lista vazia em caso de erro
     }
 }
 
-function mostrarAlunosSelecionados() {
+async function mostrarAlunosSelecionados() {
     const turmaSelecionada = document.getElementById("turma-select").value;
     const alunosList = document.getElementById("alunos-list");
-    alunosList.innerHTML = "";
+    alunosList.innerHTML = "";  // Limpa a lista de alunos
 
     document.getElementById("turma-selecionada").innerText = `Turma: ${turmaSelecionada}`;
     document.getElementById("turma-selecionada").classList.remove("hidden");
     document.getElementById("alunos-container").classList.remove("hidden");
     document.getElementById("salvar-btn").classList.remove("hidden");
 
-    const alunos = obterListaDeAlunos(turmaSelecionada);
+    try {
+        // Chama a função para obter a lista de alunos da turma
+        const alunos = await obterListaDeAlunos(turmaSelecionada);
 
-    if (alunos.length === 0) {
-        alert("Nenhum aluno encontrado para esta turma.");
-        return;
+        if (alunos.length === 0) {
+            alert("Nenhum aluno encontrado para esta turma.");
+            return;
+        }
+
+        // Cria as linhas na tabela para os alunos
+        alunos.forEach(aluno => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${aluno}</td>
+                <td>
+                    <label>
+                        <input type="checkbox" class="presenca-check"> Presente
+                    </label>
+                </td>
+                <td>
+                    <select class="nota-select">
+                        <option value="0">Nota</option>
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </td>
+            `;
+            alunosList.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Erro ao obter a lista de alunos:", error);
+        alert("Erro ao carregar os alunos para a turma.");
     }
-
-    alunos.forEach(aluno => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${aluno}</td>
-            <td>
-                <label>
-                    <input type="checkbox" class="presenca-check"> Presente
-                </label>
-            </td>
-            <td>
-                <select class="nota-select">
-                    <option value="0">Nota</option>
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
-            </td>
-        `;
-        alunosList.appendChild(row);
-    });
 }
 
 // Carrega as turmas ao abrir a página

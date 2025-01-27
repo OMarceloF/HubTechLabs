@@ -22,7 +22,6 @@ function adicionarInput(containerId = "inputs-alunos") {
     removeButton.innerText = "x";
     removeButton.onclick = () => removerInput(removeButton);
 
-
     div.appendChild(input);
     div.appendChild(addButton);
     div.appendChild(removeButton);
@@ -99,8 +98,6 @@ function adicionarListaAlunos() {
     atualizarBotoesRemocao(); // Atualiza os botões de remoção
 }
 
-
-
 // Função para salvar a turma
 async function salvarTurma() {
     const nomeTurma = document.getElementById("nome-turma").value.trim();
@@ -171,7 +168,6 @@ async function salvarTurma() {
         console.error("Erro ao enviar os dados:", error);
     }
 }
-
 
 // Função para exibir a turma na lista
 function exibirTurma(turma) {
@@ -261,12 +257,6 @@ function limparFormulario() {
     document.getElementById("nome-turma").value = "";
     document.getElementById("inputs-alunos").innerHTML = "";
     adicionarInput();
-}
-
-function atualizarAlturaCard(containerId) {
-    const inputsContainer = document.getElementById(containerId);
-    const turmaCard = inputsContainer.closest(".turma-card");
-
 }
 
 document.addEventListener("DOMContentLoaded", () => {

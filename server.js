@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 
 const app = express();
+const mysql = require('mysql2/promise');
 const port = 3000;
 const secretKey = "sua_chave_secreta_super_segura";
 
@@ -16,6 +17,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Servir arquivos estáticos
 app.use('/output', express.static(path.join(__dirname, 'output')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.json());
 
 
 // Caminho do arquivo de dados e de saída
@@ -23,58 +25,99 @@ const dadosPath = path.join(__dirname, 'data', 'dados.json'); // Caminho para da
 const presencaPath = path.join(__dirname, 'output', 'presenca_dados.json'); // Caminho para presenca_dados.json
 const usuariosPath = path.join(__dirname, 'output', 'usuarios.json');
 
-// Rota para salvar turmas em `dados.json`
-app.post('/salvar-turma', (req, res) => {
+const dbConfig = {
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'diario_turmas'
+};
+
+// Rota para salvar turmas em turmas e alunos
+app.post('/salvar-turma', async (req, res) => {
     const { turma, instrutor, alunos } = req.body;
 
-    if (!turma || !instrutor || alunos.length === 0) {
+    if (!turma || !instrutor || !alunos || alunos.length === 0) {
         return res.status(400).send({ message: "Nome da turma, nome do instrutor ou lista de alunos está vazia." });
     }
 
-    // Ler o arquivo `dados.json` (se existir)
-    let turmas = {};
-    if (fs.existsSync(dadosPath)) {
-        turmas = JSON.parse(fs.readFileSync(dadosPath, 'utf8'));
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Inserir a turma na tabela `turmas`
+        const [result] = await connection.execute(
+            'INSERT INTO turmas (nome, instrutor) VALUES (?, ?)',
+            [turma, instrutor]
+        );
+
+        // Obter o ID da turma recém-inserida
+        const turmaId = result.insertId;
+
+        // Inserir os alunos na tabela `alunos`
+        const alunoValues = alunos.map(aluno => [aluno, turmaId]);
+        await connection.query(
+            'INSERT INTO alunos (nome, turma_id) VALUES ?',
+            [alunoValues]
+        );
+
+        // Fechar a conexão
+        await connection.end();
+
+        console.log(`Turma "${turma}" com instrutor "${instrutor}" e alunos salvos com sucesso.`);
+        res.status(200).send({ message: "Turma salva com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao salvar turma:", error);
+        res.status(500).send({ message: "Erro ao salvar a turma." });
     }
-
-    // Adicionar a nova turma com o nome do instrutor
-    turmas[turma] = {
-        instrutor: instrutor,
-        alunos: alunos
-    };
-
-    // Salvar as mudanças no arquivo `dados.json`
-    fs.writeFileSync(dadosPath, JSON.stringify(turmas, null, 2));
-    console.log(`Turma "${turma}" com instrutor "${instrutor}" salva com sucesso.`);
-
-    res.status(200).send({ message: "Turma salva com sucesso!" });
 });
 
-// Rota para salvar os dados de presença em JSON
-app.post('/salvar-json', (req, res) => {
+// Rota para salvar os dados de presença 
+app.post('/salvar-presenca', async (req, res) => {
     const { turma, data, dataSalvo, alunos } = req.body;
 
-    const novaPresenca = {
-        turma,
-        data,
-        dataSalvo,
-        alunos
-    };
-
-    // Lê o arquivo de presença existente (se houver)
-    let chamadas = [];
-    if (fs.existsSync(presencaPath)) {
-        chamadas = JSON.parse(fs.readFileSync(presencaPath, 'utf8'));
+    if (!turma || !data || !alunos || alunos.length === 0) {
+        return res.status(400).send({ message: "Faltam informações obrigatórias: turma, data ou lista de alunos." });
     }
 
-    // Adiciona a nova presença
-    chamadas.push(novaPresenca);
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
 
-    // Salva o arquivo com o novo registro
-    fs.writeFileSync(presencaPath, JSON.stringify(chamadas, null, 2));
-    console.log(`Chamada de ${turma} salva com sucesso para a data ${data}.`);
+        // Obter o ID da turma
+        const [turmaResult] = await connection.execute(
+            'SELECT id FROM turmas WHERE nome = ?',
+            [turma]
+        );
 
-    res.status(200).send({ message: "Dados de presença salvos com sucesso!" });
+        if (turmaResult.length === 0) {
+            return res.status(404).send({ message: `Turma "${turma}" não encontrada.` });
+        }
+
+        const turmaId = turmaResult[0].id;
+
+        // Inserir presenças na tabela `presencas`
+        const presencas = alunos.map(aluno => [
+            turmaId,         // turma_id
+            data,            // data
+            aluno.nome,      // aluno
+            aluno.presenca,  // presenca
+            aluno.nota       // nota
+        ]);
+
+        await connection.query(
+            'INSERT INTO presencas (turma_id, data, aluno, presenca, nota) VALUES ?',
+            [presencas]
+        );
+
+        // Fechar a conexão
+        await connection.end();
+
+        console.log(`Presenças da turma "${turma}" salvas com sucesso para a data ${data}.`);
+        res.status(200).send({ message: "Dados de presença salvos com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao salvar presença:", error);
+        res.status(500).send({ message: "Erro ao salvar os dados de presença." });
+    }
 });
 
 app.get('/Diario/indexDiario.html', (req, res) => {
@@ -354,23 +397,53 @@ app.get('/VisualizarAvaliacao/visualizarAvaliacao.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'VisualizarAvaliacao', 'visualizarAvaliacao.js'));
 });
 
-app.get('/dados', (req, res) => {
+app.get('/dados', async (req, res) => {
     try {
-        const dados = fs.readFileSync(dadosPath, 'utf8');
-        const turmas = JSON.parse(dados);
-        res.status(200).json(turmas);
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Buscar as turmas
+        const [turmas] = await connection.query('SELECT id, nome, instrutor FROM turmas');
+
+        // Obter os alunos de cada turma
+        const [alunos] = await connection.query('SELECT nome, turma_id FROM alunos');
+
+        // Fechar a conexão
+        await connection.end();
+
+        // Estruturar os dados no formato esperado
+        const turmasEstruturadas = {};
+        turmas.forEach(turma => {
+            turmasEstruturadas[turma.nome] = {
+                instrutor: turma.instrutor,
+                alunos: alunos
+                    .filter(aluno => aluno.turma_id === turma.id)
+                    .map(aluno => aluno.nome)
+            };
+        });
+
+        res.status(200).json(turmasEstruturadas);
     } catch (error) {
-        console.error("Erro ao carregar o arquivo dados.json:", error);
+        console.error("Erro ao carregar os dados de turmas:", error);
         res.status(500).send({ message: "Erro ao carregar os dados de turmas." });
     }
 });
 
 
-app.get('/listar-turmas', (req, res) => {
+app.get('/listar-turmas', async (req, res) => {
     try {
-        const dados = JSON.parse(fs.readFileSync('dados.json', 'utf8')); // Caminho correto para `dados.json`
-        const turmas = Object.keys(dados); // Retorna apenas os nomes das turmas
-        res.status(200).json(turmas);
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Buscar os nomes das turmas
+        const [turmas] = await connection.query('SELECT nome FROM turmas');
+
+        // Fechar a conexão
+        await connection.end();
+
+        // Retornar apenas os nomes das turmas
+        const nomesDasTurmas = turmas.map(turma => turma.nome);
+        res.status(200).json(nomesDasTurmas);
     } catch (error) {
         console.error("Erro ao listar as turmas:", error);
         res.status(500).json({ message: "Erro ao listar as turmas." });
@@ -379,176 +452,449 @@ app.get('/listar-turmas', (req, res) => {
 
 
 
-app.post('/atualizar-notas', (req, res) => {
+app.post('/atualizar-notas', async (req, res) => {
     const { turma, data, alunos } = req.body;
 
-    let chamadas = [];
-    if (fs.existsSync(presencaPath)) {
-        chamadas = JSON.parse(fs.readFileSync(presencaPath, 'utf8'));
+    if (!turma || !data || !alunos || alunos.length === 0) {
+        return res.status(400).send({ message: "Faltam informações obrigatórias: turma, data ou alunos." });
     }
 
-    // Atualiza o registro correspondente
-    const index = chamadas.findIndex(p => p.turma === turma && p.data === data);
-    if (index === -1) {
-        res.status(404).send({ message: "Chamada não encontrada." });
-        return;
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Obter o ID da turma
+        const [turmaResult] = await connection.execute(
+            'SELECT id FROM turmas WHERE nome = ?',
+            [turma]
+        );
+
+        if (turmaResult.length === 0) {
+            return res.status(404).send({ message: `Turma "${turma}" não encontrada.` });
+        }
+
+        const turmaId = turmaResult[0].id;
+        console.log(`ID da turma "${turma}": ${turmaId}`);
+
+        // Converte a data para o formato YYYY-MM-DD (sem horário)
+        const dataFormatada = new Date(data).toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        console.log(`Data formatada para o banco de dados: ${dataFormatada}`);
+
+        // Atualizar as notas na tabela `presencas`
+        for (const aluno of alunos) {
+            if (typeof aluno.nota === "undefined" || aluno.nota === null) {
+                return res.status(400).send({ message: `Nota não fornecida para o aluno ${aluno.nome}.` });
+            }
+
+            if (isNaN(aluno.nota)) {
+                return res.status(400).send({ message: `A nota para o aluno ${aluno.nome} não é válida.` });
+            }
+
+            // Verifica se o aluno existe na tabela presencas para a turma e data especificados
+            const [presenca] = await connection.execute(
+                'SELECT * FROM presencas WHERE turma_id = ? AND data = ? AND aluno = ?',
+                [turmaId, dataFormatada, aluno.nome]  // Usando a data formatada sem o horário
+            );
+
+            console.log(`Consultando presença para aluno ${aluno.nome}:`, presenca);
+
+            if (presenca.length === 0) {
+                console.log(`Aluno "${aluno.nome}" não encontrado para a turma "${turma}" na data "${dataFormatada}"`);
+                continue; // Pula para o próximo aluno, se não for encontrado
+            }
+
+            // Se o aluno existir, realiza o UPDATE
+            const [updateResult] = await connection.execute(
+                'UPDATE presencas SET nota = ? WHERE turma_id = ? AND data = ? AND aluno = ?',
+                [aluno.nota, turmaId, dataFormatada, aluno.nome]
+            );
+
+            if (updateResult.affectedRows === 0) {
+                console.log(`Não foi possível atualizar a nota para o aluno ${aluno.nome} na turma ${turma} na data ${dataFormatada}`);
+            } else {
+                console.log(`Nota do aluno "${aluno.nome}" atualizada com sucesso!`);
+            }
+        }
+
+        // Fechar a conexão
+        await connection.end();
+
+        res.status(200).send({ message: "Notas atualizadas com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao atualizar notas:", error);
+        res.status(500).send({ message: "Erro ao atualizar as notas." });
     }
-
-    chamadas[index].alunos = alunos;
-
-    fs.writeFileSync(presencaPath, JSON.stringify(chamadas, null, 2));
-    res.status(200).send({ message: "Notas atualizadas com sucesso!" });
 });
+
+
+
+
+
 
 const avaliacoesPath = path.join(__dirname, 'output', 'avaliacoes.json'); // Caminho atualizado para a pasta /output
 
 // Rota para salvar avaliação
-app.post('/salvar-avaliacao', (req, res) => {
+app.post('/salvar-avaliacao', async (req, res) => {
     const { turma, nomeAvaliacao, dataAvaliacao, conteudoAvaliacao } = req.body;
 
     if (!turma || !nomeAvaliacao || !dataAvaliacao || !conteudoAvaliacao) {
         return res.status(400).send({ message: "Preencha todos os campos da avaliação." });
     }
 
-    const novaAvaliacao = {
-        turma,
-        nomeAvaliacao,
-        dataAvaliacao,
-        conteudoAvaliacao
-    };
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
 
-    // Ler avaliações existentes
-    let avaliacoes = [];
-    if (fs.existsSync(avaliacoesPath)) {
-        avaliacoes = JSON.parse(fs.readFileSync(avaliacoesPath, 'utf8'));
+        // Obter o ID da turma
+        const [turmaResult] = await connection.execute(
+            'SELECT id FROM turmas WHERE nome = ?',
+            [turma]
+        );
+
+        if (turmaResult.length === 0) {
+            return res.status(404).send({ message: `Turma "${turma}" não encontrada.` });
+        }
+
+        const turmaId = turmaResult[0].id;
+
+        // Inserir a nova avaliação na tabela `avaliacoes`
+        await connection.execute(
+            'INSERT INTO avaliacoes (turma_id, nome_avaliacao, data_avaliacao, conteudo_avaliacao) VALUES (?, ?, ?, ?)',
+            [turmaId, nomeAvaliacao, dataAvaliacao, conteudoAvaliacao]
+        );
+
+        // Fechar a conexão
+        await connection.end();
+
+        console.log(`Avaliação "${nomeAvaliacao}" para a turma "${turma}" salva com sucesso.`);
+        res.status(200).send({ message: "Avaliação salva com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao salvar avaliação:", error);
+        res.status(500).send({ message: "Erro ao salvar a avaliação." });
     }
-
-    // Adicionar nova avaliação
-    avaliacoes.push(novaAvaliacao);
-
-    // Salvar no arquivo avaliacoes.json
-    fs.writeFileSync(avaliacoesPath, JSON.stringify(avaliacoes, null, 2));
-    console.log(`Avaliação para "${turma}" salva com sucesso.`);
-
-    res.status(200).send({ message: "Avaliação salva com sucesso!" });
 });
 
 const notasAvaliacoesPath = path.join(__dirname, 'output', 'notasAvaliacoes.json');
 
 // Função para carregar usuários
-function carregarUsuarios() {
-    if (fs.existsSync(usuariosPath)) {
-        return JSON.parse(fs.readFileSync(usuariosPath, 'utf8'));
+async function carregarUsuarios() {
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Consultar os usuários
+        const [usuarios] = await connection.query('SELECT * FROM usuarios');
+
+        // Fechar a conexão
+        await connection.end();
+
+        // Retornar os usuários
+        return usuarios;
+    } catch (error) {
+        console.error("Erro ao carregar os usuários:", error);
+        return []; // Retorna lista vazia em caso de erro
     }
-    return [];
 }
 
 // Rota de cadastro de usuários
-app.post('/cadastro', (req, res) => {
+app.post('/cadastro', async (req, res) => {
     const { email, senha, tipo, name, phone, city, state, unit, photo } = req.body;
 
+    // Validação de dados obrigatórios
     if (!email || !senha || !tipo) {
-        return res.status(400).send({ message: 'Preencha todos os campos!' });
+        return res.status(400).send({ message: 'Preencha todos os campos obrigatórios!' });
     }
 
-    const usuarios = carregarUsuarios();
-    const usuarioExistente = usuarios.find(u => u.email === email);
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
 
-    if (usuarioExistente) {
-        return res.status(400).send({ message: 'Usuário já cadastrado!' });
+        // Verificar se o usuário já existe
+        const [usuarioExistente] = await connection.query('SELECT id FROM usuarios WHERE email = ?', [email]);
+        if (usuarioExistente.length > 0) {
+            await connection.end();
+            return res.status(400).send({ message: 'Usuário já cadastrado!' });
+        }
+
+        // Inserir novo usuário
+        await connection.execute(
+            'INSERT INTO usuarios (id, email, senha, tipo, name, phone, city, state, unit, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [email, email, senha, tipo, name || '', phone || '', city || '', state || '', unit || '', photo || '']
+        );
+
+        // Fechar a conexão
+        await connection.end();
+
+        console.log(`Usuário ${email} cadastrado com sucesso.`);
+        res.status(201).send({ message: 'Usuário cadastrado com sucesso!' });
+    } catch (error) {
+        console.error("Erro ao cadastrar usuário:", error);
+        res.status(500).send({ message: 'Erro ao cadastrar o usuário.' });
     }
-
-    const novoUsuario = { id: email, email, senha, tipo, name, phone, city, state, unit, photo };
-    usuarios.push(novoUsuario);
-    fs.writeFileSync(usuariosPath, JSON.stringify(usuarios, null, 2));
-    res.status(201).send({ message: 'Usuário cadastrado com sucesso!' });
 });
 
 
 // Rota para verificar o tipo de usuário
-app.get('/verificar-acesso', (req, res) => {
+app.get('/verificar-acesso', async (req, res) => {
     const { email } = req.query;
-    const usuarios = carregarUsuarios();
-    const usuario = usuarios.find(u => u.email === email);
 
-    if (!usuario) {
-        return res.status(404).send({ message: 'Usuário não encontrado!' });
+    if (!email) {
+        return res.status(400).send({ message: 'O campo email é obrigatório!' });
     }
 
-    res.status(200).send({ tipo: usuario.tipo });
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Consultar o tipo de usuário pelo email
+        const [result] = await connection.execute(
+            'SELECT tipo FROM usuarios WHERE email = ?',
+            [email]
+        );
+
+        // Fechar a conexão
+        await connection.end();
+
+        // Verificar se o usuário foi encontrado
+        if (result.length === 0) {
+            return res.status(404).send({ message: 'Usuário não encontrado!' });
+        }
+
+        // Retornar o tipo de usuário
+        res.status(200).send({ tipo: result[0].tipo });
+    } catch (error) {
+        console.error("Erro ao verificar o tipo de usuário:", error);
+        res.status(500).send({ message: 'Erro ao verificar o acesso.' });
+    }
 });
 
 
 // Rota para salvar notas
-app.post('/salvar-notas-avaliacoes', (req, res) => {
+app.post('/salvar-notas-avaliacoes', async (req, res) => {
     const { turma, avaliacao, notas } = req.body;
 
-    if (!turma || !avaliacao || notas.length === 0) {
+    if (!turma || !avaliacao || !notas || notas.length === 0) {
         return res.status(400).send({ message: "Preencha todos os campos corretamente." });
     }
 
-    let dadosNotas = [];
-    if (fs.existsSync(notasAvaliacoesPath)) {
-        dadosNotas = JSON.parse(fs.readFileSync(notasAvaliacoesPath, 'utf8'));
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Obter o ID da turma
+        const [turmaResult] = await connection.execute(
+            'SELECT id FROM turmas WHERE nome = ?',
+            [turma]
+        );
+
+        if (turmaResult.length === 0) {
+            await connection.end();
+            return res.status(404).send({ message: `Turma "${turma}" não encontrada.` });
+        }
+
+        const turmaId = turmaResult[0].id;
+
+        // Obter o ID da avaliação
+        const [avaliacaoResult] = await connection.execute(
+            'SELECT id FROM avaliacoes WHERE nome_avaliacao = ? AND turma_id = ?',
+            [avaliacao, turmaId]
+        );
+
+        if (avaliacaoResult.length === 0) {
+            await connection.end();
+            return res.status(404).send({ message: `Avaliação "${avaliacao}" não encontrada para a turma "${turma}".` });
+        }
+
+        const avaliacaoId = avaliacaoResult[0].id;
+
+        // Inserir as notas na tabela `notas_avaliacoes`
+        const notasValores = notas.map(nota => [
+            turmaId,          // turma_id
+            avaliacaoId,      // avaliacao_id
+            nota.aluno,       // aluno
+            nota.nota         // nota
+        ]);
+
+        await connection.query(
+            'INSERT INTO notas_avaliacoes (turma_id, avaliacao_id, aluno, nota) VALUES ?',
+            [notasValores]
+        );
+
+        // Fechar a conexão
+        await connection.end();
+
+        console.log(`Notas da avaliação "${avaliacao}" da turma "${turma}" salvas com sucesso.`);
+        res.status(200).send({ message: "Notas salvas com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao salvar as notas:", error);
+        res.status(500).send({ message: "Erro ao salvar as notas." });
     }
-
-    dadosNotas.push({ turma, avaliacao, notas });
-    fs.writeFileSync(notasAvaliacoesPath, JSON.stringify(dadosNotas, null, 2));
-
-    console.log(`Notas da avaliação "${avaliacao}" da turma "${turma}" salvas com sucesso.`);
-    res.status(200).send({ message: "Notas salvas com sucesso!" });
 });
 
 
 // Rota para obter as avaliações
-app.get('/avaliacoes', (req, res) => {
+app.get('/avaliacoes', async (req, res) => {
     try {
-        if (fs.existsSync(avaliacoesPath)) {
-            const avaliacoes = JSON.parse(fs.readFileSync(avaliacoesPath, 'utf8'));
-            res.status(200).json(avaliacoes);
-        } else {
-            res.status(404).send({ message: "Nenhuma avaliação encontrada." });
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Consultar as avaliações junto com as informações das turmas
+        const [avaliacoes] = await connection.query(`
+            SELECT 
+                a.id AS avaliacao_id,
+                t.nome AS turma,
+                a.nome_avaliacao,
+                a.data_avaliacao,
+                a.conteudo_avaliacao
+            FROM 
+                avaliacoes a
+            JOIN 
+                turmas t ON a.turma_id = t.id
+        `);
+
+        // Fechar a conexão
+        await connection.end();
+
+        if (avaliacoes.length === 0) {
+            return res.status(404).send({ message: "Nenhuma avaliação encontrada." });
         }
+
+        // Retornar as avaliações
+        res.status(200).json(avaliacoes);
     } catch (error) {
         console.error("Erro ao carregar as avaliações:", error);
         res.status(500).send({ message: "Erro ao carregar as avaliações." });
     }
 });
 
-app.put('/editar-turma', (req, res) => {
+app.put('/editar-turma', async (req, res) => {
     const { turma, alunos } = req.body;
 
-    let turmas = JSON.parse(fs.readFileSync(dadosPath, 'utf8'));
-
-    if (!turmas[turma]) {
-        return res.status(404).send({ message: "Turma não encontrada." });
+    if (!turma || !alunos || alunos.length === 0) {
+        return res.status(400).send({ message: "Preencha os dados corretamente." });
     }
 
-    turmas[turma].alunos = alunos;  // Atualiza os alunos
-    fs.writeFileSync(dadosPath, JSON.stringify(turmas, null, 2));
-    res.status(200).send({ message: "Turma editada com sucesso!" });
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Obter o ID da turma
+        const [turmaResult] = await connection.execute(
+            'SELECT id FROM turmas WHERE nome = ?',
+            [turma]
+        );
+
+        if (turmaResult.length === 0) {
+            await connection.end();
+            return res.status(404).send({ message: "Turma não encontrada." });
+        }
+
+        const turmaId = turmaResult[0].id;
+
+        // Atualizar os alunos na tabela `alunos` para a turma especificada
+        await connection.query('DELETE FROM alunos WHERE turma_id = ?', [turmaId]);
+
+        // Inserir os novos alunos na tabela `alunos`
+        const alunosValores = alunos.map(aluno => [aluno, turmaId]);
+        await connection.query(
+            'INSERT INTO alunos (nome, turma_id) VALUES ?',
+            [alunosValores]
+        );
+
+        // Fechar a conexão
+        await connection.end();
+
+        console.log(`Turma "${turma}" atualizada com sucesso.`);
+        res.status(200).send({ message: "Turma editada com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao editar turma:", error);
+        res.status(500).send({ message: "Erro ao editar a turma." });
+    }
 });
 
-app.delete('/excluir-turma', (req, res) => {
+app.delete('/excluir-turma', async (req, res) => {
     const { turma } = req.body;
 
-    let turmas = JSON.parse(fs.readFileSync(dadosPath, 'utf8'));
-
-    if (!turmas[turma]) {
-        return res.status(404).send({ message: "Turma não encontrada." });
+    if (!turma) {
+        return res.status(400).send({ message: "O nome da turma é obrigatório." });
     }
 
-    delete turmas[turma];
-    fs.writeFileSync(dadosPath, JSON.stringify(turmas, null, 2));
-    res.status(200).send({ message: "Turma excluída com sucesso!" });
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Verificar se a turma existe
+        const [turmaResult] = await connection.execute(
+            'SELECT id FROM turmas WHERE nome = ?',
+            [turma]
+        );
+
+        if (turmaResult.length === 0) {
+            await connection.end();
+            return res.status(404).send({ message: "Turma não encontrada." });
+        }
+
+        const turmaId = turmaResult[0].id;
+
+        // Excluir a turma (os alunos associados serão removidos automaticamente)
+        await connection.execute('DELETE FROM turmas WHERE id = ?', [turmaId]);
+
+        // Fechar a conexão
+        await connection.end();
+
+        console.log(`Turma "${turma}" excluída com sucesso.`);
+        res.status(200).send({ message: "Turma excluída com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao excluir a turma:", error);
+        res.status(500).send({ message: "Erro ao excluir a turma." });
+    }
 });
 
 
 // Rota para obter as notas das avaliações
-app.get('/notasavaliacoes', (req, res) => {
+app.get('/notasavaliacoes', async (req, res) => {
     try {
-        const notas = fs.readFileSync(path.join(__dirname, 'output', 'notasavaliacoes.json'), 'utf8');
-        res.status(200).json(JSON.parse(notas));
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Consultar as notas das avaliações
+        const [notas] = await connection.query(`
+            SELECT 
+                t.nome AS turma,
+                a.nome_avaliacao,
+                n.aluno,
+                n.nota
+            FROM 
+                notas_avaliacoes n
+            JOIN 
+                avaliacoes a ON n.avaliacao_id = a.id
+            JOIN 
+                turmas t ON n.turma_id = t.id
+        `);
+
+        // Fechar a conexão
+        await connection.end();
+
+        if (notas.length === 0) {
+            return res.status(404).send({ message: "Nenhuma nota encontrada." });
+        }
+
+        // Estruturar os dados no formato esperado
+        const notasEstruturadas = {};
+        notas.forEach(nota => {
+            if (!notasEstruturadas[nota.turma]) {
+                notasEstruturadas[nota.turma] = [];
+            }
+
+            notasEstruturadas[nota.turma].push({
+                nomeAvaliacao: nota.nome_avaliacao,
+                aluno: nota.aluno,
+                nota: nota.nota
+            });
+        });
+
+        // Retornar os dados estruturados
+        res.status(200).json(notasEstruturadas);
     } catch (error) {
         console.error("Erro ao carregar as notas:", error);
         res.status(500).send({ message: "Erro ao carregar as notas." });
@@ -556,24 +902,88 @@ app.get('/notasavaliacoes', (req, res) => {
 });
 
 // Rota para obter as presenças
-app.get('/dados-presenca', (req, res) => {
+app.get('/dados-presenca', async (req, res) => {
     try {
-        const chamadas = JSON.parse(fs.readFileSync(presencaPath, 'utf8'));
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
 
-        // Ordenar as chamadas pela data
-        const chamadasOrdenadas = chamadas.sort((a, b) => new Date(a.data) - new Date(b.data));
+        // Consultar presenças e ordenar pela data
+        const [presencas] = await connection.query(`
+            SELECT 
+                t.nome AS turma,
+                p.data,
+                p.aluno,
+                p.presenca,
+                p.nota
+            FROM 
+                presencas p
+            JOIN 
+                turmas t ON p.turma_id = t.id
+            ORDER BY p.data ASC
+        `);
 
-        res.status(200).json(chamadasOrdenadas);
+        // Fechar a conexão
+        await connection.end();
+
+        if (presencas.length === 0) {
+            return res.status(404).send({ message: "Nenhuma presença encontrada." });
+        }
+
+        // Estruturar os dados por turma e data
+        const presencasEstruturadas = {};
+        presencas.forEach(presenca => {
+            if (!presencasEstruturadas[presenca.turma]) {
+                presencasEstruturadas[presenca.turma] = [];
+            }
+
+            presencasEstruturadas[presenca.turma].push({
+                data: presenca.data,
+                aluno: presenca.aluno,
+                presenca: presenca.presenca,
+                nota: presenca.nota
+            });
+        });
+
+        // Retornar os dados estruturados
+        res.status(200).json(presencasEstruturadas);
     } catch (error) {
         console.error("Erro ao carregar as presenças:", error);
-        res.status(500).send({ message: "Erro ao carregar as presenças" });
+        res.status(500).send({ message: "Erro ao carregar as presenças." });
     }
 });
 
-app.get('/dados-presenca', (req, res) => {
+app.get('/dados-presenca', async (req, res) => {
     try {
-        const presencas = JSON.parse(fs.readFileSync(presencaPath, 'utf8'));
-        console.log("Chamadas retornadas:", presencas); // Adiciona log para depuração
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Consultar todas as presenças
+        const [presencas] = await connection.query(`
+            SELECT 
+                t.nome AS turma,
+                p.data,
+                p.aluno,
+                p.presenca,
+                p.nota
+            FROM 
+                presencas p
+            JOIN 
+                turmas t ON p.turma_id = t.id
+            ORDER BY 
+                p.data ASC
+        `);
+
+        // Fechar a conexão
+        await connection.end();
+
+        if (presencas.length === 0) {
+            return res.status(404).send({ message: "Nenhuma presença encontrada." });
+        }
+
+        // Log para depuração
+        console.log("Chamadas retornadas:", presencas);
+
+        // Retornar os dados
         res.status(200).json(presencas);
     } catch (error) {
         console.error("Erro ao carregar as presenças:", error);
@@ -601,44 +1011,123 @@ function verificarToken(req, res, next) {
 
 // Middleware para verificar permissão usando arquivo `usuarios.json`
 function verificarPermissao(permissoes) {
-    return (req, res, next) => {
-        const usuarios = carregarUsuarios();
-        const usuario = usuarios.find(u => u.email === req.user.email);
-        if (!usuario) {
-            return res.status(404).send({ message: 'Usuário não encontrado!' });
+    return async (req, res, next) => {
+        const email = req.user?.email;
+
+        if (!email) {
+            return res.status(400).send({ message: 'E-mail do usuário não encontrado na requisição.' });
         }
-        if (permissoes.includes(usuario.tipo) || usuario.tipo === 'Diretor/Coordenador') {
-            next();
-        } else {
-            res.status(403).send({ message: 'Acesso negado!' });
+
+        try {
+            // Conectar ao banco de dados
+            const connection = await mysql.createConnection(dbConfig);
+
+            // Consultar o usuário pelo e-mail
+            const [usuarios] = await connection.query(
+                'SELECT tipo FROM usuarios WHERE email = ?',
+                [email]
+            );
+
+            // Fechar a conexão
+            await connection.end();
+
+            // Verificar se o usuário existe
+            if (usuarios.length === 0) {
+                return res.status(404).send({ message: 'Usuário não encontrado!' });
+            }
+
+            const usuario = usuarios[0];
+
+            // Verificar se o tipo de usuário tem permissão
+            if (permissoes.includes(usuario.tipo) || usuario.tipo === 'Diretor/Coordenador') {
+                next();
+            } else {
+                res.status(403).send({ message: 'Acesso negado!' });
+            }
+        } catch (error) {
+            console.error("Erro ao verificar permissão:", error);
+            res.status(500).send({ message: 'Erro ao verificar permissão.' });
         }
     };
 }
 
 // Função para carregar usuários
-function carregarUsuarios() {
-    const usuariosPath = path.join(__dirname, 'output', 'usuarios.json');
-    if (fs.existsSync(usuariosPath)) {
-        return JSON.parse(fs.readFileSync(usuariosPath, 'utf8'));
+async function carregarUsuarios() {
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Consultar todos os usuários
+        const [usuarios] = await connection.query('SELECT * FROM usuarios');
+
+        // Fechar a conexão
+        await connection.end();
+
+        // Retornar os usuários
+        return usuarios;
+    } catch (error) {
+        console.error("Erro ao carregar os usuários:", error);
+        return []; // Retorna uma lista vazia em caso de erro
     }
-    return [];
 }
 
 // Rota protegida para criação de turma (apenas DEV e Coordenador)
-app.post('/salvar-turma', verificarToken, verificarPermissao(['DEV']), (req, res) => {
+app.post('/salvar-turma', verificarToken, verificarPermissao(['DEV', 'Diretor/Coordenador']), async (req, res) => {
     const { turma, instrutor, alunos } = req.body;
-    if (!turma || !instrutor || alunos.length === 0) {
+
+    if (!turma || !instrutor || !alunos || alunos.length === 0) {
         return res.status(400).send({ message: "Nome da turma, nome do instrutor ou lista de alunos está vazia." });
     }
-    const turmas = fs.existsSync(dadosPath) ? JSON.parse(fs.readFileSync(dadosPath, 'utf8')) : {};
-    turmas[turma] = { instrutor, alunos };
-    fs.writeFileSync(dadosPath, JSON.stringify(turmas, null, 2));
-    res.status(200).send({ message: "Turma salva com sucesso!" });
+
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Verificar se a turma já existe
+        const [turmaExistente] = await connection.query(
+            'SELECT id FROM turmas WHERE nome = ?',
+            [turma]
+        );
+
+        if (turmaExistente.length > 0) {
+            await connection.end();
+            return res.status(400).send({ message: "A turma já existe." });
+        }
+
+        // Inserir a turma na tabela `turmas`
+        const [turmaResult] = await connection.execute(
+            'INSERT INTO turmas (nome, instrutor) VALUES (?, ?)',
+            [turma, instrutor]
+        );
+
+        const turmaId = turmaResult.insertId;
+
+        // Inserir os alunos na tabela `alunos`
+        const alunosValores = alunos.map(aluno => [aluno, turmaId]);
+        await connection.query(
+            'INSERT INTO alunos (nome, turma_id) VALUES ?',
+            [alunosValores]
+        );
+
+        // Fechar a conexão
+        await connection.end();
+
+        res.status(200).send({ message: "Turma salva com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao salvar a turma:", error);
+        res.status(500).send({ message: "Erro ao salvar a turma." });
+    }
 });
 
 // Rota para acessar diário (Instrutor e Coordenador têm acesso)
 app.get('/Diario/indexDiario.html', verificarToken, verificarPermissao(['Instrutor/Professor', 'DEV']), (req, res) => {
-    res.sendFile(path.join(__dirname, 'Diario', 'indexDiario.html'));
+    try {
+        const filePath = path.join(__dirname, 'Diario', 'indexDiario.html');
+        res.sendFile(filePath);
+    } catch (error) {
+        console.error("Erro ao acessar o diário:", error);
+        res.status(500).send({ message: "Erro ao acessar o diário." });
+    }
 });
 
 
@@ -652,7 +1141,7 @@ app.get('/Diario/indexDiario.html', verificarToken, verificarPermissao(['Instrut
 // });
 
 // Rota para obter os dados do usuário logado
-app.get('/usuario-logado', (req, res) => {
+app.get('/usuario-logado', async (req, res) => {
     const token = req.headers.authorization;
 
     if (!token) {
@@ -660,18 +1149,36 @@ app.get('/usuario-logado', (req, res) => {
     }
 
     try {
-        const decoded = jwt.verify(token, secretKey); // Decodifica o token
-        const usuarios = JSON.parse(fs.readFileSync(path.join(__dirname, 'output', 'usuarios.json'), 'utf8'));
-        const usuario = usuarios.find(u => u.email === decoded.email);
+        // Verificar e decodificar o token
+        const decoded = jwt.verify(token, secretKey);
 
-        if (!usuario) {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Consultar o usuário pelo e-mail decodificado
+        const [usuarios] = await connection.query(
+            'SELECT email, name, photo, tipo FROM usuarios WHERE email = ?',
+            [decoded.email]
+        );
+
+        // Fechar a conexão
+        await connection.end();
+
+        // Verificar se o usuário existe
+        if (usuarios.length === 0) {
             return res.status(404).send({ message: 'Usuário não encontrado!' });
         }
 
-        // Retorna apenas o campo "photo" (ou outros se necessário)
-        res.status(200).send({ photo: usuario.photo });
+        // Retornar os dados do usuário
+        const usuario = usuarios[0];
+        res.status(200).send({
+            email: usuario.email,
+            name: usuario.name,
+            photo: usuario.photo,
+            tipo: usuario.tipo
+        });
     } catch (error) {
-        console.error("Erro ao verificar token:", error);
+        console.error("Erro ao verificar token ou buscar usuário:", error);
         res.status(403).send({ message: 'Token inválido!' });
     }
 });
@@ -679,33 +1186,96 @@ app.get('/usuario-logado', (req, res) => {
 
 
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
     const { email, senha } = req.body;
-    // Carregar os usuários
-    const usuarios = JSON.parse(fs.readFileSync(path.join(__dirname, 'output', 'usuarios.json'), 'utf8'));
-    const usuario = usuarios.find(u => u.email === email && u.senha === senha);
-    if (!usuario) {
-        return res.status(401).send({ message: 'E-mail ou senha incorretos!' });
+
+    if (!email || !senha) {
+        return res.status(400).send({ message: 'E-mail e senha são obrigatórios!' });
     }
-    console.log(`Usuário autenticado: ${usuario.email}, Tipo: ${usuario.tipo}`);
-    const token = jwt.sign({ email: usuario.email, tipo: usuario.tipo }, secretKey, { expiresIn: '2h' });
-    res.status(200).send({ message: 'Login bem-sucedido!', token, tipo: usuario.tipo });
+
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Consultar o usuário pelo e-mail
+        const [usuarios] = await connection.query(
+            'SELECT email, senha, tipo FROM usuarios WHERE email = ?',
+            [email]
+        );
+
+        // Fechar a conexão
+        await connection.end();
+
+        // Verificar se o usuário foi encontrado
+        if (usuarios.length === 0) {
+            return res.status(401).send({ message: 'E-mail ou senha incorretos!' });
+        }
+
+        const usuario = usuarios[0];
+
+        // Comparar a senha diretamente (apenas para uso temporário)
+        if (usuario.senha !== senha) {
+            return res.status(401).send({ message: 'E-mail ou senha incorretos!' });
+        }
+
+        // Gerar o token JWT
+        const token = jwt.sign(
+            { email: usuario.email, tipo: usuario.tipo },
+            secretKey,
+            { expiresIn: '2h' }
+        );
+
+        console.log(`Usuário autenticado: ${usuario.email}, Tipo: ${usuario.tipo}`);
+        res.status(200).send({
+            message: 'Login bem-sucedido!',
+            token,
+            tipo: usuario.tipo
+        });
+    } catch (error) {
+        console.error("Erro ao autenticar o usuário:", error);
+        res.status(500).send({ message: 'Erro ao realizar login.' });
+    }
 });
 
-// Função para salvar as alterações no `usuarios.json`
-function atualizarUsuario(email, novosDados) {
-    const usuariosPath = path.join(__dirname, 'output', 'usuarios.json');
-    const usuarios = JSON.parse(fs.readFileSync(usuariosPath, 'utf8'));
-    const usuarioIndex = usuarios.findIndex(u => u.email === email);
-    if (usuarioIndex === -1) {
-        return false; // Usuário não encontrado
+// Função para atualizar usuário
+async function atualizarUsuario(email, novosDados) {
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Verificar se o usuário existe
+        const [usuarioExistente] = await connection.query(
+            'SELECT id FROM usuarios WHERE email = ?',
+            [email]
+        );
+
+        if (usuarioExistente.length === 0) {
+            await connection.end();
+            return false; // Usuário não encontrado
+        }
+
+        // Atualizar os dados do usuário
+        const campos = Object.keys(novosDados)
+            .map(campo => `${campo} = ?`)
+            .join(', ');
+
+        const valores = [...Object.values(novosDados), email];
+
+        await connection.query(
+            `UPDATE usuarios SET ${campos} WHERE email = ?`,
+            valores
+        );
+
+        // Fechar a conexão
+        await connection.end();
+        return true; // Atualização bem-sucedida
+    } catch (error) {
+        console.error("Erro ao atualizar usuário:", error);
+        return false; // Erro ao atualizar
     }
-    usuarios[usuarioIndex] = {...usuarios[usuarioIndex], ...novosDados };
-    fs.writeFileSync(usuariosPath, JSON.stringify(usuarios, null, 2));
-    return true;
 }
 
-app.get('/perfil', (req, res) => {
+app.get('/perfil', async (req, res) => {
     const token = req.headers.authorization;
 
     if (!token) {
@@ -713,13 +1283,27 @@ app.get('/perfil', (req, res) => {
     }
 
     try {
+        // Decodificar o token
         const decoded = jwt.verify(token, secretKey);
-        const usuarios = JSON.parse(fs.readFileSync(usuariosPath, 'utf8'));
-        const usuario = usuarios.find(u => u.email === decoded.email);
 
-        if (!usuario) {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Consultar o usuário pelo e-mail
+        const [usuarios] = await connection.query(
+            'SELECT name, email, phone, city, state, unit, photo FROM usuarios WHERE email = ?',
+            [decoded.email]
+        );
+
+        // Fechar a conexão
+        await connection.end();
+
+        // Verificar se o usuário foi encontrado
+        if (usuarios.length === 0) {
             return res.status(404).send({ message: 'Usuário não encontrado!' });
         }
+
+        const usuario = usuarios[0];
 
         // Retornar os dados do perfil
         res.status(200).send({
@@ -730,32 +1314,54 @@ app.get('/perfil', (req, res) => {
             state: usuario.state || "",
             unit: usuario.unit || "",
             photo: usuario.photo || "/projeto/Imagens/perfil.png"
-        });        
+        });
     } catch (error) {
-        console.error('Erro ao verificar token:', error);
+        console.error('Erro ao verificar token ou consultar usuário:', error);
         res.status(403).send({ message: 'Token inválido!' });
     }
 });
 
 
-// Função para atualizar um usuário no arquivo JSON
-function atualizarUsuario(email, novosDados) {
-    if (fs.existsSync(usuariosPath)) {
-        const usuarios = JSON.parse(fs.readFileSync(usuariosPath, 'utf8'));
-        const usuarioIndex = usuarios.findIndex(u => u.email === email);
-        if (usuarioIndex === -1) {
+// Função para atualizar um usuário
+async function atualizarUsuario(email, novosDados) {
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Verificar se o usuário existe
+        const [usuarioExistente] = await connection.query(
+            'SELECT id FROM usuarios WHERE email = ?',
+            [email]
+        );
+
+        if (usuarioExistente.length === 0) {
+            await connection.end();
             return false; // Usuário não encontrado
         }
-        // Atualiza os dados do usuário
-        usuarios[usuarioIndex] = {...usuarios[usuarioIndex], ...novosDados };
-        fs.writeFileSync(usuariosPath, JSON.stringify(usuarios, null, 2));
-        return true;
+
+        // Preparar os campos e valores para o update
+        const campos = Object.keys(novosDados)
+            .map(campo => `${campo} = ?`)
+            .join(', ');
+        const valores = [...Object.values(novosDados), email];
+
+        // Atualizar os dados do usuário
+        await connection.query(
+            `UPDATE usuarios SET ${campos} WHERE email = ?`,
+            valores
+        );
+
+        // Fechar a conexão
+        await connection.end();
+        return true; // Atualização bem-sucedida
+    } catch (error) {
+        console.error("Erro ao atualizar o usuário:", error);
+        return false; // Erro ao atualizar
     }
-    return false;
 }
 
 // Rota para atualizar o perfil do usuário
-app.post('/atualizar-perfil', (req, res) => {
+app.post('/atualizar-perfil', async (req, res) => {
     const token = req.headers.authorization;
 
     if (!token) {
@@ -763,27 +1369,73 @@ app.post('/atualizar-perfil', (req, res) => {
     }
 
     try {
+        // Decodificar o token
         const decoded = jwt.verify(token, secretKey);
         const email = decoded.email;
 
-        const usuarios = JSON.parse(fs.readFileSync(usuariosPath, 'utf8'));
-        const usuarioIndex = usuarios.findIndex(user => user.email === email);
+        const { name, phone, city, state, unit, senha, photo } = req.body;
 
-        if (usuarioIndex === -1) {
+        if (!name && !phone && !city && !state && !unit && !senha && !photo) {
+            return res.status(400).send({ error: "Nenhum campo para atualizar fornecido" });
+        }
+
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Verificar se o usuário existe
+        const [usuarios] = await connection.query(
+            'SELECT id FROM usuarios WHERE email = ?',
+            [email]
+        );
+
+        if (usuarios.length === 0) {
+            await connection.end();
             return res.status(404).send({ error: "Usuário não encontrado" });
         }
 
-        const { name, phone, city, state, unit, senha, photo } = req.body;
+        // Montar query de atualização dinamicamente
+        const campos = [];
+        const valores = [];
 
-        if (name) usuarios[usuarioIndex].name = name;
-        if (phone) usuarios[usuarioIndex].phone = phone;
-        if (city) usuarios[usuarioIndex].city = city;
-        if (state) usuarios[usuarioIndex].state = state;
-        if (unit) usuarios[usuarioIndex].unit = unit;
-        if (photo) usuarios[usuarioIndex].photo = photo; // Atualizar o URL da foto
-        if (senha) usuarios[usuarioIndex].senha = senha;
+        if (name) {
+            campos.push('name = ?');
+            valores.push(name);
+        }
+        if (phone) {
+            campos.push('phone = ?');
+            valores.push(phone);
+        }
+        if (city) {
+            campos.push('city = ?');
+            valores.push(city);
+        }
+        if (state) {
+            campos.push('state = ?');
+            valores.push(state);
+        }
+        if (unit) {
+            campos.push('unit = ?');
+            valores.push(unit);
+        }
+        if (photo) {
+            campos.push('photo = ?');
+            valores.push(photo);
+        }
+        if (senha) {
+            campos.push('senha = ?');
+            valores.push(senha);
+        }
 
-        fs.writeFileSync(usuariosPath, JSON.stringify(usuarios, null, 2));
+        // Adicionar o e-mail ao final dos valores para a cláusula WHERE
+        valores.push(email);
+
+        // Executar atualização
+        const updateQuery = `UPDATE usuarios SET ${campos.join(', ')} WHERE email = ?`;
+        await connection.query(updateQuery, valores);
+
+        // Fechar a conexão
+        await connection.end();
+
         res.status(200).send({ message: "Perfil atualizado com sucesso!" });
     } catch (error) {
         console.error("Erro ao atualizar perfil:", error);
@@ -816,9 +1468,18 @@ app.post('/upload-image', upload.single('photo'), (req, res) => {
     res.status(200).send({ imageUrl });
 });
 
-app.get('/usuarios', (req, res) => {
+app.get('/usuarios', async (req, res) => {
     try {
-        const usuarios = JSON.parse(fs.readFileSync(path.join(__dirname, 'output', 'usuarios.json'), 'utf8'));
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Consultar todos os usuários
+        const [usuarios] = await connection.query('SELECT * FROM usuarios');
+
+        // Fechar a conexão
+        await connection.end();
+
+        // Retornar os usuários
         res.status(200).json(usuarios);
     } catch (error) {
         console.error("Erro ao carregar usuários:", error);

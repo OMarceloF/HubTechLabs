@@ -1,19 +1,19 @@
-// Carrega as turmas do backend (dados.json)
+// Carrega as turmas do servidor (agora usando o backend)
 async function carregarTurmas() {
     try {
-        const response = await fetch('http://localhost:3000/dados'); // Requisição ao servidor Node.js
+        const response = await fetch('http://localhost:3000/dados'); // Requisição ao backend
         if (!response.ok) {
             throw new Error("Erro ao buscar as turmas");
         }
-        const turmas = await response.json();
+        const turmas = await response.json(); // Dados das turmas
 
         const selectElement = document.getElementById("turma-select");
 
         // Preenche o dropdown com as turmas recebidas
-        for (const turma in turmas) {
+        for (const nomeTurma in turmas) {  // Agora estamos usando a chave "nomeTurma"
             const option = document.createElement("option");
-            option.value = turma;
-            option.textContent = turma;
+            option.value = nomeTurma;
+            option.textContent = nomeTurma;
             selectElement.appendChild(option);
         }
 
@@ -24,8 +24,6 @@ async function carregarTurmas() {
         console.error("Erro ao carregar as turmas:", error);
     }
 }
-
-
 
 // Função para salvar os dados de presença e notas com data
 async function salvarDados() {
@@ -49,7 +47,7 @@ async function salvarDados() {
     };
 
     try {
-        const response = await fetch('http://localhost:3000/salvar-json', {
+        const response = await fetch('http://localhost:3000/salvar-presenca', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
@@ -66,14 +64,9 @@ async function salvarDados() {
     }
 }
 
-
 function obterListaDeAlunos(turmaSelecionada) {
-    const turma = window.turmas[turmaSelecionada];
-    if (Array.isArray(turma)) {
-        // Caso a turma seja um array simples
-        return turma;
-    } else if (typeof turma === "object" && turma.alunos) {
-        // Caso a turma tenha a estrutura com "instrutor" e "alunos"
+    const turma = window.turmas[turmaSelecionada]; // Acesse diretamente a turma pela chave "nome"
+    if (turma && turma.alunos) {
         return turma.alunos;
     } else {
         return [];
@@ -106,7 +99,7 @@ function exibirMensagem(mensagem, isError, callback) {
 function mostrarAlunosSelecionados() {
     const turmaSelecionada = document.getElementById("turma-select").value;
     const alunosList = document.getElementById("alunos-list");
-    alunosList.innerHTML = "";
+    alunosList.innerHTML = "";  // Limpa a lista de alunos
 
     document.getElementById("turma-selecionada").innerText = `Turma: ${turmaSelecionada}`;
     document.getElementById("turma-selecionada").classList.remove("hidden");
@@ -166,6 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    // Função para carregar perfil do usuário logado
     async function carregarPerfil() {
         try {
             const response = await fetch('http://localhost:3000/perfil', {

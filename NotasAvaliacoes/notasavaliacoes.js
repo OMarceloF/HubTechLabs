@@ -8,54 +8,52 @@ document.addEventListener("DOMContentLoaded", () => {
     // Função para carregar as turmas
     async function carregarTurmas() {
         try {
-            const response = await fetch('http://localhost:3000/dados'); // Use a rota correta
+            const response = await fetch('http://localhost:3000/dados'); // Usando a rota correta
             if (!response.ok) {
                 throw new Error("Erro ao buscar as turmas");
             }
-    
+
             const turmas = await response.json(); // Obtenha as turmas
-            const turmaSelect = document.getElementById("turma-select");
-    
-            // Limpa o dropdown antes de preenchê-lo
             turmaSelect.innerHTML = '<option value="" disabled selected>Selecione uma turma</option>';
-    
-            for (const turma in turmas) {
+
+            Object.keys(turmas).forEach(turma => {
                 const option = document.createElement('option');
                 option.value = turma;
-                option.textContent = turma;
+                option.textContent = turma; // Exibe o nome da turma corretamente
                 turmaSelect.appendChild(option);
-            }
+            });
         } catch (error) {
             console.error('Erro ao carregar as turmas:', error);
         }
     }
-    
 
     // Função para carregar avaliações da turma selecionada
     async function carregarAvaliacoes(turma) {
         try {
-            const response = await fetch('http://localhost:3000/avaliacoes'); // Endpoint para listar avaliações
+            const response = await fetch('http://localhost:3000/avaliacoes'); // Ajuste para a rota que retorna as avaliações
             const avaliacoes = await response.json();
+
+            // Filtra as avaliações pela turma selecionada
             const avaliacoesFiltradas = avaliacoes.filter(avaliacao => avaliacao.turma === turma);
 
             avaliacaoSelect.innerHTML = '<option value="">Selecione uma avaliação</option>';
+
             if (avaliacoesFiltradas.length === 0) {
                 alert(`Nenhuma avaliação encontrada para a turma "${turma}".`);
                 return;
             }
 
+            // Exibe as avaliações filtradas no dropdown
             avaliacoesFiltradas.forEach(avaliacao => {
-                const option = document.createElement('option');
-                option.value = avaliacao.nomeAvaliacao;
-                option.textContent = avaliacao.nomeAvaliacao;
+                const option = document.createElement("option");
+                option.value = avaliacao.nome_avaliacao; // Nome da avaliação
+                option.textContent = `${avaliacao.nome_avaliacao} - ${formatarData(avaliacao.data_avaliacao)}`; // Exibe nome e data
                 avaliacaoSelect.appendChild(option);
             });
         } catch (error) {
             console.error('Erro ao carregar as avaliações:', error);
         }
     }
-
-
 
     // Evento de seleção de turma
     turmaSelect.addEventListener("change", () => {
@@ -65,21 +63,31 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Função para formatar data para o formato dd/mm/yyyy
+    function formatarData(dataISO) {
+        const data = new Date(dataISO);
+        const dia = String(data.getDate()).padStart(2, '0');
+        const mes = String(data.getMonth() + 1).padStart(2, '0');
+        const ano = data.getFullYear();
+        return `${dia}/${mes}/${ano}`;
+    }
+
+    // Função para gerar lista de alunos da turma
     async function gerarListaAlunos(turma) {
         try {
-            const response = await fetch('http://localhost:3000/dados'); // Carrega os dados das turmas
+            const response = await fetch('http://localhost:3000/dados'); // Ajuste a rota para obter as turmas
             const dados = await response.json();
             const turmaData = dados[turma]; // Obtém os dados da turma
-    
+
             // Verifica se a turma contém a lista de alunos
-            const alunos = Array.isArray(turmaData) ? turmaData : turmaData?.alunos || [];
-    
+            const alunos = turmaData?.alunos || [];
+
             if (alunos.length === 0) {
                 alert(`Nenhum aluno encontrado para a turma "${turma}".`);
                 alunosContainer.classList.add("hidden");
-                return;
+                return; // Usar return dentro da função, não fora
             }
-    
+
             formNotas.innerHTML = `
                 <table class="tabela-notas">
                     <thead>
@@ -91,9 +99,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     <tbody id="tabela-body"></tbody>
                 </table>
             `;
-    
+
             const tabelaBody = document.getElementById("tabela-body");
-    
+
             alunos.forEach(aluno => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
@@ -112,13 +120,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
                 tabelaBody.appendChild(row);
             });
-    
+
             alunosContainer.classList.remove("hidden"); // Exibe a tabela
         } catch (error) {
-            console.error('Erro ao carregar alunos:', error);
+            console.error("Erro ao carregar alunos:", error);
         }
     }
-    
 
     // Evento de seleção de avaliação
     avaliacaoSelect.addEventListener("change", () => {
@@ -133,25 +140,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const turma = turmaSelect.value;
         const avaliacao = avaliacaoSelect.value;
         const inputsNotas = formNotas.querySelectorAll('select[data-aluno]');
-    
+
         const notas = Array.from(inputsNotas).map(input => ({
             aluno: input.dataset.aluno,
             nota: input.value === "" ? "Não Avaliado" : parseFloat(input.value)  // Define "Não Avaliado" se não houver nota
         }));
-    
+
         const dadosNotas = {
             turma,
             avaliacao,
             notas
         };
-    
+
         try {
             const response = await fetch('http://localhost:3000/salvar-notas-avaliacoes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosNotas)
             });
-    
+
             if (response.ok) {
                 exibirMensagem("Avaliação salva com sucesso!", false, () => resetarCampos());
             } else {
@@ -161,13 +168,14 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Erro ao salvar as notas:", error);
         }
     });
-    
+
+    // Função para exibir mensagens de sucesso ou erro
     function exibirMensagem(mensagem, isError, callback) {
         const mensagemFeedback = document.getElementById("mensagem-feedback");
         mensagemFeedback.textContent = mensagem;
         mensagemFeedback.classList.remove("hidden");
         mensagemFeedback.classList.toggle("erro", isError);
-    
+
         setTimeout(() => {
             mensagemFeedback.classList.add("hidden");
             if (callback) {
@@ -176,6 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 2000);  // 2 segundos
     }
 
+    // Função para resetar os campos
     function resetarCampos() {
         formNotas.reset();
         alunosContainer.classList.add("hidden");
@@ -183,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("avaliacao-select").value = "";
     }
 
+    // Função para obter lista de alunos
     function obterListaDeAlunos(turmaSelecionada) {
         const turma = window.turmas[turmaSelecionada];
         if (Array.isArray(turma)) {
@@ -196,23 +206,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Função para mostrar alunos selecionados
     function mostrarAlunosSelecionados() {
         const turmaSelecionada = document.getElementById("turma-select").value;
         const alunosList = document.getElementById("alunos-list");
         alunosList.innerHTML = "";
-    
+
         document.getElementById("turma-selecionada").innerText = `Turma: ${turmaSelecionada}`;
         document.getElementById("turma-selecionada").classList.remove("hidden");
         document.getElementById("alunos-container").classList.remove("hidden");
         document.getElementById("salvar-btn").classList.remove("hidden");
-    
+
         const alunos = obterListaDeAlunos(turmaSelecionada);
-    
+
         if (alunos.length === 0) {
             alert("Nenhum aluno encontrado para esta turma.");
             return;
         }
-    
+
         alunos.forEach(aluno => {
             const row = document.createElement("tr");
             row.innerHTML = `
@@ -237,50 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alunosList.appendChild(row);
         });
     }
-    
-    // Pega a foto de usuário logado
-    // Função para obter token do cookie
-    function getTokenFromCookie() {
-        const cookies = document.cookie.split("; ");
-        for (const cookie of cookies) {
-            const [key, value] = cookie.split("=");
-            if (key === "token") {
-                return value;
-            }
-        }
-        return null;
-    }
 
-    const token = getTokenFromCookie();
-    if (!token) {
-        alert("Você precisa estar logado para acessar esta página.");
-        window.location.href = "/Login/login.html";
-        return;
-    }
-
-    async function carregarPerfil() {
-        try {
-            const response = await fetch('http://localhost:3000/perfil', {
-                headers: { Authorization: token }
-            });
-
-            if (!response.ok) {
-                throw new Error("Erro ao carregar os dados do perfil");
-            }
-
-            const data = await response.json();
-
-            // Atualiza os elementos do HTML com os dados do usuário
-            document.getElementById("profile-photo").src = data.photo || "/projeto/Imagens/perfil.png";
-        } catch (error) {
-            console.error("Erro ao carregar perfil:", error);
-            alert("Erro ao carregar os dados do perfil.");
-        }
-    }
-
-    carregarPerfil();
-
-    carregarTurmas();
+    // Carregar turmas ao abrir a página
+    window.onload = carregarTurmas;
 });
-
-
