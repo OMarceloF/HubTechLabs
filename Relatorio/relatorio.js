@@ -371,6 +371,25 @@ async function exportarRelatorioPDF() {
             doc.addImage(graficoDesempenhoImg, 'PNG', 10, 30, 190, 90);
         }
 
+        // Tabela de observações
+        if (registrosFiltradosPresenca.length > 0) {
+            doc.addPage();
+            const tabelaPresencaDesempenho = registrosFiltradosPresenca.map(registro => [
+                new Date(registro.data).toLocaleDateString('pt-BR'),
+                registro.observacao || "-"
+            ]);
+
+            doc.setFontSize(14);
+            doc.text("Observações por Aula:", 10, 20);
+
+            doc.autoTable({
+                startY: 30, // Define que a tabela começa 5mm abaixo do texto
+                head: [['Data', 'Observção']],
+                body: tabelaPresencaDesempenho,
+                theme: 'grid',
+            });
+        }
+
         // **Salvar PDF**
         doc.save(`Relatorio_Turma_${turmaNome}_${alunoSelecionado}.pdf`);
     } catch (error) {
