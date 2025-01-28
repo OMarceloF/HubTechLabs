@@ -102,6 +102,20 @@ h2 {
     background-color: #f0f8ff;
 }
 
+#alunos-table th:nth-child(4),
+#alunos-table td:nth-child(4) {
+    width: 200px;
+    text-align: center;
+}
+
+.observacao-input {
+    width: 95%;
+    padding: 5px;
+    border: 1px solid #b3d9ff;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
 #salvar-btn {
     margin-top: 20px;
     padding: 10px 20px;
