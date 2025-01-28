@@ -53,7 +53,12 @@ async function carregarDatas() {
         // Acessar os dados da turma selecionada
         const presencasDaTurma = presencas[turmaSelecionada];  // Acesse os dados de presença pela turma selecionada
 
-        if (!presencasDaTurma || presencasDaTurma.length === 0) {
+        // if (!presencasDaTurma || presencasDaTurma.length === 0) {
+        //     alert(`Nenhuma chamada encontrada para a turma ${turmaSelecionada}.`);
+        //     return;
+        // }
+
+        if (!presencas[turmaSelecionada] || presencas[turmaSelecionada].length === 0) {
             alert(`Nenhuma chamada encontrada para a turma ${turmaSelecionada}.`);
             return;
         }
@@ -84,9 +89,6 @@ async function carregarDatas() {
     }
 }
 
-// Carrega as notas dos alunos na data escolhida
-// Carrega as notas dos alunos na data escolhida
-// Carrega as notas dos alunos na data escolhida
 // Carrega as notas dos alunos na data escolhida
 async function carregarNotas() {
     const turmaSelecionada = document.getElementById("turma-select").value;
@@ -120,6 +122,7 @@ async function carregarNotas() {
         chamada.forEach(p => {
             // Verifica se o aluno já tem nota atribuída
             const notaAluno = p.nota !== undefined ? p.nota : 0; // Se não tiver nota, usa 0 como valor padrão
+            const observacao = p.observacao || "";
 
             const row = document.createElement("tr");
             row.innerHTML = `
@@ -135,6 +138,9 @@ async function carregarNotas() {
                         <option value="5" ${notaAluno === 5 ? "selected" : ""}>5</option>
                     </select>
                 </td>
+                <td>
+                    <input type="text" class="observacao-input" value="${observacao}" placeholder="Digite uma observação">
+                </td>
             `;
             alunosList.appendChild(row);
         });
@@ -148,11 +154,6 @@ async function carregarNotas() {
     }
 }
 
-
-
-
-// Função para salvar as notas
-// Função para salvar as notas
 // Função para salvar as notas
 async function salvarNotas() {
     const turmaSelecionada = document.getElementById("turma-select").value;
@@ -170,7 +171,8 @@ async function salvarNotas() {
     alunos.forEach(aluno => {
         const nome = aluno.querySelector("td:first-child").textContent; // Nome do aluno
         const nota = aluno.querySelector(".nota-select").value; // Nota selecionada
-        novosDados.push({ nome, nota }); // Adiciona a nota ao array de novos dados
+        const observacao = aluno.querySelector(".observacao-input").value;
+        novosDados.push({ nome, nota, observacao }); // Adiciona a nota ao array de novos dados
     });
 
     // Busca os dados atuais para manter o campo `dataSalvo`
@@ -207,7 +209,8 @@ async function salvarNotas() {
             return {
                 nome: aluno.nome,
                 presenca: alunoPresenca ? alunoPresenca.presenca : "Ausente", // Se o aluno não existir, "Ausente"
-                nota: aluno.nota
+                nota: aluno.nota,
+                observacao: aluno.observacao, // Se não tiver observação, usa a original
             };
         })
     };

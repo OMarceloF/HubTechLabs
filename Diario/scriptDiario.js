@@ -42,7 +42,8 @@ async function salvarDados() {
         alunos: Array.from(alunos).map(aluno => ({
             nome: aluno.querySelector("td:first-child").textContent,
             presenca: aluno.querySelector(".presenca-check").checked ? "Presente" : "Ausente",
-            nota: aluno.querySelector(".nota-select").value
+            nota: aluno.querySelector(".nota-select").value,
+            observacao: aluno.querySelector(".observacao-input").value || "" // Captura a observação
         }))
     };
 
@@ -132,6 +133,9 @@ function mostrarAlunosSelecionados() {
                     <option value="4">4</option>
                     <option value="5">5</option>
                 </select>
+            </td>
+            <td>
+                <input type="text" class="observacao-input" placeholder="Digite uma observação">
             </td>
         `;
         alunosList.appendChild(row);
