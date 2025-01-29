@@ -1,0 +1,92 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+.container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+.photo-container {
+    display: flex;
+    flex-direction: column; /* Organiza os itens em coluna */
+    align-items: center; /* Centraliza horizontalmente */
+    justify-content: center; /* Centraliza verticalmente */
+    gap: 10px; /* Espaço entre a imagem e o botão */
+    margin: 0 auto; /* Garante que o container seja centralizado */
+}
+
+
+.photo-container img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+}
+.custom-upload-button {
+    background-color: #78f8e1;
+    color: rgb(0, 0, 0);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+}
+
+.custom-upload-button:hover {
+    opacity: 0.9;
+}
+
+.section {
+    margin-bottom: 20px;
+}
+
+.section label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="senha"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    align-items: right;
+    box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+button {
+    background-color: #28a745;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #218838;
+}

@@ -17,7 +17,9 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Servir arquivos estáticos
 app.use('/output', express.static(path.join(__dirname, 'output')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true }));  // ✅ Permite ler dados no formato x-www-form-urlencoded
+app.use(express.json());  // ✅ Permite ler JSON, caso precise
+
 
 
 // Caminho do arquivo de dados e de saída
@@ -32,47 +34,60 @@ const dbConfig = {
     database: 'diario_turmas'
 };
 
-// Rota para salvar turmas em turmas e alunos
 app.post('/salvar-turma', async (req, res) => {
-    const { turma, instrutor, alunos } = req.body;
+    const { unidade_id, turma, instrutor, alunos } = req.body;
 
-    if (!turma || !instrutor || !alunos || alunos.length === 0) {
-        return res.status(400).send({ message: "Nome da turma, nome do instrutor ou lista de alunos está vazia." });
+    if (!unidade_id || !turma || !instrutor || alunos.length === 0) {
+        return res.status(400).json({ message: 'Todos os campos são obrigatórios!' });
     }
 
     try {
-        // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
 
-        // Inserir a turma na tabela `turmas`
-        const [result] = await connection.execute(
-            'INSERT INTO turmas (nome, instrutor) VALUES (?, ?)',
-            [turma, instrutor]
+        let finalUnidadeId = unidade_id;
+
+        // Verifica se a unidade já existe no banco
+        const [unidadeExistente] = await connection.execute(
+            'SELECT id FROM unidades WHERE id = ?',
+            [unidade_id]
         );
 
-        // Obter o ID da turma recém-inserida
+        // Se a unidade não existir, cria uma nova e pega o ID gerado
+        if (unidadeExistente.length === 0) {
+            const [novaUnidade] = await connection.execute(
+                'INSERT INTO unidades (unidade) VALUES (?)',
+                [unidade_id]
+            );
+            finalUnidadeId = novaUnidade.insertId; // Pega o novo ID da unidade criada
+        }
+
+        // Inserir a turma associada à unidade
+        const [result] = await connection.execute(
+            'INSERT INTO turmas (unidade_id, nome, instrutor) VALUES (?, ?, ?)',
+            [finalUnidadeId, turma, instrutor]
+        );
+
         const turmaId = result.insertId;
 
-        // Inserir os alunos na tabela `alunos`
-        const alunoValues = alunos.map(aluno => [aluno, turmaId]);
-        await connection.query(
-            'INSERT INTO alunos (nome, turma_id) VALUES ?',
-            [alunoValues]
-        );
+        // Inserir os alunos associados à turma
+        for (const aluno of alunos) {
+            await connection.execute(
+                'INSERT INTO alunos (turma_id, nome) VALUES (?, ?)',
+                [turmaId, aluno]
+            );
+        }
 
-        // Fechar a conexão
         await connection.end();
+        res.status(201).json({ message: 'Turma cadastrada com sucesso!' });
 
-        console.log(`Turma "${turma}" com instrutor "${instrutor}" e alunos salvos com sucesso.`);
-        res.status(200).send({ message: "Turma salva com sucesso!" });
     } catch (error) {
-        console.error("Erro ao salvar turma:", error);
-        res.status(500).send({ message: "Erro ao salvar a turma." });
+        console.error('Erro ao cadastrar turma:', error);
+        res.status(500).json({ message: 'Erro ao cadastrar a turma.' });
     }
 });
 
 // Rota para salvar os dados de presença 
-app.post('/salvar-presenca', async (req, res) => {
+app.post('/salvar-presenca', async(req, res) => {
     const { turma, data, dataSalvo, alunos } = req.body;
 
     if (!turma || !data || !alunos || alunos.length === 0) {
@@ -85,8 +100,7 @@ app.post('/salvar-presenca', async (req, res) => {
 
         // Obter o ID da turma
         const [turmaResult] = await connection.execute(
-            'SELECT id FROM turmas WHERE nome = ?',
-            [turma]
+            'SELECT id FROM turmas WHERE nome = ?', [turma]
         );
 
         if (turmaResult.length === 0) {
@@ -97,17 +111,15 @@ app.post('/salvar-presenca', async (req, res) => {
 
         // Inserir presenças na tabela `presencas`
         const presencas = alunos.map(aluno => [
-            turmaId,         // turma_id
-            data,            // data
-            aluno.nome,      // aluno
-            aluno.presenca,  // presenca
-            aluno.nota,      // nota
-            aluno.observacao // observacao
+            turmaId, // turma_id
+            data, // data
+            aluno.nome, // aluno
+            aluno.presenca, // presenca
+            aluno.nota // nota
         ]);
 
         await connection.query(
-            'INSERT INTO presencas (turma_id, data, aluno, presenca, nota, observacao) VALUES ?',
-            [presencas]
+            'INSERT INTO presencas (turma_id, data, aluno, presenca, nota) VALUES ?', [presencas]
         );
 
         // Fechar a conexão
@@ -317,6 +329,10 @@ app.get('/Imagens/imagem4.jpg', (req, res) => {
     res.sendFile(path.join(__dirname, 'Imagens', 'imagem4.jpg'));
 });
 
+app.get('/Imagens/cadastroUNI.jpg', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Imagens', 'cadastroUNI.jpg'));
+});
+
 // Inicializa o servidor
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}/Login/login.html`);
@@ -382,23 +398,35 @@ app.get('/Relatorio/relatorio.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'Relatorio', 'relatorio.js'));
 });
 
+app.get('/CadastroUnidades/cadastroUnidades.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'CadastroUnidades', 'cadastroUnidades.js'));
+});
+
+app.get('/CadastroUnidades/cadastroUnidades.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'CadastroUnidades', 'cadastroUnidades.html'));
+});
+
+app.get('/CadastroUnidades/cadastroUnidades.css', (req, res) => {
+    res.sendFile(path.join(__dirname, 'CadastroUnidades', 'cadastroUnidades.css'));
+});
+
 app.get('/projeto/data/dados.json', (req, res) => {
     res.sendFile(path.join(__dirname, 'data', 'dados.json'));
 });
 
 app.get('/VisualizarAvaliacao/visualizarAvaliacao.html', (req, res) => {
-	    res.sendFile(path.join(__dirname, 'VisualizarAvaliacao', 'visualizarAvaliacao.html'));
+    res.sendFile(path.join(__dirname, 'VisualizarAvaliacao', 'visualizarAvaliacao.html'));
 });
-	
+
 app.get('/VisualizarAvaliacao/visualizarAvaliacao.css', (req, res) => {
     res.sendFile(path.join(__dirname, 'VisualizarAvaliacao', 'visualizarAvaliacao.css'));
- });
-	
+});
+
 app.get('/VisualizarAvaliacao/visualizarAvaliacao.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'VisualizarAvaliacao', 'visualizarAvaliacao.js'));
 });
 
-app.get('/dados', async (req, res) => {
+app.get('/dados', async(req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -431,7 +459,7 @@ app.get('/dados', async (req, res) => {
 });
 
 
-app.get('/listar-turmas', async (req, res) => {
+app.get('/listar-turmas', async(req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -453,7 +481,7 @@ app.get('/listar-turmas', async (req, res) => {
 
 
 
-app.post('/atualizar-notas', async (req, res) => {
+app.post('/atualizar-notas', async(req, res) => {
     const { turma, data, alunos } = req.body;
 
     if (!turma || !data || !alunos || alunos.length === 0) {
@@ -466,8 +494,7 @@ app.post('/atualizar-notas', async (req, res) => {
 
         // Obter o ID da turma
         const [turmaResult] = await connection.execute(
-            'SELECT id FROM turmas WHERE nome = ?',
-            [turma]
+            'SELECT id FROM turmas WHERE nome = ?', [turma]
         );
 
         if (turmaResult.length === 0) {
@@ -493,8 +520,7 @@ app.post('/atualizar-notas', async (req, res) => {
 
             // Verifica se o aluno existe na tabela presencas para a turma e data especificados
             const [presenca] = await connection.execute(
-                'SELECT * FROM presencas WHERE turma_id = ? AND data = ? AND aluno = ?',
-                [turmaId, dataFormatada, aluno.nome]  // Usando a data formatada sem o horário
+                'SELECT * FROM presencas WHERE turma_id = ? AND data = ? AND aluno = ?', [turmaId, dataFormatada, aluno.nome] // Usando a data formatada sem o horário
             );
 
             console.log(`Consultando presença para aluno ${aluno.nome}:`, presenca);
@@ -506,33 +532,13 @@ app.post('/atualizar-notas', async (req, res) => {
 
             // Se o aluno existir, realiza o UPDATE
             const [updateResult] = await connection.execute(
-                'UPDATE presencas SET nota = ?, observacao = ? WHERE turma_id = ? AND data = ? AND aluno = ?',
-                [aluno.nota, aluno.observacao, turmaId, dataFormatada, aluno.nome]
+                'UPDATE presencas SET nota = ? WHERE turma_id = ? AND data = ? AND aluno = ?', [aluno.nota, turmaId, dataFormatada, aluno.nome]
             );
 
             if (updateResult.affectedRows === 0) {
                 console.log(`Não foi possível atualizar a nota para o aluno ${aluno.nome} na turma ${turma} na data ${dataFormatada}`);
             } else {
                 console.log(`Nota do aluno "${aluno.nome}" atualizada com sucesso!`);
-            }
-
-            // Atualizar as notas e observações na tabela `presencas`
-            for (const aluno of alunos) {
-                const { nome, nota, observacao } = aluno;
-
-                if (!nome || typeof nota === 'undefined' || !data) {
-                    console.error(`Dados inválidos para o aluno:`, aluno);
-                    continue;
-                }
-
-                const [updateResult] = await connection.execute(
-                    'UPDATE presencas SET nota = ?, observacao = ? WHERE turma_id = ? AND data = ? AND aluno = ?',
-                    [nota, observacao || '', turmaId, data, nome]
-                );
-
-                if (updateResult.affectedRows === 0) {
-                    console.log(`Não foi possível atualizar as informações do aluno ${nome}.`);
-                }
             }
         }
 
@@ -554,7 +560,7 @@ app.post('/atualizar-notas', async (req, res) => {
 const avaliacoesPath = path.join(__dirname, 'output', 'avaliacoes.json'); // Caminho atualizado para a pasta /output
 
 // Rota para salvar avaliação
-app.post('/salvar-avaliacao', async (req, res) => {
+app.post('/salvar-avaliacao', async(req, res) => {
     const { turma, nomeAvaliacao, dataAvaliacao, conteudoAvaliacao } = req.body;
 
     if (!turma || !nomeAvaliacao || !dataAvaliacao || !conteudoAvaliacao) {
@@ -567,8 +573,7 @@ app.post('/salvar-avaliacao', async (req, res) => {
 
         // Obter o ID da turma
         const [turmaResult] = await connection.execute(
-            'SELECT id FROM turmas WHERE nome = ?',
-            [turma]
+            'SELECT id FROM turmas WHERE nome = ?', [turma]
         );
 
         if (turmaResult.length === 0) {
@@ -579,8 +584,7 @@ app.post('/salvar-avaliacao', async (req, res) => {
 
         // Inserir a nova avaliação na tabela `avaliacoes`
         await connection.execute(
-            'INSERT INTO avaliacoes (turma_id, nome_avaliacao, data_avaliacao, conteudo_avaliacao) VALUES (?, ?, ?, ?)',
-            [turmaId, nomeAvaliacao, dataAvaliacao, conteudoAvaliacao]
+            'INSERT INTO avaliacoes (turma_id, nome_avaliacao, data_avaliacao, conteudo_avaliacao) VALUES (?, ?, ?, ?)', [turmaId, nomeAvaliacao, dataAvaliacao, conteudoAvaliacao]
         );
 
         // Fechar a conexão
@@ -617,13 +621,13 @@ async function carregarUsuarios() {
 }
 
 // Rota de cadastro de usuários
-app.post('/cadastro', async (req, res) => {
+app.post('/cadastro', async(req, res) => {
     const { email, senha, tipo, name, phone, city, state, unit, photo } = req.body;
 
-    // Validação de dados obrigatórios
-    if (!email || !senha || !tipo) {
-        return res.status(400).send({ message: 'Preencha todos os campos obrigatórios!' });
-    }
+   // Validação de dados obrigatórios
+   if (!email || !senha || !tipo || !name || !phone || !city || !state || !unit) {
+    return res.status(400).send({ message: 'Preencha todos os campos obrigatórios!' });
+}
 
     try {
         // Conectar ao banco de dados
@@ -638,8 +642,7 @@ app.post('/cadastro', async (req, res) => {
 
         // Inserir novo usuário
         await connection.execute(
-            'INSERT INTO usuarios (id, email, senha, tipo, name, phone, city, state, unit, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [email, email, senha, tipo, name || '', phone || '', city || '', state || '', unit || '', photo || '']
+            'INSERT INTO usuarios (id, email, senha, tipo, name, phone, city, state, unit, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [email, email, senha, tipo, name || '', phone || '', city || '', state || '', unit || '', photo || '']
         );
 
         // Fechar a conexão
@@ -655,7 +658,7 @@ app.post('/cadastro', async (req, res) => {
 
 
 // Rota para verificar o tipo de usuário
-app.get('/verificar-acesso', async (req, res) => {
+app.get('/verificar-acesso', async(req, res) => {
     const { email } = req.query;
 
     if (!email) {
@@ -668,8 +671,7 @@ app.get('/verificar-acesso', async (req, res) => {
 
         // Consultar o tipo de usuário pelo email
         const [result] = await connection.execute(
-            'SELECT tipo FROM usuarios WHERE email = ?',
-            [email]
+            'SELECT tipo FROM usuarios WHERE email = ?', [email]
         );
 
         // Fechar a conexão
@@ -690,7 +692,7 @@ app.get('/verificar-acesso', async (req, res) => {
 
 
 // Rota para salvar notas
-app.post('/salvar-notas-avaliacoes', async (req, res) => {
+app.post('/salvar-notas-avaliacoes', async(req, res) => {
     const { turma, avaliacao, notas } = req.body;
 
     if (!turma || !avaliacao || !notas || notas.length === 0) {
@@ -703,8 +705,7 @@ app.post('/salvar-notas-avaliacoes', async (req, res) => {
 
         // Obter o ID da turma
         const [turmaResult] = await connection.execute(
-            'SELECT id FROM turmas WHERE nome = ?',
-            [turma]
+            'SELECT id FROM turmas WHERE nome = ?', [turma]
         );
 
         if (turmaResult.length === 0) {
@@ -716,8 +717,7 @@ app.post('/salvar-notas-avaliacoes', async (req, res) => {
 
         // Obter o ID da avaliação
         const [avaliacaoResult] = await connection.execute(
-            'SELECT id FROM avaliacoes WHERE nome_avaliacao = ? AND turma_id = ?',
-            [avaliacao, turmaId]
+            'SELECT id FROM avaliacoes WHERE nome_avaliacao = ? AND turma_id = ?', [avaliacao, turmaId]
         );
 
         if (avaliacaoResult.length === 0) {
@@ -729,15 +729,14 @@ app.post('/salvar-notas-avaliacoes', async (req, res) => {
 
         // Inserir as notas na tabela `notas_avaliacoes`
         const notasValores = notas.map(nota => [
-            turmaId,          // turma_id
-            avaliacaoId,      // avaliacao_id
-            nota.aluno,       // aluno
-            nota.nota         // nota
+            turmaId, // turma_id
+            avaliacaoId, // avaliacao_id
+            nota.aluno, // aluno
+            nota.nota // nota
         ]);
 
         await connection.query(
-            'INSERT INTO notas_avaliacoes (turma_id, avaliacao_id, aluno, nota) VALUES ?',
-            [notasValores]
+            'INSERT INTO notas_avaliacoes (turma_id, avaliacao_id, aluno, nota) VALUES ?', [notasValores]
         );
 
         // Fechar a conexão
@@ -753,7 +752,7 @@ app.post('/salvar-notas-avaliacoes', async (req, res) => {
 
 
 // Rota para obter as avaliações
-app.get('/avaliacoes', async (req, res) => {
+app.get('/avaliacoes', async(req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -787,7 +786,7 @@ app.get('/avaliacoes', async (req, res) => {
     }
 });
 
-app.put('/editar-turma', async (req, res) => {
+app.put('/editar-turma', async(req, res) => {
     const { turma, alunos } = req.body;
 
     if (!turma || !alunos || alunos.length === 0) {
@@ -800,8 +799,7 @@ app.put('/editar-turma', async (req, res) => {
 
         // Obter o ID da turma
         const [turmaResult] = await connection.execute(
-            'SELECT id FROM turmas WHERE nome = ?',
-            [turma]
+            'SELECT id FROM turmas WHERE nome = ?', [turma]
         );
 
         if (turmaResult.length === 0) {
@@ -817,8 +815,7 @@ app.put('/editar-turma', async (req, res) => {
         // Inserir os novos alunos na tabela `alunos`
         const alunosValores = alunos.map(aluno => [aluno, turmaId]);
         await connection.query(
-            'INSERT INTO alunos (nome, turma_id) VALUES ?',
-            [alunosValores]
+            'INSERT INTO alunos (nome, turma_id) VALUES ?', [alunosValores]
         );
 
         // Fechar a conexão
@@ -832,7 +829,7 @@ app.put('/editar-turma', async (req, res) => {
     }
 });
 
-app.delete('/excluir-turma', async (req, res) => {
+app.delete('/excluir-turma', async(req, res) => {
     const { turma } = req.body;
 
     if (!turma) {
@@ -845,8 +842,7 @@ app.delete('/excluir-turma', async (req, res) => {
 
         // Verificar se a turma existe
         const [turmaResult] = await connection.execute(
-            'SELECT id FROM turmas WHERE nome = ?',
-            [turma]
+            'SELECT id FROM turmas WHERE nome = ?', [turma]
         );
 
         if (turmaResult.length === 0) {
@@ -872,7 +868,7 @@ app.delete('/excluir-turma', async (req, res) => {
 
 
 // Rota para obter as notas das avaliações
-app.get('/notasavaliacoes', async (req, res) => {
+app.get('/notasavaliacoes', async(req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -922,7 +918,7 @@ app.get('/notasavaliacoes', async (req, res) => {
 });
 
 // Rota para obter as presenças
-app.get('/dados-presenca', async (req, res) => {
+app.get('/dados-presenca', async(req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -934,14 +930,12 @@ app.get('/dados-presenca', async (req, res) => {
                 p.data,
                 p.aluno,
                 p.presenca,
-                p.nota,
-                p.observacao
+                p.nota
             FROM 
                 presencas p
             JOIN 
                 turmas t ON p.turma_id = t.id
-            ORDER BY 
-                p.data ASC
+            ORDER BY p.data ASC
         `);
 
         // Fechar a conexão
@@ -962,8 +956,7 @@ app.get('/dados-presenca', async (req, res) => {
                 data: presenca.data,
                 aluno: presenca.aluno,
                 presenca: presenca.presenca,
-                nota: presenca.nota,
-                observacao: presenca.observacao
+                nota: presenca.nota
             });
         });
 
@@ -975,7 +968,7 @@ app.get('/dados-presenca', async (req, res) => {
     }
 });
 
-app.get('/dados-presenca', async (req, res) => {
+app.get('/dados-presenca', async(req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -1034,8 +1027,9 @@ function verificarToken(req, res, next) {
 
 // Middleware para verificar permissão usando arquivo `usuarios.json`
 function verificarPermissao(permissoes) {
-    return async (req, res, next) => {
-        const email = req.user?.email;
+    return async(req, res, next) => {
+        const email = req.user ?.email;
+
 
         if (!email) {
             return res.status(400).send({ message: 'E-mail do usuário não encontrado na requisição.' });
@@ -1047,8 +1041,7 @@ function verificarPermissao(permissoes) {
 
             // Consultar o usuário pelo e-mail
             const [usuarios] = await connection.query(
-                'SELECT tipo FROM usuarios WHERE email = ?',
-                [email]
+                'SELECT tipo FROM usuarios WHERE email = ?', [email]
             );
 
             // Fechar a conexão
@@ -1095,7 +1088,7 @@ async function carregarUsuarios() {
 }
 
 // Rota protegida para criação de turma (apenas DEV e Coordenador)
-app.post('/salvar-turma', verificarToken, verificarPermissao(['DEV', 'Diretor/Coordenador']), async (req, res) => {
+app.post('/salvar-turma', verificarToken, verificarPermissao(['DEV', 'Diretor/Coordenador']), async(req, res) => {
     const { turma, instrutor, alunos } = req.body;
 
     if (!turma || !instrutor || !alunos || alunos.length === 0) {
@@ -1108,8 +1101,7 @@ app.post('/salvar-turma', verificarToken, verificarPermissao(['DEV', 'Diretor/Co
 
         // Verificar se a turma já existe
         const [turmaExistente] = await connection.query(
-            'SELECT id FROM turmas WHERE nome = ?',
-            [turma]
+            'SELECT id FROM turmas WHERE nome = ?', [turma]
         );
 
         if (turmaExistente.length > 0) {
@@ -1119,8 +1111,7 @@ app.post('/salvar-turma', verificarToken, verificarPermissao(['DEV', 'Diretor/Co
 
         // Inserir a turma na tabela `turmas`
         const [turmaResult] = await connection.execute(
-            'INSERT INTO turmas (nome, instrutor) VALUES (?, ?)',
-            [turma, instrutor]
+            'INSERT INTO turmas (nome, instrutor) VALUES (?, ?)', [turma, instrutor]
         );
 
         const turmaId = turmaResult.insertId;
@@ -1128,8 +1119,7 @@ app.post('/salvar-turma', verificarToken, verificarPermissao(['DEV', 'Diretor/Co
         // Inserir os alunos na tabela `alunos`
         const alunosValores = alunos.map(aluno => [aluno, turmaId]);
         await connection.query(
-            'INSERT INTO alunos (nome, turma_id) VALUES ?',
-            [alunosValores]
+            'INSERT INTO alunos (nome, turma_id) VALUES ?', [alunosValores]
         );
 
         // Fechar a conexão
@@ -1164,7 +1154,7 @@ app.get('/Diario/indexDiario.html', verificarToken, verificarPermissao(['Instrut
 // });
 
 // Rota para obter os dados do usuário logado
-app.get('/usuario-logado', async (req, res) => {
+app.get('/usuario-logado', async(req, res) => {
     const token = req.headers.authorization;
 
     if (!token) {
@@ -1180,8 +1170,7 @@ app.get('/usuario-logado', async (req, res) => {
 
         // Consultar o usuário pelo e-mail decodificado
         const [usuarios] = await connection.query(
-            'SELECT email, name, photo, tipo FROM usuarios WHERE email = ?',
-            [decoded.email]
+            'SELECT email, name, photo, tipo FROM usuarios WHERE email = ?', [decoded.email]
         );
 
         // Fechar a conexão
@@ -1209,7 +1198,7 @@ app.get('/usuario-logado', async (req, res) => {
 
 
 
-app.post('/login', async (req, res) => {
+app.post('/login', async(req, res) => {
     const { email, senha } = req.body;
 
     if (!email || !senha) {
@@ -1222,8 +1211,7 @@ app.post('/login', async (req, res) => {
 
         // Consultar o usuário pelo e-mail
         const [usuarios] = await connection.query(
-            'SELECT email, senha, tipo FROM usuarios WHERE email = ?',
-            [email]
+            'SELECT email, senha, tipo FROM usuarios WHERE email = ?', [email]
         );
 
         // Fechar a conexão
@@ -1242,10 +1230,8 @@ app.post('/login', async (req, res) => {
         }
 
         // Gerar o token JWT
-        const token = jwt.sign(
-            { email: usuario.email, tipo: usuario.tipo },
-            secretKey,
-            { expiresIn: '2h' }
+        const token = jwt.sign({ email: usuario.email, tipo: usuario.tipo },
+            secretKey, { expiresIn: '2h' }
         );
 
         console.log(`Usuário autenticado: ${usuario.email}, Tipo: ${usuario.tipo}`);
@@ -1268,8 +1254,7 @@ async function atualizarUsuario(email, novosDados) {
 
         // Verificar se o usuário existe
         const [usuarioExistente] = await connection.query(
-            'SELECT id FROM usuarios WHERE email = ?',
-            [email]
+            'SELECT id FROM usuarios WHERE email = ?', [email]
         );
 
         if (usuarioExistente.length === 0) {
@@ -1298,7 +1283,7 @@ async function atualizarUsuario(email, novosDados) {
     }
 }
 
-app.get('/perfil', async (req, res) => {
+app.get('/perfil', async(req, res) => {
     const token = req.headers.authorization;
 
     if (!token) {
@@ -1314,8 +1299,7 @@ app.get('/perfil', async (req, res) => {
 
         // Consultar o usuário pelo e-mail
         const [usuarios] = await connection.query(
-            'SELECT name, email, phone, city, state, unit, photo FROM usuarios WHERE email = ?',
-            [decoded.email]
+            'SELECT name, email, phone, city, state, unit, photo FROM usuarios WHERE email = ?', [decoded.email]
         );
 
         // Fechar a conexão
@@ -1353,8 +1337,7 @@ async function atualizarUsuario(email, novosDados) {
 
         // Verificar se o usuário existe
         const [usuarioExistente] = await connection.query(
-            'SELECT id FROM usuarios WHERE email = ?',
-            [email]
+            'SELECT id FROM usuarios WHERE email = ?', [email]
         );
 
         if (usuarioExistente.length === 0) {
@@ -1384,7 +1367,7 @@ async function atualizarUsuario(email, novosDados) {
 }
 
 // Rota para atualizar o perfil do usuário
-app.post('/atualizar-perfil', async (req, res) => {
+app.post('/atualizar-perfil', async(req, res) => {
     const token = req.headers.authorization;
 
     if (!token) {
@@ -1407,8 +1390,7 @@ app.post('/atualizar-perfil', async (req, res) => {
 
         // Verificar se o usuário existe
         const [usuarios] = await connection.query(
-            'SELECT id FROM usuarios WHERE email = ?',
-            [email]
+            'SELECT id FROM usuarios WHERE email = ?', [email]
         );
 
         if (usuarios.length === 0) {
@@ -1491,7 +1473,7 @@ app.post('/upload-image', upload.single('photo'), (req, res) => {
     res.status(200).send({ imageUrl });
 });
 
-app.get('/usuarios', async (req, res) => {
+app.get('/usuarios', async(req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -1507,5 +1489,117 @@ app.get('/usuarios', async (req, res) => {
     } catch (error) {
         console.error("Erro ao carregar usuários:", error);
         res.status(500).send({ message: "Erro ao carregar usuários." });
+    }
+});
+
+// Rota para criar uma nova unidade
+app.post('/cadastrar-unidade',upload.single('unidadeFoto'), async(req, res) => {
+    const { unidade, escola, cidade, coordenador } = req.body;
+    const unidadeFoto = req.file ? `/uploads/unidades/${req.file.filename}` : "/projeto/Imagens/perfil.png";
+
+    if (!unidade) {
+        return res.status(400).send({ message: 'O nome da unidade é obrigatório!' });
+    }
+
+
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        await connection.execute(
+            'INSERT INTO unidades (unidade, escola, cidade, coordenador, photo) VALUES (?, ?, ?, ?, ?)', [unidade, escola, cidade, coordenador, unidadeFoto]
+        );
+        await connection.end();
+
+        res.status(201).send({ message: 'Unidade cadastrada com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao cadastrar unidade:', error);
+        res.status(500).send({ message: 'Erro ao cadastrar a unidade.' });
+    }
+});
+
+app.get('/listar-unidades', async (req, res) => {
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        const [rows] = await connection.execute('SELECT id, unidade, photo FROM unidades');
+        await connection.end();
+        
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error('Erro ao buscar unidades:', error);
+        res.status(500).json({ message: 'Erro ao buscar unidades.' });
+    }
+});
+
+
+// Atualizar a rota de criar turma para associar a unidade
+app.post('/salvar-turma', async(req, res) => {
+    const { turma, instrutor, alunos, unidade_id } = req.body;
+
+    if (!turma || !instrutor || !unidade_id || !alunos || alunos.length === 0) {
+        return res.status(400).send({ message: 'Preencha todos os campos obrigatórios!' });
+    }
+
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        const [result] = await connection.execute(
+            'INSERT INTO turmas (nome, instrutor, unidade_id) VALUES (?, ?, ?)', [turma, instrutor, unidade_id]
+        );
+        const turmaId = result.insertId;
+
+        const alunoValues = alunos.map(aluno => [aluno, turmaId]);
+        await connection.query('INSERT INTO alunos (nome, turma_id) VALUES ?', [alunoValues]);
+
+        await connection.end();
+
+        res.status(201).send({ message: 'Turma salva com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao salvar a turma:', error);
+        res.status(500).send({ message: 'Erro ao salvar a turma.' });
+    }
+});
+
+// Middleware para processar formulários sem JSON
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true })); // Para processar formulários tradicionais
+
+// Rota para cadastrar unidade
+app.post('/cadastrar-unidade', (req, res) => {
+    console.log("📥 Dados recebidos:", req.body); // Debug no terminal
+
+    const { unidade, escola, cidade, coordenador } = req.body;
+
+    // Verificar se os campos estão preenchidos
+    if (!unidade || !escola || !cidade || !coordenador) {
+        console.log("⚠ Erro: Campos inválidos recebidos!");
+        return res.status(400).send("Todos os campos são obrigatórios!");
+    }
+
+    // Comando SQL para inserir no MySQL (phpMyAdmin)
+    const query = `INSERT INTO unidades (unidade, escola, cidade, coordenador) VALUES (?, ?, ?, ?)`;
+    
+    db.query(query, [unidade, escola, cidade, coordenador], (err, result) => {
+        if (err) {
+            console.error("❌ Erro ao inserir no banco:", err);
+            return res.status(500).send("Erro ao cadastrar a unidade.");
+        }
+
+        console.log("✅ Unidade cadastrada com sucesso! ID:", result.insertId);
+        res.send(`Unidade cadastrada com sucesso! ID: ${result.insertId}`);
+    });
+});
+
+// Rota para listar unidades cadastradas
+app.get('/listar-unidades', async (req, res) => {
+    console.log('🔹 Requisição recebida para listar unidades');
+
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        const [unidades] = await connection.query('SELECT * FROM unidades');
+        await connection.end();
+
+        console.log('✅ Lista de unidades recuperada com sucesso!', unidades);
+        res.status(200).json(unidades);
+    } catch (error) {
+        console.error('❌ Erro ao listar unidades:', error);
+        res.status(500).json({ message: 'Erro ao listar as unidades.' });
     }
 });

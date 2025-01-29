@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Unidade</title>
+    <link rel="stylesheet" href="cadastroUnidades.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Cadastrar Unidade</h2>
+        <div class="photo-container">
+            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil">
+            <label for="upload-photo" class="custom-upload-button">Alterar foto</label>
+            <input id="upload-photo" type="file" accept="image/*" style="display: none;">
+        </div>    
+        <form id="cadastro-form">
+            <label for="unidade">Nome da Unidade:</label>
+            <input type="text" id="unidade" name="unidade" placeholder="Digite o nome da unidade">
+            
+            <label for="escola">Nome da Escola:</label>
+            <input type="text" id="escola" name="escola" placeholder="Digite o nome da escola">
+            
+            <label for="cidade">Cidade:</label>
+            <input type="text" id="cidade" name="cidade" placeholder="Digite a cidade">
+            
+            <label for="coordenador">Coordenador:</label>
+            <input type="text" id="coordenador" name="coordenador" placeholder="Digite o nome do coordenador">
+            
+            <button type="button" id="cadastrar-btn">Cadastrar</button>
+        </form>
+    </div>
+    <script src="cadastroUnidades.js"></script>
+</body>
+</html>

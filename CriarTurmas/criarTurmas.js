@@ -30,6 +30,34 @@ function adicionarInput(containerId = "inputs-alunos") {
     atualizarBotoesRemocao(containerId); // Atualiza a visibilidade do botão "X"
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    async function carregarUnidades() {
+        try {
+            const response = await fetch('http://localhost:3000/listar-unidades');
+            if (!response.ok) throw new Error('Erro ao buscar unidades');
+    
+            const unidades = await response.json();
+            const unidadeSelect = document.getElementById('unidade-select');
+    
+            // Limpa o select antes de adicionar opções
+            unidadeSelect.innerHTML = '<option value="" disabled selected>Selecione uma unidade</option>';
+    
+            unidades.forEach(unidade => {
+                const option = document.createElement('option');
+                option.value = unidade.id;
+                option.textContent = unidade.unidade;
+                unidadeSelect.appendChild(option);
+            });
+    
+        } catch (error) {
+            console.error('Erro ao carregar unidades:', error);
+        }
+    }    
+    carregarUnidades()
+});
+
+
+
 // Função para remover um campo de aluno
 function removerInput(button) {
     const inputGroup = button.parentNode;
@@ -150,7 +178,7 @@ async function salvarTurma() {
             document.getElementById("nome-turma").value = "";
             document.getElementById("nome-instrutor").value = "";
             document.getElementById("inputs-alunos").innerHTML = "";
-            adicionarInput();  // Adiciona um novo input vazio
+            adicionarInput(); // Adiciona um novo input vazio
 
             // Exibir mensagem de sucesso
             const mensagemSucesso = document.getElementById("mensagem-sucesso");
@@ -303,28 +331,60 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarPerfil();
 });
 
-function toggleMudarPerfil() {
-    const mudarPerfil = document.getElementById("mudarPerfil");
-    // Alterna entre mostrar e esconder
-    if (mudarPerfil.style.display === "none" || !mudarPerfil.style.display) {
-        mudarPerfil.style.display = "block"; // Mostra a caixa
-        mudarPerfil.style.display = "flex"; 
-    } else {
-        mudarPerfil.style.display = "none"; // Esconde a caixa
+async function carregarUnidades() {
+    try {
+        const response = await fetch('http://localhost:3000/listar-unidades');
+        if (!response.ok) throw new Error('Erro ao buscar unidades');
+        const unidades = await response.json();
+
+        const unidadeSelect = document.getElementById('unidade-select');
+        unidades.forEach(unidade => {
+            const option = document.createElement('option');
+            option.value = unidade.id;
+            option.textContent = unidade.nome;
+            unidadeSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Erro ao carregar unidades:', error);
     }
 }
 
-// Fecha a caixa ao clicar fora dela
-document.addEventListener("click", (event) => {
-    const mudarPerfil = document.getElementById("mudarPerfil");
-    const userInfo = document.getElementById("user-info");
+// Atualizar a função salvarTurma para enviar unidade_id
+async function salvarTurma() {
+    const unidadeId = document.getElementById('unidade-select').value;
+    const nomeTurma = document.getElementById('nome-turma').value.trim();
+    const nomeInstrutor = document.getElementById('nome-instrutor').value.trim();
+    const alunosInputs = document.querySelectorAll('#inputs-alunos .input-aluno');
 
-    // Verifica se o clique foi fora da caixa ou da imagem
-    if (
-        mudarPerfil.style.display === "flex" &&
-        !mudarPerfil.contains(event.target) &&
-        !userInfo.contains(event.target)
-    ) {
-        mudarPerfil.style.display = "none";
+    const alunos = Array.from(alunosInputs)
+        .map(input => input.value.trim())
+        .filter(nome => nome.length > 0);
+
+    if (!unidadeId || !nomeTurma || !nomeInstrutor || alunos.length === 0) {
+        alert('Preencha todos os campos obrigatórios!');
+        return;
     }
-});
+
+    const dados = { turma: nomeTurma, instrutor: nomeInstrutor, alunos, unidade_id: unidadeId };
+
+    try {
+        const response = await fetch('http://localhost:3000/salvar-turma', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados),
+        });
+
+        if (response.ok) {
+            alert('Turma salva com sucesso!');
+            window.location.reload();
+        } else {
+            throw new Error('Erro ao salvar a turma.');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar a turma:', error);
+    }
+}
+
+
+
+

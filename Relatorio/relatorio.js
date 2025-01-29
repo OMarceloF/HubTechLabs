@@ -371,25 +371,6 @@ async function exportarRelatorioPDF() {
             doc.addImage(graficoDesempenhoImg, 'PNG', 10, 30, 190, 90);
         }
 
-        // Tabela de observações
-        if (registrosFiltradosPresenca.length > 0) {
-            doc.addPage();
-            const tabelaPresencaDesempenho = registrosFiltradosPresenca.map(registro => [
-                new Date(registro.data).toLocaleDateString('pt-BR'),
-                registro.observacao || "-"
-            ]);
-
-            doc.setFontSize(14);
-            doc.text("Observações por Aula:", 10, 20);
-
-            doc.autoTable({
-                startY: 30, // Define que a tabela começa 5mm abaixo do texto
-                head: [['Data', 'Observção']],
-                body: tabelaPresencaDesempenho,
-                theme: 'grid',
-            });
-        }
-
         // **Salvar PDF**
         doc.save(`Relatorio_Turma_${turmaNome}_${alunoSelecionado}.pdf`);
     } catch (error) {
@@ -398,31 +379,7 @@ async function exportarRelatorioPDF() {
     }
 }
 
-function toggleMudarPerfil() {
-    const mudarPerfil = document.getElementById("mudarPerfil");
-    // Alterna entre mostrar e esconder
-    if (mudarPerfil.style.display === "none" || !mudarPerfil.style.display) {
-        mudarPerfil.style.display = "block"; // Mostra a caixa
-        mudarPerfil.style.display = "flex"; 
-    } else {
-        mudarPerfil.style.display = "none"; // Esconde a caixa
-    }
-}
 
-// Fecha a caixa ao clicar fora dela
-document.addEventListener("click", (event) => {
-    const mudarPerfil = document.getElementById("mudarPerfil");
-    const userInfo = document.getElementById("user-info");
-
-    // Verifica se o clique foi fora da caixa ou da imagem
-    if (
-        mudarPerfil.style.display === "flex" &&
-        !mudarPerfil.contains(event.target) &&
-        !userInfo.contains(event.target)
-    ) {
-        mudarPerfil.style.display = "none";
-    }
-});
 
 // Adiciona evento de clique no botão de exportação
 document.getElementById('exportar-relatorio').addEventListener('click', exportarRelatorioPDF);

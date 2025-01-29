@@ -42,8 +42,7 @@ async function salvarDados() {
         alunos: Array.from(alunos).map(aluno => ({
             nome: aluno.querySelector("td:first-child").textContent,
             presenca: aluno.querySelector(".presenca-check").checked ? "Presente" : "Ausente",
-            nota: aluno.querySelector(".nota-select").value,
-            observacao: aluno.querySelector(".observacao-input").value || "" // Captura a observação
+            nota: aluno.querySelector(".nota-select").value
         }))
     };
 
@@ -134,9 +133,6 @@ function mostrarAlunosSelecionados() {
                     <option value="5">5</option>
                 </select>
             </td>
-            <td>
-                <input type="text" class="observacao-input" placeholder="Digite uma observação">
-            </td>
         `;
         alunosList.appendChild(row);
     });
@@ -185,32 +181,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     carregarPerfil();
-});
-
-function toggleMudarPerfil() {
-    const mudarPerfil = document.getElementById("mudarPerfil");
-    // Alterna entre mostrar e esconder
-    if (mudarPerfil.style.display === "none" || !mudarPerfil.style.display) {
-        mudarPerfil.style.display = "block"; // Mostra a caixa
-        mudarPerfil.style.display = "flex"; 
-    } else {
-        mudarPerfil.style.display = "none"; // Esconde a caixa
-    }
-}
-
-// Fecha a caixa ao clicar fora dela
-document.addEventListener("click", (event) => {
-    const mudarPerfil = document.getElementById("mudarPerfil");
-    const userInfo = document.getElementById("user-info");
-
-    // Verifica se o clique foi fora da caixa ou da imagem
-    if (
-        mudarPerfil.style.display === "flex" &&
-        !mudarPerfil.contains(event.target) &&
-        !userInfo.contains(event.target)
-    ) {
-        mudarPerfil.style.display = "none";
-    }
 });
 
 // Carrega as turmas ao abrir a página

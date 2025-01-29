@@ -6,9 +6,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const email = document.getElementById("email").value.trim();
         const senha = document.getElementById("senha").value.trim();
         const tipo = document.getElementById("tipo").value;
+        const name = document.getElementById("name").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const city = document.getElementById("city").value.trim();
+        const state = document.getElementById("state").value.trim();
+        const unit = document.getElementById("unit").value.trim();
 
         // Validação simples para garantir que todos os campos essenciais estejam preenchidos
-        if (!email || !senha || !tipo) {
+        if (!email || !senha || !tipo || !name || !phone || !city || !state || !unit) {
             alert("Por favor, preencha todos os campos!");
             return;
         }
@@ -18,9 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const response = await fetch('http://localhost:3000/cadastro', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email, senha, tipo, name: "", phone: "", city: "", state: "", unit: "", photo: "/projeto/Imagens/perfil.png"  // Campos adicionais com valores vazios
-                })
+                body: JSON.stringify({ email, senha, tipo, name, phone, city, state, unit, photo: "/projeto/Imagens/perfil.png" })
             });
 
             const data = await response.json();
@@ -35,4 +38,5 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Erro ao cadastrar usuário. Tente novamente.");
         }
     });
+    
 });

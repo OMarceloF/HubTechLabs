@@ -204,29 +204,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
     carregarTurmas();  // Carregar as turmas ao carregar a página
 });
-
-function toggleMudarPerfil() {
-    const mudarPerfil = document.getElementById("mudarPerfil");
-    // Alterna entre mostrar e esconder
-    if (mudarPerfil.style.display === "none" || !mudarPerfil.style.display) {
-        mudarPerfil.style.display = "block"; // Mostra a caixa
-        mudarPerfil.style.display = "flex"; 
-    } else {
-        mudarPerfil.style.display = "none"; // Esconde a caixa
-    }
-}
-
-// Fecha a caixa ao clicar fora dela
-document.addEventListener("click", (event) => {
-    const mudarPerfil = document.getElementById("mudarPerfil");
-    const userInfo = document.getElementById("user-info");
-
-    // Verifica se o clique foi fora da caixa ou da imagem
-    if (
-        mudarPerfil.style.display === "flex" &&
-        !mudarPerfil.contains(event.target) &&
-        !userInfo.contains(event.target)
-    ) {
-        mudarPerfil.style.display = "none";
-    }
-});
