@@ -115,11 +115,13 @@ app.post('/salvar-presenca', async(req, res) => {
             data, // data
             aluno.nome, // aluno
             aluno.presenca, // presenca
-            aluno.nota // nota
+            aluno.nota,      // nota
+            aluno.observacao // observacao
         ]);
 
         await connection.query(
-            'INSERT INTO presencas (turma_id, data, aluno, presenca, nota) VALUES ?', [presencas]
+            'INSERT INTO presencas (turma_id, data, aluno, presenca, nota, observacao) VALUES ?',
+            [presencas]
         );
 
         // Fechar a conexão
@@ -532,13 +534,33 @@ app.post('/atualizar-notas', async(req, res) => {
 
             // Se o aluno existir, realiza o UPDATE
             const [updateResult] = await connection.execute(
-                'UPDATE presencas SET nota = ? WHERE turma_id = ? AND data = ? AND aluno = ?', [aluno.nota, turmaId, dataFormatada, aluno.nome]
+                'UPDATE presencas SET nota = ?, observacao = ? WHERE turma_id = ? AND data = ? AND aluno = ?',
+                [aluno.nota, aluno.observacao, turmaId, dataFormatada, aluno.nome]
             );
 
             if (updateResult.affectedRows === 0) {
                 console.log(`Não foi possível atualizar a nota para o aluno ${aluno.nome} na turma ${turma} na data ${dataFormatada}`);
             } else {
                 console.log(`Nota do aluno "${aluno.nome}" atualizada com sucesso!`);
+            }
+
+            // Atualizar as notas e observações na tabela `presencas`
+            for (const aluno of alunos) {
+                const { nome, nota, observacao } = aluno;
+
+                if (!nome || typeof nota === 'undefined' || !data) {
+                    console.error(`Dados inválidos para o aluno:`, aluno);
+                    continue;
+                }
+
+                const [updateResult] = await connection.execute(
+                    'UPDATE presencas SET nota = ?, observacao = ? WHERE turma_id = ? AND data = ? AND aluno = ?',
+                    [nota, observacao || '', turmaId, data, nome]
+                );
+
+                if (updateResult.affectedRows === 0) {
+                    console.log(`Não foi possível atualizar as informações do aluno ${nome}.`);
+                }
             }
         }
 
@@ -930,7 +952,8 @@ app.get('/dados-presenca', async(req, res) => {
                 p.data,
                 p.aluno,
                 p.presenca,
-                p.nota
+                p.nota,
+                p.observacao
             FROM 
                 presencas p
             JOIN 
@@ -956,7 +979,8 @@ app.get('/dados-presenca', async(req, res) => {
                 data: presenca.data,
                 aluno: presenca.aluno,
                 presenca: presenca.presenca,
-                nota: presenca.nota
+                nota: presenca.nota,
+                observacao: presenca.observacao
             });
         });
 

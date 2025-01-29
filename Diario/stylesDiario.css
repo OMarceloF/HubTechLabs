@@ -30,6 +30,32 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.mudarPerfil {
+    position: absolute;
+    right: 30px;
+    top: 90px;
+    background-color: white;
+    width: 120px;
+    height: 160px;
+    display: flex; /* Configura Flexbox */
+    flex-direction: column; /* Coloca os links em coluna */
+    justify-content: center; /* Centraliza verticalmente */
+    align-items: center; /* Centraliza horizontalmente */
+    text-align: center; /* Centraliza o texto */
+    border-radius: 8px; /* Deixa os cantos arredondados */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.mudarPerfil a {
+    margin: 0; /* Remove qualquer espaçamento adicional */
+    padding: 5px 0; /* Espaçamento interno, se necessário */
+    text-decoration: none; /* Remove o sublinhado dos links */
+    color: #5a5a5a; /* Define a cor do texto */
+    font-weight: bold; /* Deixa o texto em negrito */
+    width: 100%; /* Garante que o texto ocupa toda a largura */
+    text-align: center; /* Centraliza o texto dos links */
+}
+
 h2 {
     text-align: center;  /* Centraliza o texto */
     width: 100%;  /* Garante que ocupe toda a largura */
@@ -74,6 +100,20 @@ h2 {
 
 #alunos-table tr:nth-child(even) {
     background-color: #f0f8ff;
+}
+
+#alunos-table th:nth-child(4),
+#alunos-table td:nth-child(4) {
+    width: 200px;
+    text-align: center;
+}
+
+.observacao-input {
+    width: 95%;
+    padding: 5px;
+    border: 1px solid #b3d9ff;
+    border-radius: 5px;
+    font-size: 14px;
 }
 
 #salvar-btn {
@@ -154,12 +194,14 @@ select {
 .logo {
     width: 120px;
     height: auto;
+    cursor: pointer;
 }
 
 .user-photo {
     width: 60px;
     height: 60px;
     border-radius: 50%; /* Imagem circular */
+    cursor: pointer;
 }
 
 .user-photo:hover {

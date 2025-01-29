@@ -63,11 +63,38 @@ select {
     width: 60px;
     height: 60px;
     border-radius: 50%; /* Imagem circular */
+    cursor: pointer;
 }
 
 .user-photo:hover {
     transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
     transition: all 0.3s ease;  /* Transição suave */
+}
+
+.mudarPerfil {
+    position: absolute;
+    right: 30px;
+    top: 90px;
+    background-color: white;
+    width: 120px;
+    height: 160px;
+    display: flex; /* Configura Flexbox */
+    flex-direction: column; /* Coloca os links em coluna */
+    justify-content: center; /* Centraliza verticalmente */
+    align-items: center; /* Centraliza horizontalmente */
+    text-align: center; /* Centraliza o texto */
+    border-radius: 8px; /* Deixa os cantos arredondados */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.mudarPerfil a {
+    margin: 0; /* Remove qualquer espaçamento adicional */
+    padding: 5px 0; /* Espaçamento interno, se necessário */
+    text-decoration: none; /* Remove o sublinhado dos links */
+    color: #5a5a5a; /* Define a cor do texto */
+    font-weight: bold; /* Deixa o texto em negrito */
+    width: 100%; /* Garante que o texto ocupa toda a largura */
+    text-align: center; /* Centraliza o texto dos links */
 }
 
 footer {
