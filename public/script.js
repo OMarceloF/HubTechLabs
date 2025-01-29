@@ -103,6 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Erro ao carregar os dados do perfil.");
         }
     }
-
+console.log("óla terraqueo")
     carregarPerfil();
 });
