@@ -90,6 +90,7 @@ span {
     border-radius: 50%; /* Imagem circular */
 }
 
+
 .imagem-direita:hover {
     transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
     transition: all 0.3s ease;  /* Transição suave */

@@ -204,6 +204,7 @@ async function salvarNotas() {
             // Encontrar o aluno na chamadaOriginal
             const alunoPresenca = chamadaOriginal.alunos?.find(a => a.aluno === aluno.nome);
 
+            
             return {
                 nome: aluno.nome,
                 presenca: alunoPresenca ? alunoPresenca.presenca : "Ausente", // Se o aluno não existir, "Ausente"

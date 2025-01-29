@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const senha = document.getElementById("senha").value.trim();
         const tipo = document.getElementById("tipo").value;
 
+        
         // Validação simples para garantir que todos os campos essenciais estejam preenchidos
         if (!email || !senha || !tipo) {
             alert("Por favor, preencha todos os campos!");

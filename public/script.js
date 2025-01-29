@@ -9,6 +9,7 @@ window.addEventListener("load", () => {
         "/Imagens/imagem3.png",
         "/Imagens/imagem4.jpg"
     ];
+    
 
     let index = 0;
 

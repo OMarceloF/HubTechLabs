@@ -204,6 +204,7 @@ async function mostrarAlunosSelecionados() {
     }
 }
 
+
 function toggleMudarPerfil() {
     const mudarPerfil = document.getElementById("mudarPerfil");
     // Alterna entre mostrar e esconder

@@ -314,6 +314,7 @@ function toggleMudarPerfil() {
     }
 }
 
+
 // Fecha a caixa ao clicar fora dela
 document.addEventListener("click", (event) => {
     const mudarPerfil = document.getElementById("mudarPerfil");

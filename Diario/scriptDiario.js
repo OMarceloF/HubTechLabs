@@ -36,6 +36,7 @@ async function salvarDados() {
         return;
     }
 
+    
     const dados = {
         turma: turmaSelecionada,
         data: dataChamada,

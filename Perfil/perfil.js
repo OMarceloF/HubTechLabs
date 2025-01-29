@@ -94,6 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
             photo: profilePhoto.src // Salvar a URL da foto no perfil
         };
 
+        
         try {
             const response = await fetch('http://localhost:3000/atualizar-perfil', {
                 method: 'POST',

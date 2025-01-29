@@ -205,6 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarTurmas();  // Carregar as turmas ao carregar a página
 });
 
+
 function toggleMudarPerfil() {
     const mudarPerfil = document.getElementById("mudarPerfil");
     // Alterna entre mostrar e esconder
