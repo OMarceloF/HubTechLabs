@@ -1157,7 +1157,7 @@ app.post('/salvar-turma', verificarToken, verificarPermissao(['DEV', 'Diretor/Co
 });
 
 // Rota para acessar diário (Instrutor e Coordenador têm acesso)
-app.get('/Diario/indexDiario.html', verificarToken, verificarPermissao(['Instrutor/Professor', 'DEV']), (req, res) => {
+app.get('/Diario/indexDiario.html', verificarToken, verificarPermissao(['Instrutor', 'DEV']), (req, res) => {
     try {
         const filePath = path.join(__dirname, 'Diario', 'indexDiario.html');
         res.sendFile(filePath);

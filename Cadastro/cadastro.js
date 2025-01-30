@@ -29,10 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
             alert(data.message);
 
-            // Se o cadastro for bem-sucedido, redireciona para a página de login
-            if (response.ok) {
-                window.location.href = "/Login/login.html";
-            }
         } catch (error) {
             console.error("Erro ao cadastrar usuário:", error);
             alert("Erro ao cadastrar usuário. Tente novamente.");
