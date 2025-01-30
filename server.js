@@ -271,6 +271,14 @@ app.get('/Imagens/simboloSeta.png', (req, res) => {
     res.sendFile(path.join(__dirname, 'Imagens', 'simboloSeta.png'));
 });
 
+app.get('/Imagens/cadastroUsuario.png', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Imagens', 'cadastroUsuario.png'));
+});
+
+app.get('/Imagens/cadastroUnidade.png', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Imagens', 'cadastroUnidade.png'));
+});
+
 app.get('/Imagens/fundoCriarTurma.png', (req, res) => {
     res.sendFile(path.join(__dirname, 'Imagens', 'fundoCriarTurma.png'));
 });
