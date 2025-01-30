@@ -135,7 +135,7 @@ app.post('/salvar-presenca', async(req, res) => {
     }
 });
 
-app.get('/Diario/indexDiario.html', (req, res) => {
+app.get('/Diario/indexDiario.html', verificarAcessoRestrito, (req, res) => {
     res.sendFile(path.join(__dirname, 'Diario', 'indexDiario.html'));
 });
 
@@ -147,7 +147,7 @@ app.get('/Diario/scriptDiario.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'Diario', 'scriptDiario.js'));
 });
 
-app.get('/EditarDiario/editarDiario.html', (req, res) => {
+app.get('/EditarDiario/editarDiario.html', verificarAcessoRestrito, (req, res) => {
     res.sendFile(path.join(__dirname, 'EditarDiario', 'editarDiario.html'));
 });
 
@@ -157,18 +157,6 @@ app.get('/EditarDiario/editarDiario.css', (req, res) => {
 
 app.get('/EditarDiario/editarDiario.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'EditarDiario', 'editarDiario.js'));
-});
-
-app.get('/VisualizarAvaliacao/visualizarAvaliacao.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'VisualizarAvaliacao', 'visualizarAvaliacao.html'));
-});
-
-app.get('/VisualizarAvaliacao/visualizarAvaliacao.css', (req, res) => {
-    res.sendFile(path.join(__dirname, 'VisualizarAvaliacao', 'visualizarAvaliacao.css'));
-});
-
-app.get('/VisualizarAvaliacao/visualizarAvaliacao.js', (req, res) => {
-    res.sendFile(path.join(__dirname, 'VisualizarAvaliacao', 'VisualizarAvaliacao.js'));
 });
 
 app.get('/Login/login.html', (req, res) => {
@@ -195,7 +183,7 @@ app.get('/Cadastro/cadastro.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'Cadastro', 'cadastro.js'));
 });
 
-app.get('/Perfil/perfil.html', (req, res) => {
+app.get('/Perfil/perfil.html',(req, res) => {
     res.sendFile(path.join(__dirname, 'Perfil', 'perfil.html'));
 });
 
@@ -348,7 +336,7 @@ app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}/Login/login.html`);
 });
 
-app.get('/CriarTurmas/criarTurmas.html', (req, res) => {
+app.get('/CriarTurmas/criarTurmas.html', verificarAcessoRestrito, (req, res) => {
     res.sendFile(path.join(__dirname, 'CriarTurmas', 'criarTurmas.html'));
 });
 
@@ -360,7 +348,7 @@ app.get('/CriarTurmas/criarTurmas.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'CriarTurmas', 'criarTurmas.js'));
 });
 
-app.get('/EditarTurmas/editarTurmas.html', (req, res) => {
+app.get('/EditarTurmas/editarTurmas.html', verificarAcessoRestrito, (req, res) => {
     res.sendFile(path.join(__dirname, 'EditarTurmas', 'editarTurmas.html'));
 });
 
@@ -388,7 +376,7 @@ app.get('/NotasAvaliacoes/notasavaliacoes.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'NotasAvaliacoes', 'notasAvaliacoes.js'));
 });
 
-app.get('/NotasAvaliacoes/notasavaliacoes.html', (req, res) => {
+app.get('/NotasAvaliacoes/notasavaliacoes.html', verificarAcessoRestrito,  (req, res) => {
     res.sendFile(path.join(__dirname, 'NotasAvaliacoes', 'notasAvaliacoes.html'));
 });
 
@@ -412,7 +400,7 @@ app.get('/CadastroUnidades/cadastroUnidades.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'CadastroUnidades', 'cadastroUnidades.js'));
 });
 
-app.get('/CadastroUnidades/cadastroUnidades.html', (req, res) => {
+app.get('/CadastroUnidades/cadastroUnidades.html', verificarAcessoRestrito, (req, res) => {
     res.sendFile(path.join(__dirname, 'CadastroUnidades', 'cadastroUnidades.html'));
 });
 
@@ -1635,3 +1623,45 @@ app.get('/listar-unidades', async (req, res) => {
         res.status(500).json({ message: 'Erro ao listar as unidades.' });
     }
 });
+
+
+
+async function verificarAcessoRestrito(req, res, next) {
+    try {
+        const tipoUsuario = req.user?.tipoUsuario;
+
+        if (!tipoUsuario) {
+            return res.status(400).send({ message: 'Tipo do usuário não autorizado na requisição.' });
+        }
+
+        // Criando conexão com o banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+        
+        // Buscando o usuário no banco para garantir que ele existe
+        const [usuarios] = await connection.execute(
+            'SELECT tipo FROM usuarios WHERE tipo = ?',
+            [tipoUsuario]
+        );
+
+        // Fechando a conexão
+        await connection.end();
+
+        if (usuarios.length === 0) {
+            return res.status(404).send({ message: 'Usuário não encontrado!' });
+        }
+
+        const usuario = usuarios[0];
+
+        // Verifica se é um Coordenador e bloqueia o acesso
+        if (usuario.tipo === 'Coordenador') {
+            return res.status(403).send({ message: 'Acesso negado para Coordenadores!' });
+        }
+
+        next();
+    } catch (error) {
+        console.error("Erro ao verificar permissão:", error);
+        res.status(500).send({ message: 'Erro ao verificar permissão.' });
+    }
+}
+
+

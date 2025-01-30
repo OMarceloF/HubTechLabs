@@ -65,6 +65,36 @@ document.addEventListener("click", (event) => {
 
 // Pega a foto de usuário logado
 document.addEventListener("DOMContentLoaded", () => {
+
+    function getUserType() {
+        return localStorage.getItem("tipoUsuario");
+    }
+
+    function esconderOpcoesParaCoordenador() {
+        const tipoUsuario = getUserType();
+        
+        if (tipoUsuario === "Coordenador") {
+            // Lista de seletores que devem ser ocultados para Coordenador
+            const elementosRestritos = [
+                "/CadastroUnidades/cadastroUnidades.html",
+                "/Diario/indexDiario.html",
+                "/EditarDiario/editarDiario.html",
+                "/CriarTurmas/criarTurmas.html",
+                "/EditarTurmas/editarTurmas.html",
+                "/NotasAvaliacoes/notasAvaliacoes.html"
+            ];
+
+            document.querySelectorAll(".access-link").forEach(link => {
+                if (elementosRestritos.some(restrito => link.href.includes(restrito))) {
+                    link.style.display = "none";
+                }
+            });
+        }
+    }
+
+    esconderOpcoesParaCoordenador();
+    
+   
     // Função para obter token do cookie
     function getTokenFromCookie() {
         const cookies = document.cookie.split("; ");
@@ -106,3 +136,5 @@ document.addEventListener("DOMContentLoaded", () => {
 console.log("óla terraqueo")
     carregarPerfil();
 });
+
+
