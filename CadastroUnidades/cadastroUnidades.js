@@ -29,7 +29,6 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
         });
 
         const result = await response.text();
-        console.log("✅ Resposta do servidor:", result);
 
         if (response.ok) {
             alert("Unidade cadastrada com sucesso!");
@@ -38,8 +37,6 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
             alert(`Erro ao cadastrar: ${result}`);
         }
     } catch (error) {
-        console.error("❌ Erro na requisição:", error);
-        alert("Erro ao conectar-se ao servidor.");
     }
 });
 
@@ -82,7 +79,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const tipoUsuario = getUserType();
 
         if (!tipoUsuario) {
-            console.log("Não deu certo") 
         }
 
         if (tipoUsuario === 'Coordenador') {
@@ -92,8 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
         }
         } catch (error) {
-            console.error("Não carregou o tipo", error);
-            alert("Tentando carregr o tipo.");
         }
     }
     verificarAcessoRestrito();
@@ -135,8 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("profile-photo").src =
             data.photo || "/projeto/Imagens/perfil.png";
         } catch (error) {
-        console.error("Erro ao carregar perfil:", error);
-        alert("Erro ao carregar os dados do perfil.");
         }
     }
     carregarPerfil();
@@ -164,7 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Salvar o URL da imagem no perfil
                 document.getElementById("profile-photo1-url").value = data.imageUrl;
             } catch (error) {
-                console.error("Erro ao fazer upload da imagem:", error);
             }
         }
     });
@@ -192,7 +183,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     
         } catch (error) {
-            console.error("❌ Erro ao carregar coordenadores:", error);
         }
     }
     carregarCoordenadores();

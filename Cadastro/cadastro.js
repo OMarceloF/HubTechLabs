@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const tipoUsuario = getUserType();
 
         if (!tipoUsuario) {
-            console.log("Não deu certo") 
         }
 
         // Verifica se é um Coordenador e bloqueia o acesso
@@ -15,8 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
         }
         } catch (error) {
-            console.error("Não carregou o tipo", error);
-            alert("Tentando carregr o tipo.");
         }
     }
     verificarAcessoRestrito();
@@ -51,8 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(data.message);
 
         } catch (error) {
-            console.error("Erro ao cadastrar usuário:", error);
-            alert("Erro ao cadastrar usuário. Tente novamente.");
         }
     });
     // Função para obter token do cookie
@@ -89,8 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
             // Atualiza os elementos do HTML com os dados do usuário
             document.getElementById("profile-photo").src = data.photo || "/projeto/Imagens/perfil.png";
         } catch (error) {
-            console.error("Erro ao carregar perfil:", error);
-            alert("Erro ao carregar os dados do perfil.");
         }
     }
 

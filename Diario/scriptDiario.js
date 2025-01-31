@@ -17,12 +17,9 @@ async function obterNomeUsuario() {
       
       if (usuarioEncontrado) {
           localStorage.setItem("nomeUsuario", usuarioEncontrado.name); // Salva o nome no localStorage
-          console.log("Nome do usuário salvo no localStorage:", usuarioEncontrado.name);
       } else {
-          console.warn("Usuário não encontrado");
       }
   } catch (error) {
-      console.error("Erro ao obter nome do usuário:", error);
   }
 }
 
@@ -68,7 +65,6 @@ async function carregarTurmas() {
       window.turmas = turmasFiltradas;
       window.presencaDados = [];
   } catch (error) {
-      console.error("Erro ao carregar as turmas:", error);
   }
 }
 
@@ -105,7 +101,6 @@ async function salvarDados() {
 
     // ✅ Verifica se a turma selecionada está presente no objeto retornado
     if (!(turmaSelecionada in diariosSalvos)) {
-      console.log("Nenhum diário encontrado para essa turma. Pode salvar.");
     } else {
       const registrosDaTurma = diariosSalvos[turmaSelecionada]; // Pega os registros da turma
 
@@ -153,7 +148,6 @@ async function salvarDados() {
       exibirMensagem("Erro ao salvar os dados!", true);
     }
   } catch (error) {
-    console.error("Erro ao enviar os dados:", error);
     exibirMensagem("Erro ao enviar os dados!", true);
   }
 }
@@ -280,8 +274,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("profile-photo").src =
             data.photo || "/projeto/Imagens/perfil.png";
         } catch (error) {
-        console.error("Erro ao carregar perfil:", error);
-        alert("Erro ao carregar os dados do perfil.");
         }
     }
 
@@ -296,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const tipoUsuario = getUserType();
 
         if (!tipoUsuario) {
-            console.log("Não deu certo") 
+      
         }
 
         // Verifica se é um Coordenador e bloqueia o acesso
@@ -304,8 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = "/Err o/erro.html"; // Redireciona para a página de erro
         }
         } catch (error) {
-            console.error("Não carregou o tipo", error);
-            alert("Tentando carregr o tipo.");
+  
         }
     }
     verificarAcessoRestrito();
@@ -346,6 +337,5 @@ window.onload = async function() {
   document.getElementById("turma-select").addEventListener("change", () => {
       const turmaSelecionada = document.getElementById("turma-select").value;
       const alunos = obterListaDeAlunos(turmaSelecionada);
-      console.log("Alunos carregados:", alunos);
   });
 };

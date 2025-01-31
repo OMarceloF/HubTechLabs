@@ -5,9 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function verificarAcessoRestrito() {
         try {
         const tipoUsuario = getUserType();
-
         if (!tipoUsuario) {
-            console.log("Não deu certo") 
         }
 
         // Verifica se é um Coordenador e bloqueia o acesso
@@ -15,8 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
         }
         } catch (error) {
-            console.error("Não carregou o tipo", error);
-            alert("Tentando carregr o tipo.");
         }
     }
     verificarAcessoRestrito();
@@ -45,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 selectElement.appendChild(option);
             });
         } catch (error) {
-            console.error("Erro ao carregar as turmas:", error);
         }
     }
 
@@ -101,8 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert(`Erro ao salvar a avaliação: ${errorData.message}`);
             }
         } catch (error) {
-            console.error("Erro ao enviar os dados:", error);
-            alert("Erro ao enviar os dados ao servidor.");
         }
     });
 
@@ -141,8 +134,6 @@ document.addEventListener("DOMContentLoaded", () => {
             // Atualiza os elementos do HTML com os dados do usuário
             document.getElementById("profile-photo").src = data.photo || "/projeto/Imagens/perfil.png";
         } catch (error) {
-            console.error("Erro ao carregar perfil:", error);
-            alert("Erro ao carregar os dados do perfil.");
         }
     }
 
@@ -172,7 +163,6 @@ async function obterListaDeAlunos(turmaSelecionada) {
             return []; // Caso não haja lista de alunos
         }
     } catch (error) {
-        console.error("Erro ao obter lista de alunos:", error);
         return []; // Retorna lista vazia em caso de erro
     }
 }
@@ -221,8 +211,6 @@ async function mostrarAlunosSelecionados() {
             alunosList.appendChild(row);
         });
     } catch (error) {
-        console.error("Erro ao obter a lista de alunos:", error);
-        alert("Erro ao carregar os alunos para a turma.");
     }
 }
 

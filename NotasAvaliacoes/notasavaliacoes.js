@@ -43,7 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
             data.photo || "/projeto/Imagens/perfil.png";
         } catch (error) {
         console.error("Erro ao carregar perfil:", error);
-        alert("Erro ao carregar os dados do perfil.");
         }
     }
     carregarPerfil();
@@ -68,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
             
             if (usuarioEncontrado) {
                 localStorage.setItem("nomeUsuario", usuarioEncontrado.name); // Salva o nome no localStorage
-                console.log("Nome do usuário salvo no localStorage:", usuarioEncontrado.name);
             } else {
                 console.warn("Usuário não encontrado");
             }
@@ -392,6 +390,6 @@ window.onload = async function() {
     document.getElementById("turma-select").addEventListener("change", () => {
         const turmaSelecionada = document.getElementById("turma-select").value;
         const alunos = obterListaDeAlunos(turmaSelecionada);
-        console.log("Alunos carregados:", alunos);
+
     });
 };
