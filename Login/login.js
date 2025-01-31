@@ -24,6 +24,7 @@ document.getElementById("form-login").addEventListener("submit", async (event) =
             
             // Armazena o tipo de usuário no localStorage
             localStorage.setItem('tipoUsuario', data.tipo);
+            localStorage.setItem('email', email)
 
             // Redireciona para a página inicial ou para a página de acordo com o tipo de usuário
             if (data.tipo === 'DEV' || data.tipo === 'Coordenador') {
