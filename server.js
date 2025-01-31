@@ -1476,7 +1476,8 @@ app.post('/atualizar-perfil', async(req, res) => {
 // Configuração do armazenamento de arquivos
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, 'uploads');
+        const uploadPath = path.join(__dirname, 'uploads'); // 🔴 Garante que as imagens das unidades sejam armazenadas na pasta correta
+        fs.mkdirSync(uploadPath, { recursive: true }); // 🔴 Cria a pasta caso não exista
         cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
@@ -1513,30 +1514,6 @@ app.get('/usuarios', async(req, res) => {
     } catch (error) {
         console.error("Erro ao carregar usuários:", error);
         res.status(500).send({ message: "Erro ao carregar usuários." });
-    }
-});
-
-// Rota para criar uma nova unidade
-app.post('/cadastrar-unidade',upload.single('unidadeFoto'), async(req, res) => {
-    const { unidade, escola, cidade, coordenador } = req.body;
-    const unidadeFoto = req.file ? `/uploads/unidades/${req.file.filename}` : "/projeto/Imagens/perfil.png";
-
-    if (!unidade) {
-        return res.status(400).send({ message: 'O nome da unidade é obrigatório!' });
-    }
-
-
-    try {
-        const connection = await mysql.createConnection(dbConfig);
-        await connection.execute(
-            'INSERT INTO unidades (unidade, escola, cidade, coordenador, photo) VALUES (?, ?, ?, ?, ?)', [unidade, escola, cidade, coordenador, unidadeFoto]
-        );
-        await connection.end();
-
-        res.status(201).send({ message: 'Unidade cadastrada com sucesso!' });
-    } catch (error) {
-        console.error('Erro ao cadastrar unidade:', error);
-        res.status(500).send({ message: 'Erro ao cadastrar a unidade.' });
     }
 });
 
@@ -1586,29 +1563,56 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true })); // Para processar formulários tradicionais
 
 // Rota para cadastrar unidade
-app.post('/cadastrar-unidade', (req, res) => {
-    console.log("📥 Dados recebidos:", req.body); // Debug no terminal
+// app.post('/cadastrar-unidade', (req, res) => {
+//     console.log("📥 Dados recebidos:", req.body); // Debug no terminal
 
-    const { unidade, escola, cidade, coordenador } = req.body;
+//     const { unidade, escola, cidade, coordenador } = req.body;
+//     const photo = req.file ? `/uploads/${req.file.filename}` : "/projeto/Imagens/perfil.png";
 
-    // Verificar se os campos estão preenchidos
-    if (!unidade || !escola || !cidade || !coordenador) {
-        console.log("⚠ Erro: Campos inválidos recebidos!");
-        return res.status(400).send("Todos os campos são obrigatórios!");
-    }
+//     // Verificar se os campos estão preenchidos
+//     if (!unidade || !escola || !cidade || !coordenador) {
+//         console.log("⚠ Erro: Campos inválidos recebidos!");
+//         return res.status(400).send("Todos os campos são obrigatórios!");
+//     }
 
-    // Comando SQL para inserir no MySQL (phpMyAdmin)
-    const query = `INSERT INTO unidades (unidade, escola, cidade, coordenador) VALUES (?, ?, ?, ?)`;
+//     // Comando SQL para inserir no MySQL (phpMyAdmin)
+//     const query = `INSERT INTO unidades (unidade, escola, cidade, coordenador,photo) VALUES (?, ?, ?, ?)`;
     
-    db.query(query, [unidade, escola, cidade, coordenador], (err, result) => {
-        if (err) {
-            console.error("❌ Erro ao inserir no banco:", err);
-            return res.status(500).send("Erro ao cadastrar a unidade.");
+//     db.query(query, [unidade, escola, cidade, coordenador,photo], (err, result) => {
+//         if (err) {
+//             console.error("❌ Erro ao inserir no banco:", err);
+//             return res.status(500).send("Erro ao cadastrar a unidade.");
+//         }
+
+//         console.log("✅ Unidade cadastrada com sucesso! ID:", result.insertId);
+//         res.send(`Unidade cadastrada com sucesso! ID: ${result.insertId}`);
+//     });
+// });
+
+app.post("/cadastrar-unidade", upload.single("photo"), async (req, res) => {
+    try {
+        const { unidade, escola, cidade, coordenador } = req.body;
+
+        if (!unidade || !escola || !cidade || !coordenador) {
+            return res.status(400).send("Todos os campos são obrigatórios!");
         }
 
-        console.log("✅ Unidade cadastrada com sucesso! ID:", result.insertId);
-        res.send(`Unidade cadastrada com sucesso! ID: ${result.insertId}`);
-    });
+        // Definir o caminho correto da imagem (se houver upload)
+        const photo = req.file ? `/uploads/${req.file.filename}` : "/projeto/Imagens/perfil.png";
+
+        const connection = await mysql.createConnection(dbConfig);
+        await connection.execute(
+            "INSERT INTO unidades (unidade, escola, cidade, coordenador, photo) VALUES (?, ?, ?, ?, ?)", 
+            [unidade, escola, cidade, coordenador, photo]
+        );
+        await connection.end();
+
+        console.log("✅ Unidade cadastrada com sucesso!");
+        res.status(201).send("Unidade cadastrada com sucesso!");
+    } catch (error) {
+        console.error("❌ Erro ao cadastrar unidade:", error);
+        res.status(500).send("Erro ao cadastrar a unidade.");
+    }
 });
 
 // Rota para listar unidades cadastradas
@@ -1627,49 +1631,3 @@ app.get('/listar-unidades', async (req, res) => {
         res.status(500).json({ message: 'Erro ao listar as unidades.' });
     }
 });
-
-
-// async function verificarAcessoRestrito(req, res, next) {
-//     try {
-//         const tipoUsuario = await obterTipoUsuario(req);
-
-//         if (!tipoUsuario) {
-//             res.send({ message: `Seu tipo de usuário é: ${tipoUsuario}` });
-//             return res.status(400).send({ message: 'Tipo do usuário não autorizado na requisição.'});
-//         }
-
-//         // Criando conexão com o banco de dados
-//         const connection = await mysql.createConnection(dbConfig);
-        
-//         // Buscando o usuário no banco para garantir que ele existe
-//         const [usuarios] = await connection.execute(
-//             'SELECT tipo FROM usuarios WHERE tipo = ?',
-//             [tipoUsuario]
-//         );
-
-//         // Fechando a conexão
-//         await connection.end();
-
-//         if (usuarios.length === 0) {
-//             return res.status(404).send({ message: 'Usuário não encontrado!' });
-//         }
-
-//         const usuario = usuarios[0];
-
-//         // Verifica se é um Coordenador e bloqueia o acesso
-//         if (usuario.tipo === 'Coordenador') {
-//             return res.status(403).send({ message: 'Acesso negado para Coordenadores!' });
-//         }
-
-//         if (usuario.tipo === 'Instrutor') {
-//             return res.status(403).send({ message: 'Acesso negado para Coordenadores!' });
-//         }
-
-//         next();
-//     } catch (error) {
-//         console.error("Erro ao verificar permissão:", error);
-//         res.status(500).send({ message: 'Erro ao verificar permissão.' });
-//     }
-// }
-
-

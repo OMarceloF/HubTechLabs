@@ -295,6 +295,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Carrega as turmas ao abrir a página
     carregarTurmas();
+
+    // Pega a foto de usuário logado
+    // Função para obter token do cookie
+    function getTokenFromCookie() {
+        const cookies = document.cookie.split("; ");
+        for (const cookie of cookies) {
+        const [key, value] = cookie.split("=");
+        if (key === "token") {
+            return value;
+        }
+        }
+        return null;
+    }
+
+    const token = getTokenFromCookie();
+    if (!token) {
+        alert("Você precisa estar logado para acessar esta página.");
+        window.location.href = "/Login/login.html";
+        return;
+    }
+    
+    // Função para carregar perfil do usuário logado
+    async function carregarPerfil() {
+        try {
+        const response = await fetch("http://localhost:3000/perfil", {
+            headers: { Authorization: token },
+        });
+
+        if (!response.ok) {
+            throw new Error("Erro ao carregar os dados do perfil");
+        }
+
+        const data = await response.json();
+
+        // Atualiza os elementos do HTML com os dados do usuário
+        document.getElementById("profile-photo").src =
+            data.photo || "/projeto/Imagens/perfil.png";
+        } catch (error) {
+        console.error("Erro ao carregar perfil:", error);
+        alert("Erro ao carregar os dados do perfil.");
+        }
+    }
+    carregarPerfil();
 });
 
 function toggleMudarPerfil() {

@@ -4,16 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Usuário</title>
+    <title>Cadastar Usuário</title>
     <link rel="stylesheet" href="cadastro.css">
 </head>
 
 <body>
-    <div class="wrapper">
+
+    <header class="header">
+        <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
+        <div class="logo-container">
+            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo"></a>
+        </div>
+
+        <div class="user-info" id="user-info">
+            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo" onclick="toggleMudarPerfil()">
+        </div>
+
+        <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
+            <a href="/Perfil/perfil.html">Editar Perfil</a><br>
+            <a href="http://localhost:3000/Login/login.html">Sair</a>
+
+    </header>
+    
         <div class="container">
-            <img src="/Imagens/hubTechLabsTES.png" width="65%">
-            <br>
-            <!-- <h2>Cadastro de Usuário</h2> -->
+
+            <h2>Cadastro de Usuário</h2>
             <form id="form-cadastro">
                 <div class="form-group">
                     <!-- <label for="email">E-mail:</label> -->
@@ -51,8 +66,6 @@
                 <button type="submit" class="primary-button">Cadastrar</button>
             </form>
         </div>
-    </div>
-    <img src="/Imagens/weAreTheFuture.png" class="imagemCanto" alt="We Are The Future">
     
     <script src="cadastro.js"></script>
 </body>
