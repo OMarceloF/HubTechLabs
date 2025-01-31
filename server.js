@@ -135,7 +135,7 @@ app.post('/salvar-presenca', async(req, res) => {
     }
 });
 
-app.get('/Diario/indexDiario.html', verificarAcessoRestrito, (req, res) => {
+app.get('/Diario/indexDiario.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'Diario', 'indexDiario.html'));
 });
 
@@ -147,7 +147,7 @@ app.get('/Diario/scriptDiario.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'Diario', 'scriptDiario.js'));
 });
 
-app.get('/EditarDiario/editarDiario.html', verificarAcessoRestrito, (req, res) => {
+app.get('/EditarDiario/editarDiario.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'EditarDiario', 'editarDiario.html'));
 });
 
@@ -205,6 +205,10 @@ app.get('/projeto/public/styles.css', (req, res) => {
 
 app.get('/projeto/public/script.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'script.js'));
+});
+
+app.get('/Erro/erro.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Erro', 'erro.html'));
 });
 
 // Pegar arquivos de imagens
@@ -336,7 +340,7 @@ app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}/Login/login.html`);
 });
 
-app.get('/CriarTurmas/criarTurmas.html', verificarAcessoRestrito, (req, res) => {
+app.get('/CriarTurmas/criarTurmas.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'CriarTurmas', 'criarTurmas.html'));
 });
 
@@ -348,7 +352,7 @@ app.get('/CriarTurmas/criarTurmas.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'CriarTurmas', 'criarTurmas.js'));
 });
 
-app.get('/EditarTurmas/editarTurmas.html', verificarAcessoRestrito, (req, res) => {
+app.get('/EditarTurmas/editarTurmas.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'EditarTurmas', 'editarTurmas.html'));
 });
 
@@ -376,7 +380,7 @@ app.get('/NotasAvaliacoes/notasavaliacoes.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'NotasAvaliacoes', 'notasAvaliacoes.js'));
 });
 
-app.get('/NotasAvaliacoes/notasavaliacoes.html', verificarAcessoRestrito,  (req, res) => {
+app.get('/NotasAvaliacoes/notasavaliacoes.html',  (req, res) => {
     res.sendFile(path.join(__dirname, 'NotasAvaliacoes', 'notasAvaliacoes.html'));
 });
 
@@ -400,7 +404,7 @@ app.get('/CadastroUnidades/cadastroUnidades.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'CadastroUnidades', 'cadastroUnidades.js'));
 });
 
-app.get('/CadastroUnidades/cadastroUnidades.html', verificarAcessoRestrito, (req, res) => {
+app.get('/CadastroUnidades/cadastroUnidades.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'CadastroUnidades', 'cadastroUnidades.html'));
 });
 
@@ -1046,46 +1050,46 @@ function verificarToken(req, res, next) {
 
 
 // Middleware para verificar permissão usando arquivo `usuarios.json`
-function verificarPermissao(permissoes) {
-    return async(req, res, next) => {
-        const email = req.user ?.email;
+// function verificarPermissao(permissoes) {
+//     return async(req, res, next) => {
+//         const email = req.user ?.email;
 
 
-        if (!email) {
-            return res.status(400).send({ message: 'E-mail do usuário não encontrado na requisição.' });
-        }
+//         if (!email) {
+//             return res.status(400).send({ message: 'E-mail do usuário não encontrado na requisição.' });
+//         }
 
-        try {
-            // Conectar ao banco de dados
-            const connection = await mysql.createConnection(dbConfig);
+//         try {
+//             // Conectar ao banco de dados
+//             const connection = await mysql.createConnection(dbConfig);
 
-            // Consultar o usuário pelo e-mail
-            const [usuarios] = await connection.query(
-                'SELECT tipo FROM usuarios WHERE email = ?', [email]
-            );
+//             // Consultar o usuário pelo e-mail
+//             const [usuarios] = await connection.query(
+//                 'SELECT tipo FROM usuarios WHERE email = ?', [email]
+//             );
 
-            // Fechar a conexão
-            await connection.end();
+//             // Fechar a conexão
+//             await connection.end();
 
-            // Verificar se o usuário existe
-            if (usuarios.length === 0) {
-                return res.status(404).send({ message: 'Usuário não encontrado!' });
-            }
+//             // Verificar se o usuário existe
+//             if (usuarios.length === 0) {
+//                 return res.status(404).send({ message: 'Usuário não encontrado!' });
+//             }
 
-            const usuario = usuarios[0];
+//             const usuario = usuarios[0];
 
-            // Verificar se o tipo de usuário tem permissão
-            if (permissoes.includes(usuario.tipo) || usuario.tipo === 'Diretor/Coordenador') {
-                next();
-            } else {
-                res.status(403).send({ message: 'Acesso negado!' });
-            }
-        } catch (error) {
-            console.error("Erro ao verificar permissão:", error);
-            res.status(500).send({ message: 'Erro ao verificar permissão.' });
-        }
-    };
-}
+//             // Verificar se o tipo de usuário tem permissão
+//             if (permissoes.includes(usuario.tipo) || usuario.tipo === 'Diretor/Coordenador') {
+//                 next();
+//             } else {
+//                 res.status(403).send({ message: 'Acesso negado!' });
+//             }
+//         } catch (error) {
+//             console.error("Erro ao verificar permissão:", error);
+//             res.status(500).send({ message: 'Erro ao verificar permissão.' });
+//         }
+//     };
+// }
 
 // Função para carregar usuários
 async function carregarUsuarios() {
@@ -1108,7 +1112,7 @@ async function carregarUsuarios() {
 }
 
 // Rota protegida para criação de turma (apenas DEV e Coordenador)
-app.post('/salvar-turma', verificarToken, verificarPermissao(['DEV', 'Diretor/Coordenador']), async(req, res) => {
+app.post('/salvar-turma', verificarToken, async(req, res) => {
     const { turma, instrutor, alunos } = req.body;
 
     if (!turma || !instrutor || !alunos || alunos.length === 0) {
@@ -1153,7 +1157,7 @@ app.post('/salvar-turma', verificarToken, verificarPermissao(['DEV', 'Diretor/Co
 });
 
 // Rota para acessar diário (Instrutor e Coordenador têm acesso)
-app.get('/Diario/indexDiario.html', verificarToken, verificarPermissao(['Instrutor', 'DEV']), (req, res) => {
+app.get('/Diario/indexDiario.html', verificarToken, (req, res) => {
     try {
         const filePath = path.join(__dirname, 'Diario', 'indexDiario.html');
         res.sendFile(filePath);
@@ -1625,43 +1629,47 @@ app.get('/listar-unidades', async (req, res) => {
 });
 
 
+// async function verificarAcessoRestrito(req, res, next) {
+//     try {
+//         const tipoUsuario = await obterTipoUsuario(req);
 
-async function verificarAcessoRestrito(req, res, next) {
-    try {
-        const tipoUsuario = req.user?.tipoUsuario;
+//         if (!tipoUsuario) {
+//             res.send({ message: `Seu tipo de usuário é: ${tipoUsuario}` });
+//             return res.status(400).send({ message: 'Tipo do usuário não autorizado na requisição.'});
+//         }
 
-        if (!tipoUsuario) {
-            return res.status(400).send({ message: 'Tipo do usuário não autorizado na requisição.' });
-        }
-
-        // Criando conexão com o banco de dados
-        const connection = await mysql.createConnection(dbConfig);
+//         // Criando conexão com o banco de dados
+//         const connection = await mysql.createConnection(dbConfig);
         
-        // Buscando o usuário no banco para garantir que ele existe
-        const [usuarios] = await connection.execute(
-            'SELECT tipo FROM usuarios WHERE tipo = ?',
-            [tipoUsuario]
-        );
+//         // Buscando o usuário no banco para garantir que ele existe
+//         const [usuarios] = await connection.execute(
+//             'SELECT tipo FROM usuarios WHERE tipo = ?',
+//             [tipoUsuario]
+//         );
 
-        // Fechando a conexão
-        await connection.end();
+//         // Fechando a conexão
+//         await connection.end();
 
-        if (usuarios.length === 0) {
-            return res.status(404).send({ message: 'Usuário não encontrado!' });
-        }
+//         if (usuarios.length === 0) {
+//             return res.status(404).send({ message: 'Usuário não encontrado!' });
+//         }
 
-        const usuario = usuarios[0];
+//         const usuario = usuarios[0];
 
-        // Verifica se é um Coordenador e bloqueia o acesso
-        if (usuario.tipo === 'Coordenador') {
-            return res.status(403).send({ message: 'Acesso negado para Coordenadores!' });
-        }
+//         // Verifica se é um Coordenador e bloqueia o acesso
+//         if (usuario.tipo === 'Coordenador') {
+//             return res.status(403).send({ message: 'Acesso negado para Coordenadores!' });
+//         }
 
-        next();
-    } catch (error) {
-        console.error("Erro ao verificar permissão:", error);
-        res.status(500).send({ message: 'Erro ao verificar permissão.' });
-    }
-}
+//         if (usuario.tipo === 'Instrutor') {
+//             return res.status(403).send({ message: 'Acesso negado para Coordenadores!' });
+//         }
+
+//         next();
+//     } catch (error) {
+//         console.error("Erro ao verificar permissão:", error);
+//         res.status(500).send({ message: 'Erro ao verificar permissão.' });
+//     }
+// }
 
 

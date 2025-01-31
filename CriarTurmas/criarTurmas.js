@@ -288,6 +288,27 @@ function limparFormulario() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    function getUserType() {
+        return localStorage.getItem("tipoUsuario");
+    }
+    async function verificarAcessoRestrito() {
+        try {
+        const tipoUsuario = getUserType();
+
+        if (!tipoUsuario) {
+            console.log("Não deu certo") 
+        }
+
+        // Verifica se é um Coordenador e bloqueia o acesso
+        if (tipoUsuario === 'Coordenador') {
+            window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+        }
+        } catch (error) {
+            console.error("Não carregou o tipo", error);
+            alert("Tentando carregr o tipo.");
+        }
+    }
+    verificarAcessoRestrito();
     // Pega a foto de usuário logado
     // Função para obter token do cookie
     function getTokenFromCookie() {

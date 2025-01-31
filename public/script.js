@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return localStorage.getItem("tipoUsuario");
     }
 
-    function esconderOpcoesParaCoordenador() {
+    function esconderOpcoes() {
         const tipoUsuario = getUserType();
         
         if (tipoUsuario === "Coordenador") {
@@ -90,9 +90,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
         }
+        else if (tipoUsuario === "Instrutor"){
+            const elementosRestritos = [
+                "/Cadastro/cadastro.html",
+                "/CadastroUnidades/cadastroUnidades.html",
+                "/Avaliacoes/avaliacao.html"
+            ];
+
+            document.querySelectorAll(".access-link").forEach(link => {
+                if (elementosRestritos.some(restrito => link.href.includes(restrito))) {
+                    link.style.display = "none";
+                }
+            });
+        }
     }
 
-    esconderOpcoesParaCoordenador();
+    esconderOpcoes();
     
    
     // Função para obter token do cookie
@@ -133,8 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Erro ao carregar os dados do perfil.");
         }
     }
-console.log("óla terraqueo")
     carregarPerfil();
+
 });
 
 
