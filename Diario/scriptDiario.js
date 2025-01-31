@@ -209,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Verifica se é um Coordenador e bloqueia o acesso
         if (tipoUsuario === 'Coordenador') {
-            window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+            window.location.href = "/Err o/erro.html"; // Redireciona para a página de erro
         }
         } catch (error) {
             console.error("Não carregou o tipo", error);

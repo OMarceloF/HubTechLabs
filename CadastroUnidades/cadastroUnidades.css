@@ -1,19 +1,28 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    background-color: rgb(243, 243, 243);
     margin: 0;
+    padding: 0;
+    min-height: 100vh;
 }
-.container {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+h2{
     text-align: center;
 }
+.container {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 40px;
+    background-color: rgba(255, 255, 255, 0.842);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    margin-top: 15vh;
+    display: flex;
+    flex-direction: column; /* Organiza os itens em coluna */
+    align-items: center; /* Centraliza horizontalmente */
+    justify-content: center; /* Centraliza verticalmente */
+}
+
 .photo-container {
     display: flex;
     flex-direction: column; /* Organiza os itens em coluna */
@@ -30,6 +39,46 @@ body {
     border-radius: 50%;
     border: 2px solid #ddd;
 }
+
+/* Estilo do Cabeçalho */
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #78f8e18e;
+    padding: 10px 10px;
+    color: white;
+    position: fixed;  /* Fixa no topo */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    height: 80px;
+}
+
+select {
+    width: 100%;
+}
+
+/* Logo e Foto do Usuário */
+.logo {
+    width: 120px;
+    height: auto;
+}
+
+.user-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; /* Imagem circular */
+    cursor: pointer;
+}
+
+.user-photo:hover {
+    transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
+    transition: all 0.3s ease;  /* Transição suave */
+}
+
 .custom-upload-button {
     background-color: #78f8e1;
     color: rgb(0, 0, 0);
@@ -80,13 +129,42 @@ input {
     border-radius: 4px;
 }
 button {
-    background-color: #28a745;
-    color: white;
-    padding: 10px;
+    background-color: #78f8e1;
+    color: rgb(0, 0, 0);
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px 15px;
+    margin-bottom: 20px;
 }
 button:hover {
-    background-color: #218838;
+    opacity: 0.9;
+}
+
+.mudarPerfil {
+    position: absolute;
+    right: 30px;
+    top: 90px;
+    background-color: white;
+    width: 120px;
+    height: 160px;
+    display: flex; /* Configura Flexbox */
+    flex-direction: column; /* Coloca os links em coluna */
+    justify-content: center; /* Centraliza verticalmente */
+    align-items: center; /* Centraliza horizontalmente */
+    text-align: center; /* Centraliza o texto */
+    border-radius: 8px; /* Deixa os cantos arredondados */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.mudarPerfil a {
+    margin: 0; /* Remove qualquer espaçamento adicional */
+    padding: 5px 0; /* Espaçamento interno, se necessário */
+    text-decoration: none; /* Remove o sublinhado dos links */
+    color: #5a5a5a; /* Define a cor do texto */
+    font-weight: bold; /* Deixa o texto em negrito */
+    width: 100%; /* Garante que o texto ocupa toda a largura */
+    text-align: center; /* Centraliza o texto dos links */
 }
