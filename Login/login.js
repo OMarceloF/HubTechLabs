@@ -37,6 +37,5 @@ document.getElementById("form-login").addEventListener("submit", async (event) =
         }
     } catch (error) {
         console.error("Erro ao fazer login:", error);
-        alert("Erro ao conectar ao servidor.");
     }
 });

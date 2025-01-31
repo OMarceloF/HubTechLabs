@@ -7,6 +7,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const tipoUsuario = getUserType();
         const selectTipo = document.getElementById("tipo");
 
+<<<<<<< HEAD
+        if (!tipoUsuario) {
+        }
+
+        // Verifica se é um Coordenador e bloqueia o acesso
+        if (tipoUsuario === 'Instrutor') {
+            window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+        }
+        } catch (error) {
+=======
         if (tipoUsuario === "Coordenador" && selectTipo) {
             // Remove todas as opções existentes
             selectTipo.innerHTML = "";
@@ -16,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
             opcaoInstrutor.value = "Instrutor";
             opcaoInstrutor.textContent = "Instrutor";
             selectTipo.appendChild(opcaoInstrutor);
+>>>>>>> main
         }
     }
 
@@ -67,8 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
             alert(data.message);
         } catch (error) {
-            console.error("Erro ao cadastrar usuário:", error);
-            alert("Erro ao cadastrar usuário. Tente novamente.");
         }
     });
 
@@ -104,8 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             document.getElementById("profile-photo").src = data.photo || "/projeto/Imagens/perfil.png";
         } catch (error) {
-            console.error("Erro ao carregar perfil:", error);
-            alert("Erro ao carregar os dados do perfil.");
         }
     }
 

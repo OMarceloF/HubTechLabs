@@ -135,8 +135,6 @@ function obterListaDeAlunos(turmaSelecionada) {
         const avaliacoes = await responseAvaliacoes.json();
         const notasAvaliacao = await responseNotas.json();
 
-        console.log("Avaliações recebidas:", avaliacoes);
-        console.log("Notas recebidas:", notasAvaliacao);
 
         // Encontra a avaliação específica para a turma e nome da avaliação
         const avaliacao = avaliacoes.find(a => a.turma === turma && a.nome_avaliacao === avaliacaoNome);
@@ -238,7 +236,7 @@ function obterListaDeAlunos(turmaSelecionada) {
         data.photo || "/projeto/Imagens/perfil.png";
     } catch (error) {
       console.error("Erro ao carregar perfil:", error);
-      alert("Erro ao carregar os dados do perfil.");
+    
     }
   }
 

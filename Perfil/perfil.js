@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("email").setAttribute("readonly", "readonly");
         } catch (error) {
             console.error("Erro ao carregar perfil:", error);
-            alert("Erro ao carregar os dados do perfil.");
         }
     }
 
@@ -112,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (error) {
             console.error("Erro ao atualizar perfil:", error);
-            alert("Erro ao atualizar o perfil.");
         }
     });
 
