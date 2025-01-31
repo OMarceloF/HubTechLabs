@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const tipoUsuario = getUserType();
 
         if (!tipoUsuario) {
-            console.log("Não deu certo") 
         }
 
         // Verifica se é um Coordenador e bloqueia o acesso
@@ -15,8 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
         }
         } catch (error) {
-            console.error("Não carregou o tipo", error);
-            alert("Tentando carregr o tipo.");
         }
     }
     verificarAcessoRestrito();
@@ -51,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
             
             if (usuarioEncontrado) {
                 localStorage.setItem("nomeUsuario", usuarioEncontrado.name); // Salva o nome no localStorage
-                console.log("Nome do usuário salvo no localStorage:", usuarioEncontrado.name);
             } else {
                 console.warn("Usuário não encontrado");
             }
@@ -326,7 +322,6 @@ window.onload = async function() {
     document.getElementById("turma-select").addEventListener("change", () => {
         const turmaSelecionada = document.getElementById("turma-select").value;
         const alunos = obterListaDeAlunos(turmaSelecionada);
-        console.log("Alunos carregados:", alunos);
     });
 };
 

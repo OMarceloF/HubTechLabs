@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("email").setAttribute("readonly", "readonly");
         } catch (error) {
             console.error("Erro ao carregar perfil:", error);
-            alert("Erro ao carregar os dados do perfil.");
         }
     }
 
@@ -112,10 +111,33 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (error) {
             console.error("Erro ao atualizar perfil:", error);
-            alert("Erro ao atualizar o perfil.");
         }
     });
 
     // Carregar o perfil ao carregar a página
     carregarPerfil(); 
 });
+
+// Função para formatar telefone no padrão (DDD) 99999-9999
+function formatarTelefone(event) {
+    let telefone = event.target.value.replace(/\D/g, ""); // Remove tudo que não for número
+
+    if (telefone.length > 11) {
+        telefone = telefone.substring(0, 11); // Limita a 11 números
+    }
+
+    if (telefone.length > 10) {
+        telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 7)}-${telefone.substring(7)}`;
+    } else if (telefone.length > 6) {
+        telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 6)}-${telefone.substring(6)}`;
+    } else if (telefone.length > 2) {
+        telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2)}`;
+    } else if (telefone.length > 0) {
+        telefone = `(${telefone}`;
+    }
+
+    event.target.value = telefone;
+}
+
+// Aplica a formatação ao campo de telefone
+document.getElementById("phone").addEventListener("input", formatarTelefone);

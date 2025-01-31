@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
             data.photo || "/projeto/Imagens/perfil.png";
         } catch (error) {
         console.error("Erro ao carregar perfil:", error);
-        alert("Erro ao carregar os dados do perfil.");
+
         }
     }
     carregarPerfil();
@@ -620,7 +620,6 @@ async function exportarRelatorioPDF() {
     doc.save(`Relatorio_Turma_${turmaNome}_${alunoSelecionado}.pdf`);
   } catch (error) {
     console.error("Erro ao gerar o relatório:", error);
-    alert("Erro ao gerar o relatório. Por favor, tente novamente.");
   }
 }
 
