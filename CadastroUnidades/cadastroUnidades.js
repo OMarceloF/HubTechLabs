@@ -41,3 +41,29 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
         alert("Erro ao conectar-se ao servidor.");
     }
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    function getUserType() {
+        return localStorage.getItem("tipoUsuario");
+    }
+    async function verificarAcessoRestrito() {
+        try {
+        const tipoUsuario = getUserType();
+
+        if (!tipoUsuario) {
+            console.log("Não deu certo") 
+        }
+
+        if (tipoUsuario === 'Coordenador') {
+            window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+        }
+        if (tipoUsuario === 'Instrutor') {
+            window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+        }
+        } catch (error) {
+            console.error("Não carregou o tipo", error);
+            alert("Tentando carregr o tipo.");
+        }
+    }
+    verificarAcessoRestrito();
+});

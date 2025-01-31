@@ -1,4 +1,26 @@
 document.addEventListener("DOMContentLoaded", () => {
+    function getUserType() {
+        return localStorage.getItem("tipoUsuario");
+    }
+    async function verificarAcessoRestrito() {
+        try {
+        const tipoUsuario = getUserType();
+
+        if (!tipoUsuario) {
+            console.log("Não deu certo") 
+        }
+
+        // Verifica se é um Coordenador e bloqueia o acesso
+        if (tipoUsuario === 'Coordenador') {
+            window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+        }
+        } catch (error) {
+            console.error("Não carregou o tipo", error);
+            alert("Tentando carregr o tipo.");
+        }
+    }
+    verificarAcessoRestrito();
+
     const turmaSelect = document.getElementById("turma-select");
     const alunosList = document.getElementById("alunos-list");
     const turmaDetails = document.getElementById("turma-details");
