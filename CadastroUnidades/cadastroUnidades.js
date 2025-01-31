@@ -168,4 +168,32 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     });
+
+    async function carregarCoordenadores() {
+        try {
+            const response = await fetch("http://localhost:3000/listar-coordenadores");
+    
+            if (!response.ok) {
+                throw new Error("Erro ao carregar os coordenadores.");
+            }
+    
+            const coordenadores = await response.json();
+            const selectCoordenador = document.getElementById("coordenador");
+    
+            // Limpa o select antes de adicionar os coordenadores
+            selectCoordenador.innerHTML = `<option value="">Selecione um Coordenador</option>`;
+    
+            coordenadores.forEach(coordenador => {
+                const option = document.createElement("option");
+                option.value = coordenador.name; /* Armazena o nome como identificador*/
+                option.textContent = `${coordenador.name}`;
+                /*option.textContent = `${coordenador.name} - ${coordenador.email}`;*/ 
+                selectCoordenador.appendChild(option);
+            });
+    
+        } catch (error) {
+            console.error("❌ Erro ao carregar coordenadores:", error);
+        }
+    }
+    carregarCoordenadores();
 });
