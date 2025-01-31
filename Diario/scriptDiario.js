@@ -1,31 +1,87 @@
-// Carrega as turmas do servidor (agora usando o backend)
-async function carregarTurmas() {
+async function obterNomeUsuario() {
   try {
-    const response = await fetch("http://localhost:3000/dados"); // Requisição ao backend
-    if (!response.ok) {
-      throw new Error("Erro ao buscar as turmas");
-    }
-    const turmas = await response.json(); // Dados das turmas
+      const email = localStorage.getItem("email"); // Obtém o email armazenado
+      if (!email) {
+          throw new Error("Nenhum email encontrado no localStorage");
+      }
 
-    const selectElement = document.getElementById("turma-select");
+      const response = await fetch("http://localhost:3000/usuarios"); // Chama a API
+      if (!response.ok) {
+          throw new Error("Erro ao buscar usuários");
+      }
 
-    // Preenche o dropdown com as turmas recebidas
-    for (const nomeTurma in turmas) {
-      // Agora estamos usando a chave "nomeTurma"
-      const option = document.createElement("option");
-      option.value = nomeTurma;
-      option.textContent = nomeTurma;
-      selectElement.appendChild(option);
-    }
-
-    // Armazena os dados das turmas globalmente
-    window.turmas = turmas;
-    window.presencaDados = [];
+      const usuarios = await response.json(); // Converte a resposta em JSON
+      
+      // Filtra o usuário correspondente ao email armazenado
+      const usuarioEncontrado = usuarios.find(usuario => usuario.email === email);
+      
+      if (usuarioEncontrado) {
+          localStorage.setItem("nomeUsuario", usuarioEncontrado.name); // Salva o nome no localStorage
+          console.log("Nome do usuário salvo no localStorage:", usuarioEncontrado.name);
+      } else {
+          console.warn("Usuário não encontrado");
+      }
   } catch (error) {
-    console.error("Erro ao carregar as turmas:", error);
+      console.error("Erro ao obter nome do usuário:", error);
   }
 }
 
+
+async function carregarTurmas() {
+  try {
+      const response = await fetch("http://localhost:3000/dados"); // Requisição ao backend
+      if (!response.ok) {
+          throw new Error("Erro ao buscar as turmas");
+      }
+      const turmas = await response.json(); // Dados das turmas
+
+      const nomeUsuario = localStorage.getItem("nomeUsuario"); // Obtém o nome do instrutor
+      if (!nomeUsuario) {
+          throw new Error("Nome do usuário não encontrado no localStorage");
+      }
+
+      // Filtra turmas onde o instrutor seja o usuário logado
+      const turmasFiltradas = Object.fromEntries(
+          Object.entries(turmas).filter(([_, turma]) => turma.instrutor === nomeUsuario)
+      );
+
+      const selectElement = document.getElementById("turma-select");
+      selectElement.innerHTML = ""; // Limpa opções anteriores
+
+      // Adiciona a opção inicial
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "Escolha sua turma";
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      selectElement.appendChild(defaultOption);
+
+      // Preenche o dropdown com as turmas filtradas
+      for (const nomeTurma in turmasFiltradas) {
+          const option = document.createElement("option");
+          option.value = nomeTurma;
+          option.textContent = nomeTurma;
+          selectElement.appendChild(option);
+      }
+
+      // Armazena os dados das turmas globalmente
+      window.turmas = turmasFiltradas;
+      window.presencaDados = [];
+  } catch (error) {
+      console.error("Erro ao carregar as turmas:", error);
+  }
+}
+
+function obterListaDeAlunos(turmaSelecionada) {
+  const turma = window.turmas[turmaSelecionada]; // Acesse diretamente a turma pela chave "nome"
+  if (turma && turma.alunos) {
+      return turma.alunos;
+  } else {
+      return [];
+  }
+}
+
+// Função para salvar os dados de presença e notas com data
 // Função para salvar os dados de presença e notas com data
 async function salvarDados() {
   const turmaSelecionada = document.getElementById("turma-select").value;
@@ -37,20 +93,54 @@ async function salvarDados() {
     return;
   }
 
-  const dados = {
-    turma: turmaSelecionada,
-    data: dataChamada,
-    alunos: Array.from(alunos).map((aluno) => ({
-      nome: aluno.querySelector("td:first-child").textContent,
-      presenca: aluno.querySelector(".presenca-check").checked
-        ? "Presente"
-        : "Ausente",
-      nota: aluno.querySelector(".nota-select").value,
-      observacao: aluno.querySelector(".observacao-input").value || "", // Captura a observação
-    })),
-  };
-
   try {
+    // Verificar se já existe um diário salvo para essa data e turma
+    const responseVerificacao = await fetch("http://localhost:3000/dados-presenca");
+    
+    if (!responseVerificacao.ok) {
+      throw new Error("Erro ao verificar dados de presença existentes");
+    }
+
+    const diariosSalvos = await responseVerificacao.json();
+
+    // ✅ Verifica se a turma selecionada está presente no objeto retornado
+    if (!(turmaSelecionada in diariosSalvos)) {
+      console.log("Nenhum diário encontrado para essa turma. Pode salvar.");
+    } else {
+      const registrosDaTurma = diariosSalvos[turmaSelecionada]; // Pega os registros da turma
+
+      if (!Array.isArray(registrosDaTurma)) {
+        throw new Error("Os dados da turma não estão no formato esperado!");
+      }
+
+      // Converte dataChamada para o mesmo formato da API (YYYY-MM-DD)
+      const dataChamadaFormatada = new Date(dataChamada).toISOString().split("T")[0];
+
+      // Verifica se já existe um registro com a mesma data
+      const diarioExistente = registrosDaTurma.some(
+        (registro) => registro.data.split("T")[0] === dataChamadaFormatada
+      );
+
+      if (diarioExistente) {
+        exibirMensagem("Já existe um diário salvo para essa turma e data!", true);
+        return; // Impede que os dados sejam salvos novamente
+      }
+    }
+
+    // Se não houver um diário salvo para essa data, continua com o processo
+    const dados = {
+      turma: turmaSelecionada,
+      data: dataChamada,
+      alunos: Array.from(alunos).map((aluno) => ({
+        nome: aluno.querySelector("td:first-child").textContent,
+        presenca: aluno.querySelector(".presenca-check").checked
+          ? "Presente"
+          : "Ausente",
+        nota: aluno.querySelector(".nota-select").value,
+        observacao: aluno.querySelector(".observacao-input").value || "", // Captura a observação
+      })),
+    };
+
     const response = await fetch("http://localhost:3000/salvar-presenca", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -58,9 +148,7 @@ async function salvarDados() {
     });
 
     if (response.ok) {
-      exibirMensagem("Chamada salva com sucesso!", false, () =>
-        resetarCampos()
-      );
+      exibirMensagem("Chamada salva com sucesso!", false, () => resetarCampos());
     } else {
       exibirMensagem("Erro ao salvar os dados!", true);
     }
@@ -69,6 +157,10 @@ async function salvarDados() {
     exibirMensagem("Erro ao enviar os dados!", true);
   }
 }
+
+
+
+
 
 function obterListaDeAlunos(turmaSelecionada) {
   const turma = window.turmas[turmaSelecionada]; // Acesse diretamente a turma pela chave "nome"
@@ -245,5 +337,15 @@ document.addEventListener("click", (event) => {
   }
 });
 
-// Carrega as turmas ao abrir a página
-window.onload = carregarTurmas;
+// Chamar a função ao carregar a página
+window.onload = async function() {
+  await obterNomeUsuario();
+  await carregarTurmas(); // Mantendo a função original
+
+  // Adiciona evento de mudança para atualizar os alunos ao selecionar a turma
+  document.getElementById("turma-select").addEventListener("change", () => {
+      const turmaSelecionada = document.getElementById("turma-select").value;
+      const alunos = obterListaDeAlunos(turmaSelecionada);
+      console.log("Alunos carregados:", alunos);
+  });
+};
