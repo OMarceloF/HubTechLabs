@@ -136,3 +136,27 @@ document.addEventListener("click", (event) => {
         mudarPerfil.style.display = "none";
     }
 });
+
+// Função para formatar o telefone no padrão (99) 99999-9999
+function formatarTelefone(event) {
+    let telefone = event.target.value.replace(/\D/g, ""); // Remove tudo que não for número
+
+    if (telefone.length > 11) {
+        telefone = telefone.substring(0, 11); // Limita a 11 números
+    }
+
+    if (telefone.length > 10) {
+        telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 7)}-${telefone.substring(7)}`;
+    } else if (telefone.length > 6) {
+        telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 6)}-${telefone.substring(6)}`;
+    } else if (telefone.length > 2) {
+        telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2)}`;
+    } else if (telefone.length > 0) {
+        telefone = `(${telefone}`;
+    }
+
+    event.target.value = telefone;
+}
+
+// Aplica a formatação ao campo de telefone
+document.getElementById("phone").addEventListener("input", formatarTelefone);

@@ -204,3 +204,13 @@ input {
     margin-bottom: 15px;
     box-sizing: border-box; /* 🔹 Garante que padding e borda não ultrapassem a largura */
 }
+
+#phone {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    text-align: left; /* 🔹 Mantém o texto alinhado corretamente */
+    box-sizing: border-box;
+}
