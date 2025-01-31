@@ -63,34 +63,63 @@ h2 {
     font-weight: bold;
 }
 
-.input-turma,
+
 .input-aluno {
-    width: 80%;
+    flex: 1; /* 🔹 Faz com que o input ocupe o espaço restante */
     padding: 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 16px;
-    font-family: Arial;
+    box-sizing: border-box;
+}
+
+.input-turma {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    align-items: right;
+    box-sizing: border-box; /* Inclui padding e borda no tamanho total */
 }
 
 .input-group {
     display: flex;
     align-items: center;
+    gap: 8px; /* 🔹 Adiciona um pequeno espaço entre os elementos */
     margin-bottom: 10px;
 }
 
-.add-button,
-.remove-button {
+.add-button {
+    display: flex;
+    justify-content: center;
+    align-items: center; /* 🔹 Centraliza o conteúdo dentro do botão */
+    width: 40px; /* 🔹 Define um tamanho fixo para o botão */
+    height: 40px; /* 🔹 Garante que o botão tenha altura igual à do input */
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
     border: none;
-    padding: 10px 10px;
     cursor: pointer;
-    margin-left: 5px;
+    background-color: #11e843;
+    color: white;
+}
+
+.remove-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
     border-radius: 10px;
     font-size: 18px;
     font-weight: bold;
-    align-items: center;
+    border: none;
+    cursor: pointer;
+    background-color: #ff0f27;
+    color: white;
 }
-
 .green-button {
     background-color: #11e843;
     color: white;
@@ -200,7 +229,23 @@ input.edit-input {
 }
 
 select {
+    /* width: 80%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: Arial;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px; */
     width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    align-items: right;
+    box-sizing: border-box; /* Inclui padding e borda no tamanho total */
 }
 
 /* Logo e Foto do Usuário */
@@ -283,3 +328,6 @@ select {
     text-align: center; /* Centraliza o texto dos links */
 }
 
+textarea{
+    font-family: arial;
+}

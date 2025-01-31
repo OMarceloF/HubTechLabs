@@ -350,6 +350,34 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     carregarPerfil();
+
+    async function carregarInstrutores() {
+        try {
+            const response = await fetch("http://localhost:3000/listar-instrutores");
+    
+            if (!response.ok) {
+                throw new Error("Erro ao carregar os instrutores.");
+            }
+    
+            const instrutores = await response.json();
+            const selectInstrutor = document.getElementById("nome-instrutor");
+    
+            // Limpa o select antes de adicionar os instrutores
+            selectInstrutor.innerHTML = `<option value="">Selecione um Instrutor</option>`;
+    
+            instrutores.forEach(instrutor => {
+                const option = document.createElement("option");
+                option.value = instrutor.name; // Armazena o nome como identificador
+                option.textContent = `${instrutor.name}`; // Exibe nome
+                selectInstrutor.appendChild(option);
+            });
+    
+        } catch (error) {
+            console.error("❌ Erro ao carregar instrutores:", error);
+        }
+    }
+
+    carregarInstrutores();
 });
 
 

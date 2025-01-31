@@ -27,14 +27,13 @@
     <div class="container">
 
         <div class="card">
+            <h2>Criar Turma</h2>
             <div class="section">
                 <label for="unidade-select"><strong>Unidade Escolar</strong></label>
                 <select id="unidade-select" class="input-turma">
                     <option value="" disabled selected>Selecione uma unidade</option>
                 </select>
             </div>
-
-            <h2>Criar Turma</h2>
             <!-- Seção do Nome da Turma -->
             <div class="section">
                 <label for="nome-turma"><strong>Nome da Turma</strong></label>
@@ -44,7 +43,9 @@
             <!-- Seção do Nome do Instrutor -->
             <div class="section">
                 <label for="nome-instrutor"><strong>Nome do Instrutor</strong></label>
-                <input type="text" id="nome-instrutor" placeholder="Digite o nome do Instrutor" class="input-turma">
+                <select id="nome-instrutor" class="input-turma">
+                    <option value="">Selecione um Instrutor</option>
+                </select>
             </div>
             <!-- Seção dos Inputs de Alunos -->
             <div class="section">

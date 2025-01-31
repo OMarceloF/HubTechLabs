@@ -6,6 +6,13 @@ body {
     min-height: 100vh;
 }
 
+.form-cadastro{
+    width: 90%;
+}
+
+.form-group{
+    width: 100%;
+}
 /* Estilo do Cabeçalho */
 .header {
     width: 100%;

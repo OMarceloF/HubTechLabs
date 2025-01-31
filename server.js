@@ -1631,3 +1631,39 @@ app.get('/listar-unidades', async (req, res) => {
         res.status(500).json({ message: 'Erro ao listar as unidades.' });
     }
 });
+
+app.get("/listar-coordenadores", async (req, res) => {
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        
+        // Buscar apenas usuários que são Coordenadores
+        const [coordenadores] = await connection.execute(
+            "SELECT name, email FROM usuarios WHERE tipo = 'Coordenador'"
+        );
+
+        await connection.end();
+
+        res.status(200).json(coordenadores);
+    } catch (error) {
+        console.error("❌ Erro ao listar coordenadores:", error);
+        res.status(500).send({ message: "Erro ao obter a lista de coordenadores." });
+    }
+});
+
+app.get("/listar-instrutores", async (req, res) => {
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        
+        // Buscar apenas usuários que são Instrutores
+        const [instrutores] = await connection.execute(
+            "SELECT name, email FROM usuarios WHERE tipo = 'Instrutor'"
+        );
+
+        await connection.end();
+
+        res.status(200).json(instrutores);
+    } catch (error) {
+        console.error("❌ Erro ao listar instrutores:", error);
+        res.status(500).send({ message: "Erro ao obter a lista de instrutores." });
+    }
+});
