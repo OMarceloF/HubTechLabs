@@ -172,6 +172,10 @@ document
     const turmaSelecionada = document.getElementById("turma-select").value;
     const alunoSelecionado = this.value;
 
+    let mensagemAviso = document.getElementById("msg-erro");
+    const graficosContainer = document.getElementById("graficos-aluno-container");
+    const botaoRelatorio = document.getElementById("exportar-relatorio");
+
     try {
       const notasResponse = await fetch("/notasavaliacoes");
       const presencaResponse = await fetch("/dados-presenca");
@@ -182,16 +186,28 @@ document
       const notasData = await notasResponse.json();
       const presencaData = await presencaResponse.json();
 
-      // Filtrar as notas do aluno para a turma selecionada
       const notasAluno = notasData[turmaSelecionada]
-        .filter((avaliacao) => avaliacao.aluno === alunoSelecionado)
-        .map((avaliacao) => parseFloat(avaliacao.nota) || 0);
+        ? notasData[turmaSelecionada].filter(
+            (avaliacao) => avaliacao.aluno === alunoSelecionado
+          ).map((avaliacao) => parseFloat(avaliacao.nota) || 0)
+        : [];
 
-      // Filtrar as presenças do aluno para a turma selecionada
-      const presencasTurma = presencaData[turmaSelecionada];
+      const presencasTurma = presencaData[turmaSelecionada] || [];
       const presencasAluno = presencasTurma.filter(
         (p) => p.aluno === alunoSelecionado
       );
+
+      if (notasAluno.length === 0 && presencasAluno.length === 0) {
+        mensagemAviso.textContent = "Nenhuma nota ou presença registrada para o aluno selecionado.";
+        mensagemAviso.style.display = "block";
+
+        graficosContainer?.classList.add("hidden");
+        botaoRelatorio?.classList.add("hidden");
+        return;
+      } else {
+        mensagemAviso.style.display = "none";
+        botaoRelatorio?.classList.remove("hidden");
+      }
 
       const datasAulas = presencasAluno.map((p) => {
         const data = new Date(p.data);
@@ -205,19 +221,51 @@ document
       const statusPresencas = presencasAluno.map((p) =>
         p.presenca === "Presente" ? 1 : 0
       );
-      const notasPresencas = presencasAluno.map((p) => parseFloat(p.nota) || 0);
 
       criarGraficoNotasAluno(notasAluno);
       criarGraficoPresencaData(datasAulas, statusPresencas);
       criarGraficoNotasTodasAulas(presencasAluno, alunoSelecionado);
 
-      document
-        .getElementById("graficos-aluno-container")
-        .classList.remove("hidden");
+      graficosContainer?.classList.remove("hidden");
     } catch (error) {
       console.error("Erro ao carregar os gráficos do aluno:", error);
+      mensagemAviso.textContent = "Erro ao carregar os dados do aluno.";
+      mensagemAviso.style.display = "block";
+      graficosContainer?.classList.add("hidden");
+      botaoRelatorio?.classList.add("hidden");
     }
   });
+
+// Função para ocultar e zerar gráficos ao modificar qualquer campo de entrada
+document.querySelectorAll("input, select").forEach((element) => {
+  element.addEventListener("input", () => {
+    const graficosContainer = document.getElementById("graficos-aluno-container");
+    const botaoRelatorio = document.getElementById("exportar-relatorio");
+    if (graficosContainer && !graficosContainer.classList.contains("hidden")) {
+      graficosContainer.classList.add("hidden");
+      botaoRelatorio?.classList.add("hidden");
+      
+      // Zerar gráficos
+      if (window.graficoNotasAluno) {
+        window.graficoNotasAluno.destroy();
+        window.graficoNotasAluno = null;
+      }
+      if (window.graficoPresencaAula) {
+        window.graficoPresencaAula.destroy();
+        window.graficoPresencaAula = null;
+      }
+      if (window.graficoDesempenhoAula) {
+        window.graficoDesempenhoAula.destroy();
+        window.graficoDesempenhoAula = null;
+      }
+    }
+  });
+});
+
+
+
+
+
 
 // Função para criar gráfico com todas as notas do aluno (incluindo somaNotasPresenca)
 function criarGraficoNotasTodasAulas(presencasAluno, alunoSelecionado) {
