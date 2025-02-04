@@ -5,7 +5,7 @@ async function obterNomeUsuario() {
           throw new Error("Nenhum email encontrado no localStorage");
       }
 
-      const response = await fetch("http://localhost:3000/usuarios"); // Chama a API
+      const response = await fetch("https://hub-orcin.vercel.app/usuarios"); // Chama a API
       if (!response.ok) {
           throw new Error("Erro ao buscar usuários");
       }
@@ -26,7 +26,7 @@ async function obterNomeUsuario() {
 
 async function carregarTurmas() {
   try {
-      const response = await fetch("http://localhost:3000/dados"); // Requisição ao backend
+      const response = await fetch("https://hub-orcin.vercel.app/dados"); // Requisição ao backend
       if (!response.ok) {
           throw new Error("Erro ao buscar as turmas");
       }
@@ -91,7 +91,7 @@ async function salvarDados() {
 
   try {
     // Verificar se já existe um diário salvo para essa data e turma
-    const responseVerificacao = await fetch("http://localhost:3000/dados-presenca");
+    const responseVerificacao = await fetch("https://hub-orcin.vercel.app/dados-presenca");
     
     if (!responseVerificacao.ok) {
       throw new Error("Erro ao verificar dados de presença existentes");
@@ -136,7 +136,7 @@ async function salvarDados() {
       })),
     };
 
-    const response = await fetch("http://localhost:3000/salvar-presenca", {
+    const response = await fetch("https://hub-orcin.vercel.app/salvar-presenca", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dados),
@@ -260,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Função para carregar perfil do usuário logado
     async function carregarPerfil() {
         try {
-        const response = await fetch("http://localhost:3000/perfil", {
+        const response = await fetch("https://hub-orcin.vercel.app/perfil", {
             headers: { Authorization: token },
         });
 
