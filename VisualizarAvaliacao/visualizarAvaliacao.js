@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
             throw new Error("Nenhum email encontrado no localStorage");
         }
 
-        const response = await fetch("http://localhost:3000/usuarios"); // Chama a API
+        const response = await fetch("https://hub-orcin.vercel.app/usuarios"); // Chama a API
         if (!response.ok) {
             throw new Error("Erro ao buscar usuários");
         }
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function carregarTurmas() {
     try {
-        const response = await fetch("http://localhost:3000/dados"); // Requisição ao backend
+        const response = await fetch("https://hub-orcin.vercel.app/dados"); // Requisição ao backend
         if (!response.ok) {
             throw new Error("Erro ao buscar as turmas");
         }
@@ -97,7 +97,7 @@ function obterListaDeAlunos(turmaSelecionada) {
   // Carregar avaliações da turma selecionada
   async function carregarAvaliacoes(turma) {
     try {
-      const response = await fetch("http://localhost:3000/avaliacoes");
+      const response = await fetch("https://hub-orcin.vercel.app/avaliacoes");
       const avaliacoes = await response.json();
 
       // Filtra as avaliações pela turma selecionada
@@ -130,8 +130,8 @@ function obterListaDeAlunos(turmaSelecionada) {
   async function exibirAvaliacao(turma, avaliacaoNome) {
     try {
         // Requisição para pegar as avaliações
-        const responseAvaliacoes = await fetch('http://localhost:3000/avaliacoes');
-        const responseNotas = await fetch('http://localhost:3000/notasavaliacoes');
+        const responseAvaliacoes = await fetch('https://hub-orcin.vercel.app/avaliacoes');
+        const responseNotas = await fetch('https://hub-orcin.vercel.app/notasavaliacoes');
         const avaliacoes = await responseAvaliacoes.json();
         const notasAvaliacao = await responseNotas.json();
 
@@ -221,7 +221,7 @@ function obterListaDeAlunos(turmaSelecionada) {
   // Carregar o perfil do usuário logado
   async function carregarPerfil() {
     try {
-      const response = await fetch("http://localhost:3000/perfil", {
+      const response = await fetch("https://hub-orcin.vercel.app/perfil", {
         headers: { Authorization: token },
       });
 
