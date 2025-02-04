@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
@@ -5,7 +6,6 @@ const cors = require('cors');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
-require('dotenv').config();
 
 const app = express();
 const mysql = require('mysql2/promise');
