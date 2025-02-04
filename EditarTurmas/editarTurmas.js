@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error("Nenhum email encontrado no localStorage");
             }
     
-            const response = await fetch("http://localhost:3000/usuarios"); // Chama a API
+            const response = await fetch("https://hub-orcin.vercel.app/usuarios"); // Chama a API
             if (!response.ok) {
                 throw new Error("Erro ao buscar usuários");
             }
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     async function carregarTurmas() {
         try {
-            const response = await fetch("http://localhost:3000/dados"); // Requisição ao backend
+            const response = await fetch("https://hub-orcin.vercel.app/dados"); // Requisição ao backend
             if (!response.ok) {
                 throw new Error("Erro ao buscar as turmas");
             }
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Carregar os alunos dessa turma
         try {
-            const response = await fetch('http://localhost:3000/dados'); // Rota para buscar os dados da turma
+            const response = await fetch('https://hub-orcin.vercel.app/dados'); // Rota para buscar os dados da turma
             const dados = await response.json();
 
             // Acessa os dados da turma selecionada corretamente
@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const dadosAtualizados = { turma, alunos };
 
         try {
-            const response = await fetch('http://localhost:3000/editar-turma', {
+            const response = await fetch('https://hub-orcin.vercel.app/editar-turma', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosAtualizados)
@@ -220,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const turma = turmaSelect.value;
 
         try {
-            const response = await fetch('http://localhost:3000/excluir-turma', {
+            const response = await fetch('https://hub-orcin.vercel.app/excluir-turma', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ turma })
@@ -264,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function carregarPerfil() {
         try {
-            const response = await fetch('http://localhost:3000/perfil', {
+            const response = await fetch('https://hub-orcin.vercel.app/perfil', {
                 headers: { Authorization: token }
             });
 
