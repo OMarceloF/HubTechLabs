@@ -33,7 +33,7 @@ function adicionarInput(containerId = "inputs-alunos") {
 document.addEventListener('DOMContentLoaded', () => {
     async function carregarUnidades() {
         try {
-            const response = await fetch('http://localhost:3000/listar-unidades');
+            const response = await fetch('https://hub-orcin.vercel.app/listar-unidades');
             if (!response.ok) throw new Error('Erro ao buscar unidades');
     
             const unidades = await response.json();
@@ -164,7 +164,7 @@ async function salvarTurma() {
     };
 
     try {
-        const response = await fetch('http://localhost:3000/salvar-turma', {
+        const response = await fetch('https://hub-orcin.vercel.app/salvar-turma', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -327,7 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function carregarPerfil() {
         try {
-            const response = await fetch('http://localhost:3000/perfil', {
+            const response = await fetch('https://hub-orcin.vercel.app/perfil', {
                 headers: { Authorization: token }
             });
 
@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function carregarInstrutores() {
         try {
-            const response = await fetch("http://localhost:3000/listar-instrutores");
+            const response = await fetch("https://hub-orcin.vercel.app/listar-instrutores");
     
             if (!response.ok) {
                 throw new Error("Erro ao carregar os instrutores.");
@@ -402,7 +402,7 @@ document.addEventListener("click", (event) => {
 
 async function carregarUnidades() {
     try {
-        const response = await fetch('http://localhost:3000/listar-unidades');
+        const response = await fetch('https://hub-orcin.vercel.app/listar-unidades');
         if (!response.ok) throw new Error('Erro ao buscar unidades');
         const unidades = await response.json();
 
@@ -436,7 +436,7 @@ async function salvarTurma() {
     const dados = { turma: nomeTurma, instrutor: nomeInstrutor, alunos, unidade_id: unidadeId };
 
     try {
-        const response = await fetch('http://localhost:3000/salvar-turma', {
+        const response = await fetch('https://hub-orcin.vercel.app/salvar-turma', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados),
