@@ -8,7 +8,7 @@ const multer = require('multer');
 
 const app = express();
 const mysql = require('mysql2/promise');
-const port = 3000;
+const port = 80;
 const secretKey = "sua_chave_secreta_super_segura";
 
 // Middleware
@@ -27,11 +27,13 @@ const dadosPath = path.join(__dirname, 'data', 'dados.json'); // Caminho para da
 const presencaPath = path.join(__dirname, 'output', 'presenca_dados.json'); // Caminho para presenca_dados.json
 const usuariosPath = path.join(__dirname, 'output', 'usuarios.json');
 
+require('dotenv').config();
+
 const dbConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'diario_turmas'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 };
 
 app.post('/salvar-turma', async (req, res) => {
@@ -1667,3 +1669,6 @@ app.get("/listar-instrutores", async (req, res) => {
         res.status(500).send({ message: "Erro ao obter a lista de instrutores." });
     }
 });
+
+
+module.exports = dbConfig;
