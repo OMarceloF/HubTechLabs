@@ -1671,4 +1671,3 @@ app.get("/listar-instrutores", async (req, res) => {
 });
 
 
-module.exports = dbConfig;
