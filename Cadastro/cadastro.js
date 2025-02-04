@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/cadastro', {
+            const response = await fetch('https://hub-orcin.vercel.app/cadastro', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha, tipo, name, phone, city, state, unit, photo: "/projeto/Imagens/perfil.png" })
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function carregarPerfil() {
         try {
-            const response = await fetch('http://localhost:3000/perfil', {
+            const response = await fetch('https://hub-orcin.vercel.app/perfil', {
                 headers: { Authorization: token }
             });
 
