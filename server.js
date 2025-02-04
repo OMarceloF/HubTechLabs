@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
+require('dotenv').config();
 
 const app = express();
 const mysql = require('mysql2/promise');
@@ -27,7 +28,6 @@ const dadosPath = path.join(__dirname, 'data', 'dados.json'); // Caminho para da
 const presencaPath = path.join(__dirname, 'output', 'presenca_dados.json'); // Caminho para presenca_dados.json
 const usuariosPath = path.join(__dirname, 'output', 'usuarios.json');
 
-require('dotenv').config();
 
 const dbConfig = {
     host: process.env.DB_HOST,
