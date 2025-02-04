@@ -23,7 +23,7 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
     }
 
     try {
-        const response = await fetch("http://localhost:3000/cadastrar-unidade", {
+        const response = await fetch("https://hub-orcin.vercel.app/cadastrar-unidade", {
             method: "POST",
             body: formData // ✅ Agora envia os dados corretamente como `multipart/form-data`
         });
@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Função para carregar perfil do usuário logado
     async function carregarPerfil() {
         try {
-        const response = await fetch("http://localhost:3000/perfil", {
+        const response = await fetch("https://hub-orcin.vercel.app/perfil", {
             headers: { Authorization: token },
         });
 
@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
             formData.append('photo', file);
     
             try {
-                const response = await fetch('http://localhost:3000/upload-image', {
+                const response = await fetch('https://hub-orcin.vercel.app/upload-image', {
                     method: 'POST',
                     body: formData
                 });
@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function carregarCoordenadores() {
         try {
-            const response = await fetch("http://localhost:3000/listar-coordenadores");
+            const response = await fetch("https://hub-orcin.vercel.app/listar-coordenadores");
     
             if (!response.ok) {
                 throw new Error("Erro ao carregar os coordenadores.");
