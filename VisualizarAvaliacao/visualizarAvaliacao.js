@@ -129,7 +129,7 @@ function obterListaDeAlunos(turmaSelecionada) {
       // Preenche as opções de avaliação no dropdown
       avaliacoesFiltradas.forEach((avaliacao) => {
         const option = document.createElement("option");
-        const dataFormatada = formatarDataParaExibicao(avaliacao.data_avaliacao);
+        const dataFormatada = (avaliacao.data_avaliacao);
         option.value = avaliacao.nome_avaliacao;
         option.textContent = `${avaliacao.nome_avaliacao} - ${dataFormatada}`;
         avaliacaoSelect.appendChild(option);
