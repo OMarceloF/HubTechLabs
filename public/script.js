@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 "/CriarTurmas/criarTurmas.html",
                 "/EditarTurmas/editarTurmas.html",
                 "/NotasAvaliacoes/notasAvaliacoes.html",
-                "/Relatorio/relatorio.js"
+                "/Relatorio/relatorio.html"
             ];
 
             document.querySelectorAll(".access-link").forEach(link => {

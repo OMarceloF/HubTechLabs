@@ -130,11 +130,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            const alunosOrdenados = turma.alunos.sort((a, b) => a.localeCompare(b));
+
             // Exibe os detalhes da turma
             turmaDetails.classList.remove("hidden");
             alunosList.innerHTML = ""; // Limpa a lista de alunos
 
-            turma.alunos.forEach(aluno => {
+            alunosOrdenados.forEach(aluno => {
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <input type="text" value="${aluno}" readonly>
