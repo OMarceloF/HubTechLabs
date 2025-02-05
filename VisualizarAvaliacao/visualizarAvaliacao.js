@@ -1,3 +1,16 @@
+function formatarDataParaExibicao(dataISO) {
+  if (!dataISO) return "Data inválida";
+  const data = new Date(dataISO);
+
+  // Ajusta para o horário local
+  data.setMinutes(data.getMinutes() + data.getTimezoneOffset());
+
+  const dia = String(data.getDate()).padStart(2, '0');
+  const mes = String(data.getMonth() + 1).padStart(2, '0'); // +1 pois os meses começam do 0
+  const ano = data.getFullYear();
+  return `${dia}/${mes}/${ano}`;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const turmaSelect = document.getElementById("turma-select");
   const avaliacaoSelect = document.getElementById("avaliacao-select");
@@ -116,7 +129,7 @@ function obterListaDeAlunos(turmaSelecionada) {
       // Preenche as opções de avaliação no dropdown
       avaliacoesFiltradas.forEach((avaliacao) => {
         const option = document.createElement("option");
-        const dataFormatada = formatarData(avaliacao.data_avaliacao);
+        const dataFormatada = formatarDataParaExibicao(avaliacao.data_avaliacao);
         option.value = avaliacao.nome_avaliacao;
         option.textContent = `${avaliacao.nome_avaliacao} - ${dataFormatada}`;
         avaliacaoSelect.appendChild(option);
