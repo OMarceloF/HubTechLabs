@@ -1,3 +1,16 @@
+function formatarDataParaExibicao(dataISO) {
+    if (!dataISO) return "Data inválida";
+    const data = new Date(dataISO);
+    
+    // Ajusta para o horário local
+    data.setMinutes(data.getMinutes() + data.getTimezoneOffset());
+
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0'); // +1 pois os meses começam do 0
+    const ano = data.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const turmaSelect = document.getElementById("turma-select");
     const avaliacaoSelect = document.getElementById("avaliacao-select");
@@ -149,7 +162,8 @@ document.addEventListener("DOMContentLoaded", () => {
             avaliacoesFiltradas.forEach(avaliacao => {
                 const option = document.createElement("option");
                 option.value = avaliacao.nome_avaliacao; // Nome da avaliação
-                option.textContent = `${avaliacao.nome_avaliacao} - ${formatarData(avaliacao.data_avaliacao)}`; // Exibe nome e data
+                option.textContent = `${avaliacao.nome_avaliacao} - ${formatarDataParaExibicao(avaliacao.data_avaliacao)}`;
+
                 avaliacaoSelect.appendChild(option);
             });
         } catch (error) {
