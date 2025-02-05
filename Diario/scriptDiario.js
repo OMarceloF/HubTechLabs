@@ -1,3 +1,9 @@
+function ajustarDataParaLocal(dateString) {
+  const date = new Date(dateString + "T00:00:00"); // Garante meia-noite no local
+  date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // Ajusta o fuso horário
+  return date.toISOString().split("T")[0]; // Retorna no formato YYYY-MM-DD
+}
+
 async function obterNomeUsuario() {
   try {
       const email = localStorage.getItem("email"); // Obtém o email armazenado
@@ -109,7 +115,7 @@ async function salvarDados() {
       }
 
       // Converte dataChamada para o mesmo formato da API (YYYY-MM-DD)
-      const dataChamadaFormatada = new Date(dataChamada).toISOString().split("T")[0];
+      const dataChamadaFormatada = ajustarDataParaLocal(dataChamada);
 
       // Verifica se já existe um registro com a mesma data
       const diarioExistente = registrosDaTurma.some(
