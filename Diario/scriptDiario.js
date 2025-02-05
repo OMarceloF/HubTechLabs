@@ -208,6 +208,8 @@ function mostrarAlunosSelecionados() {
     return;
   }
 
+  alunos.sort();
+
   alunos.forEach((aluno) => {
     const row = document.createElement("tr");
     row.innerHTML = `

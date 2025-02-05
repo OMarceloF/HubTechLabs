@@ -42,6 +42,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     carregarPerfil();
 
+    function getUserType() {
+      return localStorage.getItem("tipoUsuario");
+  }
+
+  async function verificarAcessoRestrito() {
+      try {
+      const tipoUsuario = getUserType();
+
+      if (!tipoUsuario) {
+    
+      }
+
+      // Verifica se é um Coordenador e bloqueia o acesso
+      if (tipoUsuario === 'Coordenador') {
+          window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+      }
+      } catch (error) {
+
+      }
+  }
+  verificarAcessoRestrito();
+
 });
 
 async function obterNomeUsuario() {

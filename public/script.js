@@ -81,7 +81,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 "/EditarDiario/editarDiario.html",
                 "/CriarTurmas/criarTurmas.html",
                 "/EditarTurmas/editarTurmas.html",
-                "/NotasAvaliacoes/notasAvaliacoes.html"
+                "/NotasAvaliacoes/notasAvaliacoes.html",
+                "/Relatorio/relatorio.js"
             ];
 
             document.querySelectorAll(".access-link").forEach(link => {
