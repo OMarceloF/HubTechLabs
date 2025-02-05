@@ -167,6 +167,8 @@ function obterListaDeAlunos(turmaSelecionada) {
             }
         });
 
+        alunosComNotas.sort((a, b) => a.aluno.localeCompare(b.aluno))
+
         // Popula a tabela com os dados das notas
         alunosComNotas.forEach(nota => {
             const tr = document.createElement("tr");

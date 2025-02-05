@@ -173,6 +173,8 @@ document
         return;
       }
 
+      alunos.sort((a, b) => a.localeCompare(b))
+
       alunos.forEach((aluno) => {
         const option = document.createElement("option");
         option.value = aluno;

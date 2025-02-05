@@ -190,6 +190,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 return; // Usar return dentro da função, não fora
             }
 
+            alunos.sort((a, b) => a.localeCompare(b))
+
             formNotas.innerHTML = `
                 <table class="tabela-notas">
                     <thead>
