@@ -7,7 +7,7 @@ window.addEventListener("load", () => {
         "/Imagens/imagem1.jpg",
         "/Imagens/imagem2.png",
         "/Imagens/imagem3.png",
-        "/Imagens/imagem4.jpg"
+        "/Imagens/Imagem4.jpg"
     ];
 
     let index = 0;
