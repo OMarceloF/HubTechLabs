@@ -1,9 +1,3 @@
-
-function ajustarDataParaLocal(dateString) {
-    const date = new Date(dateString + "T00:00:00"); // Garante meia-noite no local
-    date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // Ajusta o fuso horário
-    return date.toISOString().split("T")[0]; // Retorna no formato YYYY-MM-DD
-}
 document.addEventListener("DOMContentLoaded", () => {
     function getUserType() {
         return localStorage.getItem("tipoUsuario");
@@ -73,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const turma = document.getElementById("turma").value.trim();
         const nomeAvaliacao = document.getElementById("nome-avaliacao").value.trim();
-        const dataAvaliacao = ajustarDataParaLocal(document.getElementById("data-avaliacao").value);S
+        const dataAvaliacao = document.getElementById("data-avaliacao").value;
         const conteudoAvaliacao = document.getElementById("conteudo-avaliacao").value.trim();
 
         if (!turma || !nomeAvaliacao || !dataAvaliacao || !conteudoAvaliacao) {
