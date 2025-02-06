@@ -233,14 +233,20 @@ document
      botaoRelatorio?.classList.remove("hidden");
    }
 
-   const datasAulas = presencasAluno.map((p) => {
-     const data = new Date(p.data);
-     return `${data.getDate().toString().padStart(2, "0")}/${(
-       data.getMonth() + 1
-     )
-       .toString()
-       .padStart(2, "0")}/${data.getFullYear()}`;
-   });
+  //  const datasAulas = presencasAluno.map((p) => {
+  //    const data = new Date(p.data);
+  //    return `${data.getDate().toString().padStart(2, "0")}/${(
+  //      data.getMonth() + 1
+  //    )
+  //      .toString()
+  //      .padStart(2, "0")}/${data.getFullYear()}`;
+  //  });
+
+  const datasAulas = presencasAluno.map((p) => {
+    const data = new Date(p.data);
+    data.setDate(data.getDate() + 1); // Ajuste para corrigir a exibição errada
+    return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
+  });
 
    const statusPresencas = presencasAluno.map((p) =>
      p.presenca === "Presente" ? 1 : 0
