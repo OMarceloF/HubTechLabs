@@ -296,11 +296,7 @@ const ctxDesempenhoAula = document
 
 const labels = presencasAluno.map((aula) => {
  const data = new Date(aula.data);
- return `${data.getDate().toString().padStart(2, "0")}/${(
-   data.getMonth() + 1
- )
-   .toString()
-   .padStart(2, "0")}/${data.getFullYear()}`;
+ return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
 });
 
 const notas = presencasAluno.map((aula) => parseFloat(aula.nota) || 0);
