@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
             avaliacoesFiltradas.forEach(avaliacao => {
                 const option = document.createElement("option");
                 option.value = avaliacao.nome_avaliacao; // Nome da avaliação
-                option.textContent = `${avaliacao.nome_avaliacao} - ${(avaliacao.data_avaliacao)}`;
+                option.textContent = `${avaliacao.nome_avaliacao} - ${formatarDataParaExibicao(avaliacao.data_avaliacao)}`;
 
                 avaliacaoSelect.appendChild(option);
             });
