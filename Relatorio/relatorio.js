@@ -1,3 +1,15 @@
+function formatarDataParaExibicao(dataISO) {
+  if (!dataISO) return "Data inválida";
+  const data = new Date(dataISO);
+  
+  // Ajusta para o horário local
+  data.setMinutes(data.getMinutes() + data.getTimezoneOffset());
+
+  const dia = String(data.getDate()).padStart(2, '0');
+  const mes = String(data.getMonth() + 1).padStart(2, '0'); // +1 pois os meses começam do 0
+  const ano = data.getFullYear();
+  return `${dia}/${mes}/${ano}`;
+}
 document.addEventListener("DOMContentLoaded", () => {
      // Pega a foto de usuário logado
     // Função para obter token do cookie
@@ -247,8 +259,8 @@ document
       );
 
       criarGraficoNotasAluno(notasAluno);
-      criarGraficoPresencaData(datasAulas, statusPresencas);
-      criarGraficoNotasTodasAulas(presencasAluno, alunoSelecionado);
+      criarGraficoPresencaData(formatarDataParaExibicao(datasAulas), statusPresencas);
+      criarGraficoNotasTodasAulas(formatarDataParaExibicao(presencasAluno), alunoSelecionado);
 
       graficosContainer?.classList.remove("hidden");
     } catch (error) {
