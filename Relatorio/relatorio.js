@@ -189,7 +189,6 @@ document
 });
 
 // Evento ao selecionar um aluno
-// Evento ao selecionar um aluno
 document
 .getElementById("aluno-select")
 .addEventListener("change", async function () {
@@ -290,50 +289,55 @@ element.addEventListener("input", () => {
 
 // Função para criar gráfico com todas as notas do aluno (incluindo somaNotasPresenca)
 function criarGraficoNotasTodasAulas(presencasAluno, alunoSelecionado) {
-const ctxDesempenhoAula = document
- .getElementById("grafico-desempenho-aula")
- .getContext("2d");
+  const ctxDesempenhoAula = document
+  .getElementById("grafico-desempenho-aula")
+  .getContext("2d");
 
-const labels = presencasAluno.map((aula) => {
- const data = new Date(aula.data);
- return `${data.getDate().toString().padStart(2, "0")}/${(
-   data.getMonth() + 1
- )
-   .toString()
-   .padStart(2, "0")}/${data.getFullYear()}`;
-});
+  const labels = presencasAluno.map((aula) => {
+  const data = presencasAluno.map((p) => {
+    const data = new Date(aula.data);
+    data.setDate(data.getDate() + 1); // Ajuste para corrigir a exibição errada
+    return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
+   });
+  // const data = new Date(aula.data);
+  // return `${data.getDate().toString().padStart(2, "0")}/${(
+  //   data.getMonth() + 1
+  // )
+  //   .toString()
+  //   .padStart(2, "0")}/${data.getFullYear()}`;
+  });
 
-const notas = presencasAluno.map((aula) => parseFloat(aula.nota) || 0);
-const presencas = presencasAluno.map((aula) =>
- aula.presenca === "Presente" ? 1 : 0
-);
-const cores = presencas.map((p) =>
- p === 1 ? "rgb(0, 123, 255)" : "rgb(255, 0, 55)"
-);
+  const notas = presencasAluno.map((aula) => parseFloat(aula.nota) || 0);
+  const presencas = presencasAluno.map((aula) =>
+  aula.presenca === "Presente" ? 1 : 0
+  );
+  const cores = presencas.map((p) =>
+  p === 1 ? "rgb(0, 123, 255)" : "rgb(255, 0, 55)"
+  );
 
-if (window.graficoDesempenhoAula) window.graficoDesempenhoAula.destroy();
+  if (window.graficoDesempenhoAula) window.graficoDesempenhoAula.destroy();
 
-window.graficoDesempenhoAula = new Chart(ctxDesempenhoAula, {
- type: "bar",
- data: {
-   labels: labels,
-   datasets: [
-     {
-       label: `Notas de ${alunoSelecionado} nas Aulas`,
-       data: notas,
-       backgroundColor: "rgba(0, 142, 237, 0.7)",
-       borderColor: "#36a2eb",
-       borderWidth: 2,
-     },
-   ],
- },
- options: {
-   responsive: true,
-   scales: {
-     y: { beginAtZero: true, max: 5 },
-   },
- },
-});
+  window.graficoDesempenhoAula = new Chart(ctxDesempenhoAula, {
+  type: "bar",
+  data: {
+    labels: labels,
+    datasets: [
+      {
+        label: `Notas de ${alunoSelecionado} nas Aulas`,
+        data: notas,
+        backgroundColor: "rgba(0, 142, 237, 0.7)",
+        borderColor: "#36a2eb",
+        borderWidth: 2,
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    scales: {
+      y: { beginAtZero: true, max: 5 },
+    },
+  },
+  });
 }
 
 // Função para criar gráfico de presença por data
