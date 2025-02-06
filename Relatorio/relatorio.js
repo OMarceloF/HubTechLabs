@@ -299,12 +299,6 @@ function criarGraficoNotasTodasAulas(presencasAluno, alunoSelecionado) {
     data.setDate(data.getDate() + 1); // Ajuste para corrigir a exibição errada
     return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
    });
-  // const data = new Date(aula.data);
-  // return `${data.getDate().toString().padStart(2, "0")}/${(
-  //   data.getMonth() + 1
-  // )
-  //   .toString()
-  //   .padStart(2, "0")}/${data.getFullYear()}`;
   });
 
   const notas = presencasAluno.map((aula) => parseFloat(aula.nota) || 0);
