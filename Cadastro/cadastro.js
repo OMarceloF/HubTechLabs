@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const city = document.getElementById("city").value.trim();
         const state = document.getElementById("state").value.trim();
         const unit = document.getElementById("unit").value.trim();
+        const mensagemSucesso = document.getElementById("mensagem-sucesso");
 
         if (!email || !senha || !tipo || !name || !phone || !city || !state || !unit) {
             alert("Por favor, preencha todos os campos!");
@@ -65,11 +66,20 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await response.json();
-            alert(data.message);
 
-            // 🔹 Resetando o formulário após o cadastro bem-sucedido
             if (response.ok) {
+                // 🔹 Exibe a mensagem abaixo do formulário
+                mensagemSucesso.style.display = "block";
+    
+                // 🔹 Limpa o formulário após o cadastro
                 document.getElementById("form-cadastro").reset();
+    
+                // 🔹 Esconde a mensagem após 1 segundo
+                setTimeout(() => {
+                    mensagemSucesso.style.display = "none";
+                }, 1000);
+            } else {
+                alert(data.message); // Exibe erro caso algo dê errado
             }
         } catch (error) {
         }
