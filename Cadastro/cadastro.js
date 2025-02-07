@@ -66,6 +66,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await response.json();
             alert(data.message);
+
+            // 🔹 Resetando o formulário após o cadastro bem-sucedido
+            if (response.ok) {
+                document.getElementById("form-cadastro").reset();
+            }
         } catch (error) {
         }
     });
