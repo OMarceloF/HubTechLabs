@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // 🔹 Esconde a mensagem após 1 segundo
                 setTimeout(() => {
                     mensagemSucesso.style.display = "none";
-                }, 1000);
+                }, 2000);
             } else {
                 alert(data.message); // Exibe erro caso algo dê errado
             }
