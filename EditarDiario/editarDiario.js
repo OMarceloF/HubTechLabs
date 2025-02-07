@@ -173,6 +173,9 @@ async function carregarNotas() {
     const alunosList = document.getElementById("alunos-list");
     alunosList.innerHTML = ""; // Limpa a lista de alunos antes de preenchê-la
 
+    // Ordena os alunos em ordem alfabética pelo nome
+    chamada.sort((a, b) => a.aluno.localeCompare(b.aluno));
+
     // Itera sobre os alunos da chamada e preenche a tabela
     chamada.forEach((p) => {
       // Verifica se o aluno já tem nota atribuída
