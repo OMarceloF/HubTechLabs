@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
     const profilePhoto = document.getElementById("profile-photo");
-    const uploadPhotoInput = document.getElementById("upload-photo");
-    const changePhotoButton = document.getElementById("change-photo-button");
     const profileForm = document.getElementById("profile-form");
 
     // Função para obter token do cookie
@@ -50,34 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Erro ao carregar perfil:", error);
         }
     }
-
-    // Atualizar a visualização da foto no upload
-    uploadPhotoInput.addEventListener("change", async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const formData = new FormData();
-            formData.append('photo', file);
-    
-            try {
-                const response = await fetch('https://hub-orcin.vercel.app/upload-image', {
-                    method: 'POST',
-                    body: formData
-                });
-    
-                if (!response.ok) {
-                    throw new Error("Erro ao enviar imagem.");
-                }
-    
-                const data = await response.json();
-                profilePhoto.src = data.imageUrl;
-    
-                // Salvar o URL da imagem no perfil
-                document.getElementById("profile-photo-url").value = data.imageUrl;
-            } catch (error) {
-                console.error("Erro ao fazer upload da imagem:", error);
-            }
-        }
-    });
 
     // Atualizar perfil
     profileForm.addEventListener("submit", async (event) => {
