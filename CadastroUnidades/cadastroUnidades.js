@@ -179,12 +179,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
     
             const coordenadores = await response.json();
-            console.log("Coordenadores recebidos:", coordenadores); // 🔹 Para verificar se os dados foram recebidos corretamente
+            console.log("Coordenadores recebidos:", coordenadores); // 🔹 Verifica se os dados foram recebidos corretamente
     
             const selectCoordenador = document.getElementById("coordenador");
     
             // Limpa o select antes de adicionar os coordenadores
             selectCoordenador.innerHTML = `<option value="">Selecione um Coordenador</option>`;
+    
+            if (!coordenadores || coordenadores.length === 0) {
+                console.warn("Nenhum coordenador encontrado.");
+                return;
+            }
     
             coordenadores.forEach(coordenador => {
                 const option = document.createElement("option");
@@ -199,5 +204,6 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Erro ao carregar os coordenadores:", error);
         }
     }
+    
     carregarCoordenadores();
 });
