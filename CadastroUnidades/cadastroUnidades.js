@@ -142,31 +142,31 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarPerfil();
 
     // Atualizar a visualização da foto no upload
-    uploadPhotoInput.addEventListener("change", async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const formData = new FormData();
-            formData.append('photo', file);
+    // uploadPhotoInput.addEventListener("change", async (event) => {
+    //     const file = event.target.files[0];
+    //     if (file) {
+    //         const formData = new FormData();
+    //         formData.append('photo', file);
     
-            try {
-                const response = await fetch('https://hub-orcin.vercel.app/upload-image', {
-                    method: 'POST',
-                    body: formData
-                });
+    //         try {
+    //             const response = await fetch('https://hub-orcin.vercel.app/upload-image', {
+    //                 method: 'POST',
+    //                 body: formData
+    //             });
     
-                if (!response.ok) {
-                    throw new Error("Erro ao enviar imagem.");
-                }
+    //             if (!response.ok) {
+    //                 throw new Error("Erro ao enviar imagem.");
+    //             }
     
-                const data = await response.json();
-                profilePhoto.src = data.imageUrl;
+    //             const data = await response.json();
+    //             profilePhoto.src = data.imageUrl;
     
-                // Salvar o URL da imagem no perfil
-                document.getElementById("profile-photo1-url").value = data.imageUrl;
-            } catch (error) {
-            }
-        }
-    });
+    //             // Salvar o URL da imagem no perfil
+    //             document.getElementById("profile-photo1-url").value = data.imageUrl;
+    //         } catch (error) {
+    //         }
+    //     }
+    // });
 
     async function carregarCoordenadores() {
         try {
