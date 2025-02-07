@@ -294,9 +294,10 @@ const ctxDesempenhoAula = document
  .getElementById("grafico-desempenho-aula")
  .getContext("2d");
 
-const labels = presencasAluno.map((aula) => {
- const data = new Date(aula.data);
- return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
+ const labels = presencasAluno.map((aula) => {
+  const data = new Date(aula.data + "T00:00:00"); // Garante que a data seja interpretada corretamente
+  data.setDate(data.getDate() + 1); // Ajuste para corrigir a exibição errada
+  return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
 });
 
 const notas = presencasAluno.map((aula) => parseFloat(aula.nota) || 0);
