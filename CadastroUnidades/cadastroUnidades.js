@@ -11,12 +11,12 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
     }
 
     // Criar um FormData para enviar os dados corretamente
-    const formData = new FormData();
-    formData.append("unidade", unidade);
-    formData.append("escola", escola);
-    formData.append("cidade", cidade);
-    formData.append("coordenador", coordenador);
-    
+    const dados = {
+        unidade: unidade,
+        escola: escola,
+        cidade: cidade,
+        coordenador: coordenador
+    };
     // Se houver imagem, adiciona ao FormData
     // if (uploadPhotoInput.files.length > 0) {
     //     formData.append("photo", uploadPhotoInput.files[0]);
@@ -25,7 +25,10 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
     try {
         const response = await fetch("https://hub-orcin.vercel.app/cadastrar-unidade", {
             method: "POST",
-            body: formData // ✅ Agora envia os dados corretamente como `multipart/form-data`
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(dados) // ✅ Envio correto como JSON
         });
 
         const result = await response.text();

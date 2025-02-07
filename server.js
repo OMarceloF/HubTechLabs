@@ -1593,12 +1593,13 @@ app.use(bodyParser.urlencoded({ extended: true })); // Para processar formulári
 
 app.post("/cadastrar-unidade", async (req, res) => {
     try {
+        console.log("📥 Dados recebidos no backend:", req.body); // 🔹 Depuração
+
         const { unidade, escola, cidade, coordenador } = req.body;
 
         if (!unidade || !escola || !cidade || !coordenador) {
-            return res.status(400).send("Todos os campos são obrigatórios!");
+            return res.status(400).json({ message: "Todos os campos são obrigatórios!" });
         }
-
 
         const connection = await mysql.createConnection(dbConfig);
         await connection.execute(
@@ -1608,12 +1609,14 @@ app.post("/cadastrar-unidade", async (req, res) => {
         await connection.end();
 
         console.log("✅ Unidade cadastrada com sucesso!");
-        res.status(201).send("Unidade cadastrada com sucesso!");
+        res.status(201).json({ message: "Unidade cadastrada com sucesso!" });
+
     } catch (error) {
         console.error("❌ Erro ao cadastrar unidade:", error);
-        res.status(500).send("Erro ao cadastrar a unidade.");
+        res.status(500).json({ message: "Erro ao cadastrar a unidade." });
     }
 });
+
 
 // Rota para listar unidades cadastradas
 app.get('/listar-unidades', async (req, res) => {
