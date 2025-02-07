@@ -295,23 +295,31 @@ function criarGraficoNotasTodasAulas(presencasAluno, alunoSelecionado) {
   .getContext("2d");
 
   const labels = presencasAluno.map((aula) => {
-    if (!aula.data) return "Data Inválida"; // Prevenção para valores nulos ou indefinidos
+    if (!aula.data) return "Data Inválida"; // Verifica se a data é nula ou indefinida
   
-    // Tentando criar um objeto Date corretamente
+    console.log("Data original recebida:", aula.data); // DEBUG
+  
     let data;
-    if (typeof aula.data === "string" && aula.data.includes("-")) {
-      // Se a data vier no formato "YYYY-MM-DD"
-      const [ano, mes, dia] = aula.data.split("-");
-      data = new Date(Number(ano), Number(mes) - 1, Number(dia));
-    } else {
-      data = new Date(aula.data); // Tenta converter diretamente
+    
+    try {
+      // Se a data estiver no formato "YYYY-MM-DD", ajusta corretamente
+      if (typeof aula.data === "string" && aula.data.includes("-")) {
+        const [ano, mes, dia] = aula.data.split("-");
+        data = new Date(Number(ano), Number(mes) - 1, Number(dia));
+      } else {
+        // Tenta converter diretamente para data
+        data = new Date(aula.data);
+      }
+  
+      if (isNaN(data.getTime())) throw new Error("Data inválida detectada!"); // Valida a conversão
+  
+      // Retorna a data formatada corretamente
+      return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
+    } catch (error) {
+      console.error("Erro ao processar data:", aula.data, error);
+      return "Data Inválida";
     }
-  
-    if (isNaN(data.getTime())) return "Data Inválida"; // Verifica se a data é válida
-  
-    return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
   });
-  
 
   const notas = presencasAluno.map((aula) => parseFloat(aula.nota) || 0);
   const presencas = presencasAluno.map((aula) =>
