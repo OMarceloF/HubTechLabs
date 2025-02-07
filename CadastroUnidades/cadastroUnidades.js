@@ -5,6 +5,7 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
     const coordenador = document.getElementById("coordenador").value.trim();
     const mensagemSucesso = document.getElementById("mensagem-sucesso"); // 🔹 Declara corretamente a variável
 
+    
     if (!unidade || !escola || !cidade || !coordenador) {
         alert("Preencha todos os campos corretamente!");
         return;

@@ -1617,6 +1617,8 @@ app.post("/cadastrar-unidade", async (req, res) => {
     }
 });
 
+
+
 // Rota para listar unidades cadastradas
 app.get('/listar-unidades', async (req, res) => {
     console.log('🔹 Requisição recebida para listar unidades');
