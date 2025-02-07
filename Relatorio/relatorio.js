@@ -561,14 +561,23 @@ try {
 
  // **Tabela de Presenças e Notas por Aula**
  if (registrosFiltradosPresenca.length > 0) {
-   const tabelaPresencaDesempenho = registrosFiltradosPresenca.map(
-     (registro) => [
-       new Date(registro.data).toLocaleDateString("pt-BR"),
-       registro.presenca,
-       registro.nota || "-",
-     ]
-   );
-
+  const tabelaPresencaDesempenho = registrosFiltradosPresenca.map((registro) => {
+    if (!registro.data) return ["Data Inválida", registro.presenca, registro.nota || "-"];
+  
+    const data = new Date(registro.data);
+  
+    if (isNaN(data.getTime())) {
+      console.error("Erro ao processar data para PDF:", registro.data);
+      return ["Data Inválida", registro.presenca, registro.nota || "-"];
+    }
+  
+    data.setDate(data.getDate() + 1); // Ajuste para corrigir o deslocamento do dia
+  
+    const dataFormatada = `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
+  
+    return [dataFormatada, registro.presenca, registro.nota || "-"];
+  });
+  
    doc.setFontSize(12);
    doc.text("Presenças e Desempenho por Aula:", 10, yOffset);
    yOffset += 10;
