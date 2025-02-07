@@ -170,6 +170,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function carregarCoordenadores() {
         try {
+            console.log("Carregando coordenadores..."); // 🔹 Para depuração
+    
             const response = await fetch("https://hub-orcin.vercel.app/listar-coordenadores");
     
             if (!response.ok) {
@@ -177,6 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
     
             const coordenadores = await response.json();
+            console.log("Coordenadores recebidos:", coordenadores); // 🔹 Para verificar se os dados foram recebidos corretamente
+    
             const selectCoordenador = document.getElementById("coordenador");
     
             // Limpa o select antes de adicionar os coordenadores
@@ -184,13 +188,15 @@ document.addEventListener("DOMContentLoaded", () => {
     
             coordenadores.forEach(coordenador => {
                 const option = document.createElement("option");
-                option.value = coordenador.name; /* Armazena o nome como identificador*/
+                option.value = coordenador.name; // Armazena o nome como identificador
                 option.textContent = `${coordenador.name}`;
-                /*option.textContent = `${coordenador.name} - ${coordenador.email}`;*/ 
                 selectCoordenador.appendChild(option);
             });
     
+            console.log("Lista de coordenadores adicionada ao select.");
+    
         } catch (error) {
+            console.error("Erro ao carregar os coordenadores:", error);
         }
     }
     carregarCoordenadores();
