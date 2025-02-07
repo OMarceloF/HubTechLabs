@@ -634,12 +634,23 @@ try {
  // Tabela de observações
  if (registrosFiltradosPresenca.length > 0) {
    doc.addPage();
-   const tabelaPresencaDesempenho = registrosFiltradosPresenca.map(
-     (registro) => [
-       new Date(registro.data).toLocaleDateString("pt-BR"),
-       registro.observacao || "-",
-     ]
-   );
+   const tabelaPresencaDesempenho = registrosFiltradosPresenca.map((registro) => {
+    if (!registro.data) return ["Data Inválida", registro.observacao || "-"];
+  
+    const data = new Date(registro.data);
+  
+    if (isNaN(data.getTime())) {
+      console.error("Erro ao processar data para observações:", registro.data);
+      return ["Data Inválida", registro.observacao || "-"];
+    }
+  
+    data.setDate(data.getDate() + 1); // Ajuste para corrigir o deslocamento do dia
+  
+    const dataFormatada = `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
+  
+    return [dataFormatada, registro.observacao || "-"];
+  });
+  
 
    doc.setFontSize(14);
    doc.text("Observações por Aula:", 10, 20);
