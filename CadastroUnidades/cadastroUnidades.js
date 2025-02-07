@@ -3,24 +3,22 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
     const escola = document.getElementById("escola").value.trim();
     const cidade = document.getElementById("cidade").value.trim();
     const coordenador = document.getElementById("coordenador").value.trim();
-    // const uploadPhotoInput = document.getElementById("upload-photo1");
+    const mensagemSucesso = document.getElementById("mensagem-sucesso"); // 🔹 Declara corretamente a variável
 
     if (!unidade || !escola || !cidade || !coordenador) {
         alert("Preencha todos os campos corretamente!");
         return;
     }
 
-    // Criar um FormData para enviar os dados corretamente
+    // Criando o JSON a ser enviado para o backend
     const dados = {
         unidade: unidade,
         escola: escola,
         cidade: cidade,
         coordenador: coordenador
     };
-    // Se houver imagem, adiciona ao FormData
-    // if (uploadPhotoInput.files.length > 0) {
-    //     formData.append("photo", uploadPhotoInput.files[0]);
-    // }
+
+    console.log("📤 Enviando dados para o backend:", dados); // 🔹 Depuração
 
     try {
         const response = await fetch("https://hub-orcin.vercel.app/cadastrar-unidade", {
@@ -28,28 +26,31 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(dados) // ✅ Envio correto como JSON
+            body: JSON.stringify(dados)
         });
 
-        const result = await response.text();
+        const result = await response.json();
+        console.log("📥 Resposta do backend:", result); // 🔹 Depuração
 
         if (response.ok) {
-            // 🔹 Exibe a mensagem abaixo do formulário
             mensagemSucesso.style.display = "block";
 
-            // 🔹 Limpa o formulário após o cadastro
+            // Limpa o formulário após o cadastro
             document.getElementById("cadastro-form").reset();
 
-            // 🔹 Esconde a mensagem após 1 segundo
+            // Esconde a mensagem após 2 segundos
             setTimeout(() => {
                 mensagemSucesso.style.display = "none";
             }, 2000);
         } else {
-            alert(`Erro ao cadastrar: ${result}`);
+            alert(`Erro ao cadastrar: ${result.message}`);
         }
     } catch (error) {
+        console.error("❌ Erro ao cadastrar unidade:", error);
+        alert("Erro ao conectar ao servidor. Verifique sua conexão e tente novamente.");
     }
 });
+
 
 function toggleMudarPerfil() {
     const mudarPerfil = document.getElementById("mudarPerfil");
