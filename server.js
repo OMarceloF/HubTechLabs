@@ -1591,7 +1591,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // Para processar formulári
 //     });
 // });
 
-app.post("/cadastrar-unidade", upload.single("photo"), async (req, res) => {
+app.post("/cadastrar-unidade", async (req, res) => {
     try {
         const { unidade, escola, cidade, coordenador } = req.body;
 
@@ -1599,13 +1599,11 @@ app.post("/cadastrar-unidade", upload.single("photo"), async (req, res) => {
             return res.status(400).send("Todos os campos são obrigatórios!");
         }
 
-        // Definir o caminho correto da imagem (se houver upload)
-        const photo = req.file ? `/uploads/${req.file.filename}` : "/projeto/Imagens/perfil.png";
 
         const connection = await mysql.createConnection(dbConfig);
         await connection.execute(
-            "INSERT INTO unidades (unidade, escola, cidade, coordenador, photo) VALUES (?, ?, ?, ?, ?)", 
-            [unidade, escola, cidade, coordenador, photo]
+            "INSERT INTO unidades (unidade, escola, cidade, coordenador) VALUES (?, ?, ?, ?)", 
+            [unidade, escola, cidade, coordenador]
         );
         await connection.end();
 
