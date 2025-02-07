@@ -3,7 +3,7 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
     const escola = document.getElementById("escola").value.trim();
     const cidade = document.getElementById("cidade").value.trim();
     const coordenador = document.getElementById("coordenador").value.trim();
-    const uploadPhotoInput = document.getElementById("upload-photo1");
+    // const uploadPhotoInput = document.getElementById("upload-photo1");
 
     if (!unidade || !escola || !cidade || !coordenador) {
         alert("Preencha todos os campos corretamente!");
@@ -18,9 +18,9 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
     formData.append("coordenador", coordenador);
     
     // Se houver imagem, adiciona ao FormData
-    if (uploadPhotoInput.files.length > 0) {
-        formData.append("photo", uploadPhotoInput.files[0]);
-    }
+    // if (uploadPhotoInput.files.length > 0) {
+    //     formData.append("photo", uploadPhotoInput.files[0]);
+    // }
 
     try {
         const response = await fetch("https://hub-orcin.vercel.app/cadastrar-unidade", {
@@ -31,8 +31,16 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
         const result = await response.text();
 
         if (response.ok) {
-            alert("Unidade cadastrada com sucesso!");
-            window.location.reload();
+            // 🔹 Exibe a mensagem abaixo do formulário
+            mensagemSucesso.style.display = "block";
+
+            // 🔹 Limpa o formulário após o cadastro
+            document.getElementById("cadastro-form").reset();
+
+            // 🔹 Esconde a mensagem após 1 segundo
+            setTimeout(() => {
+                mensagemSucesso.style.display = "none";
+            }, 2000);
         } else {
             alert(`Erro ao cadastrar: ${result}`);
         }
