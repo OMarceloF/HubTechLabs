@@ -295,17 +295,23 @@ function criarGraficoNotasTodasAulas(presencasAluno, alunoSelecionado) {
   .getContext("2d");
 
   const labels = presencasAluno.map((aula) => {
-    if (!aula.data) return "Data Inválida"; // Prevenção caso a data não exista
+    if (!aula.data) return "Data Inválida"; // Prevenção para valores nulos ou indefinidos
   
-    const dataPartes = aula.data.split("-"); // Supondo que as datas estão no formato "YYYY-MM-DD"
-    
-    if (dataPartes.length === 3) {
-      const data = new Date(Number(dataPartes[0]), Number(dataPartes[1]) - 1, Number(dataPartes[2]));
-      return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
+    // Tentando criar um objeto Date corretamente
+    let data;
+    if (typeof aula.data === "string" && aula.data.includes("-")) {
+      // Se a data vier no formato "YYYY-MM-DD"
+      const [ano, mes, dia] = aula.data.split("-");
+      data = new Date(Number(ano), Number(mes) - 1, Number(dia));
+    } else {
+      data = new Date(aula.data); // Tenta converter diretamente
     }
-    
-    return "Data Inválida"; // Caso não seja possível processar a data
+  
+    if (isNaN(data.getTime())) return "Data Inválida"; // Verifica se a data é válida
+  
+    return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
   });
+  
 
   const notas = presencasAluno.map((aula) => parseFloat(aula.nota) || 0);
   const presencas = presencasAluno.map((aula) =>
