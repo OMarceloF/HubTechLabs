@@ -32,26 +32,28 @@ function adicionarInput(containerId = "inputs-alunos") {
 
 document.addEventListener('DOMContentLoaded', () => {
     async function carregarUnidades() {
-        try {
-            const response = await fetch('https://hub-orcin.vercel.app/listar-unidades');
-            if (!response.ok) throw new Error('Erro ao buscar unidades');
-    
-            const unidades = await response.json();
-            const unidadeSelect = document.getElementById('unidade-select');
-    
-            // Limpa o select antes de adicionar opções
-            unidadeSelect.innerHTML = '<option value="" disabled selected>Selecione uma unidade</option>';
-    
-            unidades.forEach(unidade => {
+    try {
+        const response = await fetch('https://hub-orcin.vercel.app/listar-unidades');
+        if (!response.ok) throw new Error('Erro ao buscar unidades');
+        
+        const unidades = await response.json();
+        const unidadeSelect = document.getElementById('unidade-select');
+        
+        // Limpa o select antes de adicionar novas opções
+        unidadeSelect.innerHTML = '<option value="" disabled selected>Selecione uma unidade</option>';
+
+        unidades.forEach(unidade => {
+            if (unidade.unidade !== "Unidade Base") { // Filtra "Unidade Base"
                 const option = document.createElement('option');
                 option.value = unidade.id;
                 option.textContent = unidade.unidade;
                 unidadeSelect.appendChild(option);
-            });
-    
-        } catch (error) {
-        }
-    }    
+            }
+        });
+    } catch (error) {
+        console.error("Erro ao carregar unidades:", error);
+    }
+}  
     carregarUnidades()
 });
 
@@ -346,29 +348,28 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarPerfil();
 
     async function carregarInstrutores() {
-        try {
-            const response = await fetch("https://hub-orcin.vercel.app/listar-instrutores");
-    
-            if (!response.ok) {
-                throw new Error("Erro ao carregar os instrutores.");
-            }
-    
-            const instrutores = await response.json();
-            const selectInstrutor = document.getElementById("nome-instrutor");
-    
-            // Limpa o select antes de adicionar os instrutores
-            selectInstrutor.innerHTML = `<option value="">Selecione um Instrutor</option>`;
-    
-            instrutores.forEach(instrutor => {
+    try {
+        const response = await fetch("https://hub-orcin.vercel.app/listar-instrutores");
+        if (!response.ok) throw new Error("Erro ao carregar os instrutores.");
+
+        const instrutores = await response.json();
+        const selectInstrutor = document.getElementById("nome-instrutor");
+        
+        // Limpa o select antes de adicionar novos instrutores
+        selectInstrutor.innerHTML = '<option value="" disabled selected>Selecione um Instrutor</option>';
+
+        instrutores.forEach(instrutor => {
+            if (instrutor.name !== "Instrutor da Silva") { // Filtra "Instrutor da Silva"
                 const option = document.createElement("option");
-                option.value = instrutor.name; // Armazena o nome como identificador
-                option.textContent = `${instrutor.name}`; // Exibe nome
+                option.value = instrutor.name;
+                option.textContent = instrutor.name;
                 selectInstrutor.appendChild(option);
-            });
-    
-        } catch (error) {
-        }
+            }
+        });
+    } catch (error) {
+        console.error("Erro ao carregar instrutores:", error);
     }
+}
 
     carregarInstrutores();
 });
