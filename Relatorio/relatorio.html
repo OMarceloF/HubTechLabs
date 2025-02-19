@@ -24,47 +24,92 @@
 
         <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
             <a href="/Perfil/perfil.html">Editar Perfil</a><br>
+            <!-- 🚭Como era na Vercel -->
             <a href="https://hub-orcin.vercel.app/Login/login.html">Sair</a>
+            <!-- 🚭Como é localmente -->
+            <!-- <a href="http://localhost:3000/Login/login.html">Sair</a> -->
         </div>
     </header>
-    <div class="container">
-        <h2>Relatórios de Notas e Presença</h2>
-        <form id="form-relatorios">
-            <label for="turma-select">Selecione a Turma:</label>
-            <select id="turma-select">
-                <option value="" disabled selected>Escolha uma turma</option>
-            </select>
 
-            <label for="aluno-select">Selecione o Aluno:</label>
-            <select id="aluno-select" disabled>
-                <option value="" disabled selected>Escolha um aluno</option>
-            </select>
-
-            <button type="button" id="carregar-relatorio" class="btn-primary">Carregar Relatório</button>
-        </form>
-        <h2 id="msg-erro"></h2>
-
-        <div id="relatorio-container" class="card hidden">
-            <div id="graficos-aluno-container">
-                <h4>Gráfico de Notas do Aluno</h4>
-                <canvas id="grafico-notas-aluno"></canvas>
-
-                <h4>Gráfico de Presença</h4>
-                <canvas id="grafico-presenca-aula"></canvas>
-
-                <h4>Gráfico de Notas por Aula</h4>
-                <canvas id="grafico-desempenho-aula"></canvas>
-
-                <!-- <h4>Gráfico de Presenças e Ausências</h4>
-                <canvas id="grafico-presenca-aluno"></canvas> -->
-
-            </div>
-
-            <button type="button" id="exportar-relatorio" class="btn-secondary">Exportar Relatório em PDF</button>
-
+    <div class="container" id="conteinerOpcao">
+        <div class="card">
+            <h2>Escolha o tipo de relatório:</h2>
+            <button id="relatorio-aluno-btn" class="btn-primary">Relatório por Aluno</button>
+            <button id="relatorio-turma-btn" class="btn-primary">Relatório por Turma</button>
         </div>
     </div>
 
+    <div class="container" class="hidden" id="relatorio-aluno-container">
+        <div class="card">
+            <h2>Relatórios de Notas e Presença</h2>
+            <form id="form-relatorios">
+                <label for="turma-select">Selecione a Turma:</label>
+                <select id="turma-select">
+                    <option value="" disabled selected>Escolha uma turma</option>
+                </select>
+
+                <label for="aluno-select">Selecione o Aluno:</label>
+                <select id="aluno-select" disabled>
+                    <option value="" disabled selected>Escolha um aluno</option>
+                </select>
+
+                <button type="button" id="carregar-relatorio" class="btn-primary">Carregar Relatório</button>
+            </form>
+            <h2 id="msg-erro"></h2>
+
+            <div class="hidden" id="graficos-aluno-container">
+                <div>
+                    <h4>Gráfico de Notas do Aluno</h4>
+                    <canvas id="grafico-notas-aluno"></canvas>
+
+                    <h4>Gráfico de Presença</h4>
+                    <canvas id="grafico-presenca-aula"></canvas>
+
+                    <h4>Gráfico de Notas por Aula</h4>
+                    <canvas id="grafico-desempenho-aula"></canvas>
+
+                    <!-- <h4>Gráfico de Presenças e Ausências</h4>
+                    <canvas id="grafico-presenca-aluno"></canvas> -->
+
+                </div>
+
+                <button type="button" id="exportar-relatorio" class="btn-secondary">Exportar Relatório em PDF</button>
+
+            </div>
+        </div>
+        
+    </div>
+
+    <div class="container" id="conteinerTurma" class="hidden">
+        <div class="card">
+            <h2>Relatório por Turma</h2>
+            <form>
+                <label for="turma-turma-select">Selecione a Turma:</label>
+                <select id="turma-turma-select">
+                    <option value="" disabled selected>Escolha uma turma</option>
+                </select>
+                <button type="button" id="gerar-relatorio-turma" class="btn-primary">Gerar Relatório</button>
+            </form>
+        
+            <div id="relatorio-turma-container" class="card hidden">
+                
+                <table id="tabela-relatorio-turma">
+                    <thead>
+                        <tr>
+                            <th>Nome do Aluno</th>
+                            <th>Média de Presença</th>
+                            <th>Média de Notas</th>
+                            <th>Média nas Avaliações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button type="button" id="exportar-relatorio-turma" class="btn-secondary">Exportar Relatório em PDF</button>
+            </div>
+        </div>
+        
+    </div>
+    
     <footer class="footer">
         <p>&copy; 2025 Hub Tech Labs. Todos os direitos reservados.</p>
     </footer>
