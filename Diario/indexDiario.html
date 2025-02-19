@@ -19,7 +19,10 @@
 
         <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
             <a href="/Perfil/perfil.html">Editar Perfil</a><br>
+            <!-- 🚭Como era na Vercel -->
             <a href="https://hub-orcin.vercel.app/Login/login.html">Sair</a>
+            <!-- 🚭Como é localmente -->
+            <!-- <a href="https://localhost:3000/Login/login.html">Sair</a> -->
         </div>
 
         <div class="user-info" id="user-info">
@@ -30,6 +33,10 @@
     <!-- Conteúdo Principal -->
     <div class="container">
         <h2>Chamada da Turma</h2>
+        <div class="form-group">
+            <label for="conteudo-aula">Conteúdo da Aula:</label>
+            <textarea id="conteudo-aula" rows="4" cols="50" placeholder="Descreva o conteúdo abordado..."></textarea>
+        </div>
         <div class="form-group">
             <label for="turma-select">Turma:</label>
             <select id="turma-select" onchange="mostrarAlunosSelecionados()">
@@ -54,6 +61,7 @@
                 <tbody id="alunos-list"></tbody>
             </table>
             <div id="mensagem-feedback" class="mensagem-feedback hidden"></div>
+            <h5>OBS: A NOTA É UMA MÉDIA DAS HABILIDADES E COMPETÊNCIAS MARCADAS NO PLANO DE AULA</h5>
             <button id="salvar-btn" class="hidden" onclick="salvarDados()">Salvar</button>
             
 

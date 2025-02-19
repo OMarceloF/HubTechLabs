@@ -10,8 +10,10 @@ async function obterNomeUsuario() {
       if (!email) {
           throw new Error("Nenhum email encontrado no localStorage");
       }
-
-      const response = await fetch("https://hub-orcin.vercel.app/usuarios"); // Chama a API
+      //🚭Como era na Vercel
+      const response = await fetch("https://hub-orcin.vercel.app/usuarios");
+      //🚭Como é localmente
+      // const response = await fetch("http://localhost:3000/usuarios");
       if (!response.ok) {
           throw new Error("Erro ao buscar usuários");
       }
@@ -32,7 +34,10 @@ async function obterNomeUsuario() {
 
 async function carregarTurmas() {
   try {
-      const response = await fetch("https://hub-orcin.vercel.app/dados"); // Requisição ao backend
+      //🚭Como era na Vercel
+      const response = await fetch("https://hub-orcin.vercel.app/dados"); 
+      //🚭Como é localmente
+      // const response = await fetch("http://localhost:3000/dados"); 
       if (!response.ok) {
           throw new Error("Erro ao buscar as turmas");
       }
@@ -88,6 +93,7 @@ function obterListaDeAlunos(turmaSelecionada) {
 async function salvarDados() {
   const turmaSelecionada = document.getElementById("turma-select").value;
   const dataChamada = document.getElementById("data-chamada").value;
+  const conteudoAula = document.getElementById("conteudo-aula").value.trim();
   const alunos = document.querySelectorAll("#alunos-list tr");
 
   if (!dataChamada) {
@@ -97,7 +103,10 @@ async function salvarDados() {
 
   try {
     // Verificar se já existe um diário salvo para essa data e turma
+    //🚭Como era na Vercel
     const responseVerificacao = await fetch("https://hub-orcin.vercel.app/dados-presenca");
+    //🚭Como é localmente
+    // const responseVerificacao = await fetch("http://localhost:3000/dados-presenca");
     
     if (!responseVerificacao.ok) {
       throw new Error("Erro ao verificar dados de presença existentes");
@@ -132,6 +141,7 @@ async function salvarDados() {
     const dados = {
       turma: turmaSelecionada,
       data: dataChamada,
+      conteudoAula: conteudoAula,
       alunos: Array.from(alunos).map((aluno) => ({
         nome: aluno.querySelector("td:first-child").textContent,
         presenca: aluno.querySelector(".presenca-check").checked
@@ -142,7 +152,11 @@ async function salvarDados() {
       })),
     };
 
-    const response = await fetch("https://hub-orcin.vercel.app/salvar-presenca", {
+    //🚭Como era na Vercel
+    const response = await fetch("https://hub-orcin.vercel.app/salvar-presenca", 
+    //🚭Como é localmente
+    // const response = await fetch("http://localhost:3000/salvar-presenca", 
+    {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dados),
@@ -173,6 +187,7 @@ function obterListaDeAlunos(turmaSelecionada) {
 
 function resetarCampos() {
   document.getElementById("turma-select").value = "";
+  document.getElementById("conteudo-aula").value = "";
   document.getElementById("data-chamada").value = "";
   document.getElementById("alunos-container").classList.add("hidden");
   document.getElementById("salvar-btn").classList.add("hidden");
@@ -268,7 +283,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Função para carregar perfil do usuário logado
     async function carregarPerfil() {
         try {
-        const response = await fetch("https://hub-orcin.vercel.app/perfil", {
+        //🚭Como era na Vercel
+        const response = await fetch("https://hub-orcin.vercel.app/perfil", 
+        //🚭Como é localmente
+        // const response = await fetch("http://localhost:3000/perfil",  
+        {
             headers: { Authorization: token },
         });
 
