@@ -36,13 +36,13 @@ body {
     background-color: rgba(0, 0, 0, 0.8);
 }
 
-.textoMaquina {
+/* .textoMaquina {
     position: absolute;
-    top: 65vh;  /* Mantém a imagem na parte inferior */
-    left: 30px;  /* Mantém a imagem à direita do bloco */
+    top: 65vh;  
+    left: 30px;  
     width: 32px;
     animation: typing 2s steps(14, end), blinking 0.5s infinite step-end alternate;
-}
+} */
 
 span {
     font-family: monospace;
@@ -347,4 +347,79 @@ h3 {
         box-sizing: border-box; /* Inclui padding e bordas na largura/altura */
         
     }
+}
+
+/* 🔥 BOTÃO FLUTUANTE DO WHATSAPP */
+.whatsapp-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: #25D366;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Mantém alinhado */
+    padding: 0;
+    overflow: hidden;
+    transition: width 0.3s ease-in-out;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* 🔥 ÍCONE DO WHATSAPP */
+.whatsapp-float img {
+    width: 28px;
+    height: 28px;
+    transition: transform 0.3s ease-in-out;
+    display: block;
+    margin-left: auto; /* Mantém alinhado à direita */
+    margin-right: 15px; /* Ajusta espaçamento para o texto */
+}
+
+/* 🔥 TEXTO DO BOTÃO */
+.whatsapp-text {
+    font-family: Arial, sans-serif;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    text-decoration: none;
+    pointer-events: none;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    padding-left: 15px; /* Garante alinhamento correto do texto */
+}
+
+/* 🔥 EFEITO AO PASSAR O MOUSE */
+.whatsapp-float:hover {
+    width: 170px; /* Ajuste para encaixar perfeitamente */
+    border-radius: 50px;
+    justify-content: space-between; /* Mantém alinhamento correto */
+}
+
+.whatsapp-float:hover .whatsapp-text {
+    opacity: 1;
+}
+
+.whatsapp-float:hover img {
+    transform: none;
+}
+
+/* 🔥 REMOVENDO O EFEITO DE "MÁQUINA DE ESCREVER" */
+.whatsapp-text span {
+    animation: none !important;
+    border: none !important;
+}
+
+/* 🔥 CORRIGINDO TODOS OS SPANS DO SITE */
+span {
+    animation: none !important;
+    border: none !important;
 }
