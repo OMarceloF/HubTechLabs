@@ -1,28 +1,31 @@
 document.addEventListener("DOMContentLoaded", () => {
-    function getUserType() {
-        return localStorage.getItem("tipoUsuario");
-    }
-    async function verificarAcessoRestrito() {
-        try {
-        const tipoUsuario = getUserType();
-        if (!tipoUsuario) {
-        }
+    // function getUserType() {
+    //     return localStorage.getItem("tipoUsuario");
+    // }
+    // async function verificarAcessoRestrito() {
+    //     try {
+    //     const tipoUsuario = getUserType();
+    //     if (!tipoUsuario) {
+    //     }
 
-        // Verifica se é um Coordenador e bloqueia o acesso
-        if (tipoUsuario === 'Instrutor') {
-            window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
-        }
-        } catch (error) {
-        }
-    }
-    verificarAcessoRestrito();
+    //     // Verifica se é um Instrutor e bloqueia o acesso
+    //     if (tipoUsuario === 'Instrutor') {
+    //         window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+    //     }
+    //     } catch (error) {
+    //     }
+    // }
+    // verificarAcessoRestrito();
 
     const formAvaliacao = document.getElementById("form-avaliacao");
 
     // Função para carregar as turmas do servidor
     async function carregarTurmas() {
         try {
-            const response = await fetch('https://hub-orcin.vercel.app/listar-turmas'); // Requisição ao backend
+            //🚭Como era na Vercel
+            const response = await fetch('https://hub-orcin.vercel.app/dados'); 
+            //🚭Como é localmente
+            // const response = await fetch('http://localhost:3000/dados'); 
             if (!response.ok) {
                 throw new Error("Erro ao buscar as turmas");
             }
@@ -30,17 +33,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const selectElement = document.getElementById("turma"); // ID correto
 
-            // Limpa o dropdown antes de preenchê-lo
-            selectElement.innerHTML = '<option value="" disabled selected>Escolha uma turma</option>';
+            const nomeUsuario = localStorage.getItem("nomeUsuario"); // Obtém o nome do instrutor
+            if (!nomeUsuario) {
+                throw new Error("Nome do usuário não encontrado no localStorage");
+            }
+      
+            // Filtra turmas onde o instrutor seja o usuário logado
+            const turmasFiltradas = Object.entries(turmas)
+            .filter(([_, turma]) => turma.instrutor === nomeUsuario)
+            .map(([nomeTurma]) => nomeTurma);
 
-            // Preenche o dropdown com as turmas recebidas
-            turmas.forEach(turma => {
+            selectElement.innerHTML = ""; // Limpa opções anteriores
+      
+            // Adiciona a opção inicial
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Escolha sua turma";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            selectElement.appendChild(defaultOption);
+      
+            // Preenche o dropdown com as turmas filtradas
+            turmasFiltradas.forEach(nomeTurma => {
                 const option = document.createElement("option");
-                option.value = turma; // Valor da turma
-                option.textContent = turma; // Exibe o nome da turma corretamente
+                option.value = nomeTurma;
+                option.textContent = nomeTurma;
                 selectElement.appendChild(option);
             });
+
         } catch (error) {
+            console.error("Erro ao carregar turmas:", error);
         }
     }
 
@@ -83,7 +105,11 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         try {
-            const response = await fetch('https://hub-orcin.vercel.app/salvar-avaliacao', {
+            //🚭Como era na Vercel
+            const response = await fetch('https://hub-orcin.vercel.app/salvar-avaliacao', 
+            //🚭Como é localmente
+            // const response = await fetch('http://localhost:3000/salvar-avaliacao',
+            {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(avaliacao)
@@ -121,7 +147,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Função para carregar perfil do usuário logado
     async function carregarPerfil() {
         try {
-            const response = await fetch('https://hub-orcin.vercel.app/perfil', {
+            //🚭Como era na Vercel
+            const response = await fetch('https://hub-orcin.vercel.app/perfil', 
+            //🚭Como é localmente
+            // const response = await fetch('http://localhost:3000/perfil', 
+            {
                 headers: { Authorization: token }
             });
 
@@ -143,7 +173,10 @@ document.addEventListener("DOMContentLoaded", () => {
 async function obterListaDeAlunos(turmaSelecionada) {
     try {
         // Requisição ao servidor para obter as turmas
-        const response = await fetch('https://hub-orcin.vercel.app/dados'); // Ou o endpoint correspondente
+        //🚭Como era na Vercel
+        const response = await fetch('https://hub-orcin.vercel.app/dados'); 
+        //🚭Como é localmente
+        // const response = await fetch('http://localhost:3000/dados');
         if (!response.ok) {
             throw new Error("Erro ao buscar turmas");
         }
