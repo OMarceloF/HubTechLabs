@@ -790,12 +790,11 @@ async function exportarRelatorioTurmaPDF() {
   }
 
   try {
-      // Buscar os dados necessários
       const [turmasResponse, presencaResponse, notasResponse, unidadesResponse] = await Promise.all([
-          fetch("/dados"),  // Agora retorna unidade_id corretamente
+          fetch("/dados"),
           fetch(`/dados-presenca?turma=${encodeURIComponent(turmaNome)}`),
           fetch(`/notasavaliacoes?turma=${encodeURIComponent(turmaNome)}`),
-          fetch("/unidades")  // Nova requisição para buscar os nomes das unidades
+          fetch("/unidades")
       ]);
 
       if (!turmasResponse.ok || !presencaResponse.ok || !notasResponse.ok || !unidadesResponse.ok) {
@@ -805,32 +804,16 @@ async function exportarRelatorioTurmaPDF() {
       const turmasData = await turmasResponse.json();
       const presencaData = await presencaResponse.json();
       const notasData = await notasResponse.json();
-      const unidadesData = await unidadesResponse.json(); // Agora temos um mapeamento id -> unidade
+      const unidadesData = await unidadesResponse.json();
 
-      // Obter `unidade_id` da turma
       const unidadeId = turmasData[turmaNome]?.unidade_id || "Não disponível";
-      
-      // Obter o nome da unidade correspondente ao `unidade_id`
       const nomeUnidade = unidadesData[unidadeId] || "Unidade não encontrada";
 
       const alunosPresenca = presencaData[turmaNome] || [];
       const alunosNotas = notasData[turmaNome] || [];
 
-      if (alunosPresenca.length === 0) {
-          alert("Nenhum registro de presença encontrado para essa turma.");
-          return;
-      }
-
-      if (alunosNotas.length === 0) {
-          alert("Nenhum registro de notas encontrado para essa turma.");
-          return;
-      }
-
       const doc = new jspdf.jsPDF("p", "mm", "a4");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      
-      // Agora, exibe o nome da unidade ao invés do ID
       doc.setFontSize(16);
       doc.text(`Unidade: ${nomeUnidade}`, 10, 10);
       doc.setFontSize(14);
@@ -838,7 +821,6 @@ async function exportarRelatorioTurmaPDF() {
 
       let yOffset = 40;
 
-      // Processar dados dos alunos
       const dadosAlunos = {};
 
       alunosPresenca.forEach(aluno => {
@@ -870,22 +852,21 @@ async function exportarRelatorioTurmaPDF() {
           }
       });
 
-      // Criar tabela no PDF
       doc.setFontSize(12);
       doc.text("Informações Gerais da Turma:", 10, yOffset);
       yOffset += 10;
 
       const tabelaDadosAlunos = Object.keys(dadosAlunos).map(nomeAluno => {
           const alunoData = dadosAlunos[nomeAluno];
-          const mediaPresenca = alunoData.totalAulas > 0 ? (alunoData.totalPresencas / alunoData.totalAulas) * 100 : 0;
-          const mediaNotasAulas = alunoData.totalNotasAulas > 0 ? (alunoData.somaNotasAulas / alunoData.totalPresencas) : 0;
-          const mediaNotasAvaliacoes = alunoData.totalNotasAvaliacoes > 0 ? (alunoData.somaNotasAvaliacoes / alunoData.totalNotasAvaliacoes) : 0;
+          const mediaPresenca = alunoData.totalAulas > 0 ? (alunoData.totalPresencas / alunoData.totalAulas) * 100 : "-";
+          const mediaNotasAulas = alunoData.totalNotasAulas > 0 ? (alunoData.somaNotasAulas / alunoData.totalPresencas) : "-";
+          const mediaNotasAvaliacoes = alunoData.totalNotasAvaliacoes > 0 ? (alunoData.somaNotasAvaliacoes / alunoData.totalNotasAvaliacoes) : "-";
 
           return [
               nomeAluno,
-              `${mediaPresenca.toFixed(1)}%`,
-              mediaNotasAulas.toFixed(2),
-              mediaNotasAvaliacoes.toFixed(2)
+              `${mediaPresenca === "-" ? "-" : mediaPresenca.toFixed(1)}%`,
+              mediaNotasAulas === "-" ? "-" : mediaNotasAulas.toFixed(2),
+              mediaNotasAvaliacoes === "-" ? "-" : mediaNotasAvaliacoes.toFixed(2)
           ];
       });
 
@@ -896,13 +877,13 @@ async function exportarRelatorioTurmaPDF() {
           theme: "grid"
       });
 
-      // Salvar PDF
       doc.save(`Relatorio_Turma_${turmaNome}.pdf`);
-
   } catch (error) {
       console.error("Erro ao gerar o relatório:", error);
   }
 }
+
+
 
 // Atualizar o evento do botão para incluir essa versão corrigida
 document.getElementById("exportar-relatorio-turma").addEventListener("click", exportarRelatorioTurmaPDF);
