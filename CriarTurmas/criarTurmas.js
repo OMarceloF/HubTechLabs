@@ -129,7 +129,13 @@ function adicionarListaAlunos() {
 
 // Função para salvar a turma
 async function salvarTurma() {
-    const nomeTurma = document.getElementById("nome-turma").value.trim();
+    const unidadeSelect = document.getElementById('unidade-select');
+const unidadeId = unidadeSelect.value;
+const unidadeNome = unidadeSelect.options[unidadeSelect.selectedIndex].text;
+
+const nomeBaseTurma = document.getElementById('nome-turma').value.trim();
+const nomeTurma = `${nomeBaseTurma} - ${unidadeNome}`;
+
     const nomeInstrutor = document.getElementById("nome-instrutor").value.trim();
     const alunosInputs = document.querySelectorAll("#inputs-alunos .input-aluno");
     let alunos = [];
@@ -162,7 +168,8 @@ async function salvarTurma() {
     const dados = {
         turma: nomeTurma,
         instrutor: nomeInstrutor,
-        alunos: alunos
+        alunos: alunos,
+        unidade_id: unidadeId
     };
 
     try {
@@ -420,8 +427,13 @@ async function carregarUnidades() {
 
 // Atualizar a função salvarTurma para enviar unidade_id
 async function salvarTurma() {
-    const unidadeId = document.getElementById('unidade-select').value;
-    const nomeTurma = document.getElementById('nome-turma').value.trim();
+    const unidadeSelect = document.getElementById('unidade-select');
+const unidadeId = unidadeSelect.value;
+const unidadeNome = unidadeSelect.options[unidadeSelect.selectedIndex].text;
+
+const nomeBaseTurma = document.getElementById('nome-turma').value.trim();
+const nomeTurma = `${nomeBaseTurma} - ${unidadeNome}`;
+
     const nomeInstrutor = document.getElementById('nome-instrutor').value.trim();
     const alunosInputs = document.querySelectorAll('#inputs-alunos .input-aluno');
 
