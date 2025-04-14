@@ -7,7 +7,6 @@ const cors = require('cors');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
-const valorCoordenador = coordenador && coordenador.trim() !== "" ? coordenador : null;
 
 const app = express();
 const mysql = require('mysql2/promise');
@@ -757,7 +756,7 @@ app.post('/cadastro', async (req, res) => {
         const sql = `INSERT INTO usuarios (email, senha, tipo, name, phone, city, state, unit, photo, coordenador) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-        const params = [email, senha, tipo, name, phone, city, state, unit, photo, valorCoordenador];
+        const params = [email, senha, tipo, name, phone, city, state, unit, photo, coordenador];
 
         console.log("📝 Executando query SQL com os parâmetros:", params); // Log da query
 

@@ -116,9 +116,9 @@ async function obterNomeUsuario() {
 async function carregarTurmas() {
   try {
       //🚭Como era na Vercel
-            const response = await fetch("https://hub-orcin.vercel.app/dados");
+            //const response = await fetch("https://hub-orcin.vercel.app/dados);
             //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/dados");// Requisição ao backend
+            const response = await fetch("http://localhost:3000/dados");// Requisição ao backend
       if (!response.ok) {
           throw new Error("Erro ao buscar as turmas");
       }
