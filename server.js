@@ -1,4 +1,5 @@
-require('dotenv').config();
+//require('dotenv').config();
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
@@ -10,10 +11,19 @@ const multer = require('multer');
 const app = express();
 const mysql = require('mysql2/promise');
 //🚭Como era na Vercel
-const port = 80;
+//const port = 80;
 //🚭Como é localmente
-// const port = 3000;
+const port = 3000;
 const secretKey = "sua_chave_secreta_super_segura";
+
+// importação login
+// gpt pediu para apagar essa linha-> import express from "express";
+//import path from "path";
+
+
+// 👇 Aqui você define a pasta pública
+app.use(express.static(path.join(__dirname, "../public")));
+
 
 // Middleware
 app.use(cors());
@@ -33,19 +43,19 @@ const usuariosPath = path.join(__dirname, 'output', 'usuarios.json');
 
 //🚭Como era na Vercel
 const dbConfig = {
-    host: process.env.DB_HOST,
+   host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME
 };
 
 //🚭Como é localmente
-// const dbConfig = {
-//     host: 'localhost',
-//     user: 'root',
-//     password: '',
-//     database: 'diario_turmas'
-// };
+ //const dbConfig = {
+   //  host: 'localhost',
+     //user: 'root',
+     //password: '',
+     //database: 'bcufmlxvmlcgun7cszbu'
+ //};
 
 app.post('/salvar-turma', async (req, res) => {
     const { unidade_id, turma, instrutor, alunos } = req.body;
@@ -136,7 +146,7 @@ app.post('/salvar-presenca', async(req, res) => {
         await connection.query(
             'INSERT INTO presencas (turma_id, data, aluno, presenca, nota, observacao, conteudoAula) VALUES ?',
             [presencas]
-        );
+        );        
 
         // Fechar a conexão
         await connection.end();
@@ -349,9 +359,53 @@ app.get('/Imagens/cadastroUNI.jpg', (req, res) => {
     res.sendFile(path.join(__dirname, 'Imagens', 'cadastroUNI.jpg'));
 });
 
+// teste inclusão get
+
+app.get('/conteudo-aula', async (req, res) => {
+    const { turma, data } = req.query;
+
+    if (!turma || !data) {
+        return res.status(400).json({ message: 'Informe a turma e a data.' });
+    }
+
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+
+        const [turmaResult] = await connection.execute(
+            'SELECT id FROM turmas WHERE nome = ?', [turma]
+        );
+
+        if (turmaResult.length === 0) {
+            await connection.end();
+            return res.status(404).json({ message: `Turma "${turma}" não encontrada.` });
+        }
+
+        const turmaId = turmaResult[0].id;
+
+        const [result] = await connection.execute(
+            'SELECT conteudoAula FROM presencas WHERE turma_id = ? AND data = ? LIMIT 1',
+            [turmaId, data]
+        );
+
+        await connection.end();
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Conteúdo não encontrado.' });
+        }
+
+        res.status(200).json({ conteudoAula: result[0].conteudoAula });
+
+    } catch (error) {
+        console.error('Erro ao buscar conteúdo da aula:', error);
+        res.status(500).json({ message: 'Erro ao buscar o conteúdo da aula.' });
+    }
+});
+
+
 // Inicializa o servidor
 app.listen(port, () => {
-    console.log(`Servidor rodando em http://localhost:${port}/Login/login.html`);
+    console.log(`Servidor rodando em https://ub-orcin.vercel.app:${port}/Login/login.html`);	
+    //console.log(`Servidor rodando em http://localhost:${port}/Login/login.html`);
 });
 
 app.get('/CriarTurmas/criarTurmas.html', (req, res) => {
@@ -442,6 +496,7 @@ app.get('/VisualizarAvaliacao/visualizarAvaliacao.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'VisualizarAvaliacao', 'visualizarAvaliacao.js'));
 });
 
+
 app.get('/dados', async(req, res) => {
     try {
         // Conectar ao banco de dados
@@ -517,8 +572,6 @@ app.get('/listar-turmas', async(req, res) => {
         res.status(500).json({ message: "Erro ao listar as turmas." });
     }
 });
-
-
 
 app.post('/atualizar-notas', async(req, res) => {
     const { turma, data, alunos } = req.body;
@@ -611,11 +664,6 @@ app.post('/atualizar-notas', async(req, res) => {
     }
 });
 
-
-
-
-
-
 const avaliacoesPath = path.join(__dirname, 'output', 'avaliacoes.json'); // Caminho atualizado para a pasta /output
 
 // Rota para salvar avaliação
@@ -680,29 +728,39 @@ async function carregarUsuarios() {
 }
 
 // Rota de cadastro de usuários
-app.post('/cadastro', async(req, res) => {
-    const { email, senha, tipo, name, phone, city, state, unit, photo } = req.body;
 
-   // Validação de dados obrigatórios
-   if (!email || !senha || !tipo || !name || !phone || !city || !state || !unit) {
-    return res.status(400).send({ message: 'Preencha todos os campos obrigatórios!' });
-}
+app.post('/cadastro', async (req, res) => {
+    const { email, senha, tipo, name, phone, city, state, unit, photo, coordenador } = req.body;
+    
+    console.log("📦 Dados recebidos:", req.body); // Log dos dados recebidos
+
+    // Verifica se os dados obrigatórios estão presentes
+    if (!email || !senha || !tipo || !name || !phone || !city || !state || !unit) {
+        return res.status(400).send({ message: 'Todos os campos obrigatórios devem ser preenchidos!' });
+    }
 
     try {
-        // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
 
-        // Verificar se o usuário já existe
-        const [usuarioExistente] = await connection.query('SELECT id FROM usuarios WHERE email = ?', [email]);
+        // Verifica se o e-mail já existe
+        const [usuarioExistente] = await connection.execute('SELECT id FROM usuarios WHERE email = ?', [email]);
         if (usuarioExistente.length > 0) {
             await connection.end();
             return res.status(400).send({ message: 'Usuário já cadastrado!' });
         }
 
-        // Inserir novo usuário
-        await connection.execute(
-            'INSERT INTO usuarios (id, email, senha, tipo, name, phone, city, state, unit, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [email, email, senha, tipo, name || '', phone || '', city || '', state || '', unit || '', photo || '']
-        );
+        console.log("✅ E-mail válido e não encontrado no banco.");
+
+        // Não incluímos o campo ID, pois ele é autoincrementado
+        const sql = `INSERT INTO usuarios (email, senha, tipo, name, phone, city, state, unit, photo, coordenador) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        const params = [email, senha, tipo, name, phone, city, state, unit, photo, coordenador];
+
+        console.log("📝 Executando query SQL com os parâmetros:", params); // Log da query
+
+        // Executa a query de inserção
+        await connection.execute(sql, params);
 
         // Fechar a conexão
         await connection.end();
@@ -710,11 +768,13 @@ app.post('/cadastro', async(req, res) => {
         console.log(`Usuário ${email} cadastrado com sucesso.`);
         res.status(201).send({ message: 'Usuário cadastrado com sucesso!' });
     } catch (error) {
-        console.error("Erro ao cadastrar usuário:", error);
-        res.status(500).send({ message: 'Erro ao cadastrar o usuário.' });
+        console.error('Erro ao cadastrar usuário:', error);
+        res.status(500).send('Erro ao cadastrar o usuário.');
     }
 });
 
+
+  
 
 // Rota para verificar o tipo de usuário
 app.get('/verificar-acesso', async(req, res) => {
@@ -985,17 +1045,17 @@ app.get('/dados-presenca', async(req, res) => {
         // Consultar presenças e ordenar pela data
         const [presencas] = await connection.query(`
             SELECT 
-                t.nome AS turma,
-                p.data,
-                p.aluno,
-                p.presenca,
-                p.nota,
-                p.observacao
-            FROM 
-                presencas p
-            JOIN 
-                turmas t ON p.turma_id = t.id
-            ORDER BY p.data ASC
+        t.nome AS turma,
+        p.data,
+        p.aluno,
+        p.presenca,
+        p.nota,
+        p.observacao,
+        p.conteudoAula
+        FROM presencas p
+        JOIN turmas t ON p.turma_id = t.id
+        ORDER BY p.data ASC
+
         `);
 
         // Fechar a conexão
@@ -1017,7 +1077,8 @@ app.get('/dados-presenca', async(req, res) => {
                 aluno: presenca.aluno,
                 presenca: presenca.presenca,
                 nota: presenca.nota,
-                observacao: presenca.observacao
+                observacao: presenca.observacao,
+                conteudoAula: presenca.conteudoAula
             });
         });
 
@@ -1028,46 +1089,6 @@ app.get('/dados-presenca', async(req, res) => {
         res.status(500).send({ message: "Erro ao carregar as presenças." });
     }
 });
-
-app.get('/dados-presenca', async(req, res) => {
-    try {
-        // Conectar ao banco de dados
-        const connection = await mysql.createConnection(dbConfig);
-
-        // Consultar todas as presenças
-        const [presencas] = await connection.query(`
-            SELECT 
-                t.nome AS turma,
-                p.data,
-                p.aluno,
-                p.presenca,
-                p.nota
-            FROM 
-                presencas p
-            JOIN 
-                turmas t ON p.turma_id = t.id
-            ORDER BY 
-                p.data ASC
-        `);
-
-        // Fechar a conexão
-        await connection.end();
-
-        if (presencas.length === 0) {
-            return res.status(404).send({ message: "Nenhuma presença encontrada." });
-        }
-
-        // Log para depuração
-        console.log("Chamadas retornadas:", presencas);
-
-        // Retornar os dados
-        res.status(200).json(presencas);
-    } catch (error) {
-        console.error("Erro ao carregar as presenças:", error);
-        res.status(500).send({ message: "Erro ao carregar as presenças." });
-    }
-});
-
 // Função de middleware para verificar se o usuário está autenticado
 
 function verificarToken(req, res, next) {
@@ -1203,7 +1224,35 @@ app.get('/Diario/indexDiario.html', verificarToken, (req, res) => {
         res.status(500).send({ message: "Erro ao acessar o diário." });
     }
 });
+//...
+app.get("/instrutores-por-coordenador", async (req, res) => {
+    const coordenador = req.query.coordenador;
 
+    if (!coordenador) {
+        return res.status(400).send("Coordenador não fornecido");
+    }
+
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+
+        const [instrutores] = await connection.execute(
+            "SELECT name, id FROM usuarios WHERE tipo = 'Instrutor' AND coordenador = ?",
+            [coordenador]
+        );
+
+        await connection.end();
+
+        if (instrutores.length > 0) {
+            return res.status(200).json(instrutores);
+        } else {
+            return res.status(404).send("Nenhum instrutor encontrado para esse coordenador.");
+        }
+    } catch (err) {
+        console.error("Erro ao buscar instrutores:", err);
+        return res.status(500).send("Erro interno do servidor.");
+    }
+});
+//...
 
 // app.get('/usuario-logado', verificarToken, (req, res) => {
 //     const usuarios = JSON.parse(fs.readFileSync(path.join(__dirname, 'output', 'usuarios.json'), 'utf8'));
@@ -1584,6 +1633,11 @@ app.post('/salvar-turma', async(req, res) => {
         const turmaId = result.insertId;
 
         const alunoValues = alunos.map(aluno => [aluno, turmaId]);
+        //..
+        const [rows] = await connection.execute('SELECT MAX(id) AS last_id FROM usuarios');
+        const lastId = rows[0].last_id || 0; // Se não houver nenhum ID, começamos com 0
+        const newId = lastId + 1; // Incrementa o último ID
+        //..
         await connection.query('INSERT INTO alunos (nome, turma_id) VALUES ?', [alunoValues]);
 
         await connection.end();
@@ -1599,32 +1653,6 @@ app.post('/salvar-turma', async(req, res) => {
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true })); // Para processar formulários tradicionais
 
-// Rota para cadastrar unidade
-// app.post('/cadastrar-unidade', (req, res) => {
-//     console.log("📥 Dados recebidos:", req.body); // Debug no terminal
-
-//     const { unidade, escola, cidade, coordenador } = req.body;
-//     const photo = req.file ? `/uploads/${req.file.filename}` : "/projeto/Imagens/perfil.png";
-
-//     // Verificar se os campos estão preenchidos
-//     if (!unidade || !escola || !cidade || !coordenador) {
-//         console.log("⚠ Erro: Campos inválidos recebidos!");
-//         return res.status(400).send("Todos os campos são obrigatórios!");
-//     }
-
-//     // Comando SQL para inserir no MySQL (phpMyAdmin)
-//     const query = `INSERT INTO unidades (unidade, escola, cidade, coordenador,photo) VALUES (?, ?, ?, ?)`;
-    
-//     db.query(query, [unidade, escola, cidade, coordenador,photo], (err, result) => {
-//         if (err) {
-//             console.error("❌ Erro ao inserir no banco:", err);
-//             return res.status(500).send("Erro ao cadastrar a unidade.");
-//         }
-
-//         console.log("✅ Unidade cadastrada com sucesso! ID:", result.insertId);
-//         res.send(`Unidade cadastrada com sucesso! ID: ${result.insertId}`);
-//     });
-// });
 
 app.post("/cadastrar-unidade", async (req, res) => {
     try {
@@ -1651,7 +1679,6 @@ app.post("/cadastrar-unidade", async (req, res) => {
         res.status(500).json({ message: "Erro ao cadastrar a unidade." });
     }
 });
-
 
 
 // Rota para listar unidades cadastradas
@@ -1688,7 +1715,8 @@ app.get("/listar-coordenadores", async (req, res) => {
         res.status(500).send({ message: "Erro ao obter a lista de coordenadores." });
     }
 });
-
+//... Modificação para listar instrutores
+// Rota para listar instrutores
 app.get("/listar-instrutores", async (req, res) => {
     try {
         const connection = await mysql.createConnection(dbConfig);
@@ -1706,5 +1734,34 @@ app.get("/listar-instrutores", async (req, res) => {
         res.status(500).send({ message: "Erro ao obter a lista de instrutores." });
     }
 });
+app.get("/instrutores-por-coordenador", async (req, res) => {
+    const coordenador = req.query.coordenador; // Obtém o nome do coordenador do query string
+    
+    if (!coordenador) {
+        return res.status(400).send("Coordenador não fornecido");
+    }
+
+    try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Buscar instrutores cujo coordenador é igual ao nome fornecido
+        const [instrutores] = await connection.execute(
+            "SELECT * FROM usuarios WHERE tipo = 'Instrutor' AND coordenador = ?",
+            [coordenador]
+        );
+
+        // Verifica se encontrou instrutores
+        if (instrutores.length > 0) {
+            return res.status(200).json(instrutores); // Retorna os instrutores encontrados
+        } else {
+            return res.status(404).send("Nenhum instrutor encontrado para esse coordenador.");
+        }
+    } catch (error) {
+        console.error("Erro ao buscar instrutores:", error);
+        res.status(500).send("Erro no servidor.");
+    }
+});
+
 
 

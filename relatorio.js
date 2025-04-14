@@ -34,7 +34,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Função para carregar perfil do usuário logado
     async function carregarPerfil() {
         try {
-        const response = await fetch("https://hub-orcin.vercel.app/perfil", {
+          //🚭Como era na Vercel
+            const response = await fetch("https://hub-orcin.vercel.app/perfil",
+            //🚭Como é localmente
+            //const response = await fetch("http://localhost:3000/perfil",
+              {
             headers: { Authorization: token },
         });
 
@@ -85,7 +89,10 @@ async function obterNomeUsuario() {
           throw new Error("Nenhum email encontrado no localStorage");
       }
 
-      const response = await fetch("https://hub-orcin.vercel.app/usuarios"); // Chama a API
+      //🚭Como era na Vercel
+            const response = await fetch("https://hub-orcin.vercel.app/usuarios");
+            //🚭Como é localmente
+            //const response = await fetch("http://localhost:3000/usuarios");// Chama a API
       if (!response.ok) {
           throw new Error("Erro ao buscar usuários");
       }
@@ -108,7 +115,10 @@ async function obterNomeUsuario() {
 
 async function carregarTurmas() {
   try {
-      const response = await fetch("https://hub-orcin.vercel.app/dados"); // Requisição ao backend
+      //🚭Como era na Vercel
+            const response = await fetch("https://hub-orcin.vercel.app/dados");
+            //🚭Como é localmente
+            //const response = await fetch("http://localhost:3000/dados");// Requisição ao backend
       if (!response.ok) {
           throw new Error("Erro ao buscar as turmas");
       }

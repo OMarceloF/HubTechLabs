@@ -10,7 +10,11 @@ document.getElementById("form-login").addEventListener("submit", async (event) =
     }
 
     try {
-        const response = await fetch('https://hub-orcin.vercel.app/login', {
+            //🚭Como era na Vercel
+            const response = await fetch("https://hub-orcin.vercel.app/login",
+            //🚭Como é localmente
+            //const response = await fetch("http://localhost:3000/login",
+            {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, senha })
@@ -28,9 +32,11 @@ document.getElementById("form-login").addEventListener("submit", async (event) =
 
             // Redireciona para a página inicial ou para a página de acordo com o tipo de usuário
             if (data.tipo === 'DEV' || data.tipo === 'Coordenador') {
-                window.location.href = "https://hub-orcin.vercel.app/projeto/public/index.html"; // Redireciona para o painel
+                window.location.href = "https://hub-orcin.vercel.app/index.html"; 
+                //window.location.href = "http://localhost:3000/index.html"; // Redireciona para o painel
             } else {
-                window.location.href = "https://hub-orcin.vercel.app/projeto/public/index.html"; // Página padrão
+                window.location.href = "https://hub-orcin.vercel.app/index.html"; 
+                //window.location.href = "http://localhost:3000/index.html";// Página padrão
             }
         } else {
             alert(data.message); // Exibe a mensagem de erro caso não seja sucesso

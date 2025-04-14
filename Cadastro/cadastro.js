@@ -2,23 +2,64 @@ document.addEventListener("DOMContentLoaded", () => {
     function getUserType() {
         return localStorage.getItem("tipoUsuario");
     }
-
-    function restringirOpcoesCargo() {
-        const tipoUsuario = getUserType();
-        const selectTipo = document.getElementById("tipo");
-
-        if (tipoUsuario === "Coordenador" && selectTipo) {
-            // Remove todas as opções existentes
-            selectTipo.innerHTML = "";
-            
-            // Adiciona apenas a opção "Instrutor"
-            const opcaoInstrutor = document.createElement("option");
-            opcaoInstrutor.value = "Instrutor";
-            opcaoInstrutor.textContent = "Instrutor";
-            selectTipo.appendChild(opcaoInstrutor);
+        function restringirOpcoesCargo() {
+            const tipoUsuario = getUserType();
+            const selectTipo = document.getElementById("tipo");
+            const coordenadorContainer = document.getElementById("coordenador-container");
+            const coordenadorSelect = document.getElementById("coordenador-select");
+        
+            // Deixa o seletor completo (não limita só a instrutor)
+            if (tipoUsuario === "Coordenador" && selectTipo) {
+                // Mostra todas as opções normalmente (DEV, Diretor, Coordenador, Instrutor)
+                selectTipo.innerHTML = `
+                    <option value="">Selecione o Cargo do usuario</option>
+                    <option value="Instrutor">Instrutor</option>
+                `;
+            }
+        
+            // Garante que o campo de coordenador fique escondido inicialmente
+            coordenadorContainer.style.display = "none";
+            coordenadorSelect.innerHTML = `<option value="">Selecione o Coordenador</option>`;
         }
-    }
+        
 
+    const tipoSelect = document.getElementById("tipo");
+const coordenadorContainer = document.getElementById("coordenador-container");
+const coordenadorSelect = document.getElementById("coordenador-select");
+
+// Ao trocar o tipo, mostra ou esconde o campo de coordenador
+tipoSelect.addEventListener("change", async () => {
+    if (tipoSelect.value === "Instrutor") {
+        coordenadorContainer.style.display = "block";
+
+        try {
+            //🚭Como era na Vercel
+            const response = await fetch("https://hub-orcin.vercel.app/usuarios");
+            //🚭Como é localmente
+            //const response = await fetch("http://localhost:3000/usuarios");
+            const usuarios = await response.json();
+
+            const coordenadores = usuarios.filter(user => user.tipo === "Coordenador");
+
+            coordenadorSelect.innerHTML = `<option value="">Selecione o Coordenador</option>`;
+            coordenadores.forEach(coord => {
+                const option = document.createElement("option");
+                option.value = coord.name;
+                option.textContent = coord.name;
+                coordenadorSelect.appendChild(option);
+            });
+
+        } catch (err) {
+            console.error("Erro ao carregar coordenadores:", err);
+        }
+
+    } else {
+        coordenadorContainer.style.display = "none";
+        coordenadorSelect.innerHTML = `<option value="">Selecione o Coordenador</option>`;
+    }
+});
+
+    
     async function verificarAcessoRestrito() {
         try {
             const tipoUsuario = getUserType();
@@ -52,6 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const state = document.getElementById("state").value.trim();
         const unit = document.getElementById("unit").value.trim();
         const mensagemSucesso = document.getElementById("mensagem-sucesso");
+        const coordenador = document.getElementById("coordenador-select").value;
 
         if (!email || !senha || !tipo || !name || !phone || !city || !state || !unit) {
             alert("Por favor, preencha todos os campos!");
@@ -59,10 +101,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await fetch('https://hub-orcin.vercel.app/cadastro', {
+            //🚭Como era na Vercel
+            const response = await fetch('https://hub-orcin.vercel.app/cadastro', 
+            //🚭Como é localmente
+            //const response = await fetch('http://localhost:3000/cadastro',  
+            {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, senha, tipo, name, phone, city, state, unit, photo: "/projeto/Imagens/perfil.png" })
+                body: JSON.stringify({
+                    email, senha, tipo, name, phone, city, state, unit, photo: "/projeto/Imagens/perfil.png",
+                    coordenador: coordenador || null
+                  })                  
             });
 
             const data = await response.json();
@@ -84,6 +133,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
         }
     });
+    console.log("🔎 Email recebido para cadastro:", email);
+
 
     function getTokenFromCookie() {
         const cookies = document.cookie.split("; ");
@@ -105,7 +156,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function carregarPerfil() {
         try {
-            const response = await fetch('https://hub-orcin.vercel.app/perfil', {
+            //🚭Como era na Vercel
+            const response = await fetch('https://hub-orcin.vercel.app/perfil', 
+            //🚭Como é localmente
+            //const response = await fetch('http://localhost:3000/perfil',  
+            {
                 headers: { Authorization: token }
             });
 

@@ -78,11 +78,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const elementosRestritos = [
                 "/CadastroUnidades/cadastroUnidades.html",
                 "/Diario/indexDiario.html",
-                "/EditarDiario/editarDiario.html",
+                //"/EditarDiario/editarDiario.html",
                 "/CriarTurmas/criarTurmas.html",
                 "/EditarTurmas/editarTurmas.html",
                 "/NotasAvaliacoes/notasAvaliacoes.html",
-                "/Relatorio/relatorio.html"
             ];
 
             document.querySelectorAll(".access-link").forEach(link => {
@@ -133,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
             //🚭Como era na Vercel
             const response = await fetch('https://hub-orcin.vercel.app/perfil', 
             //🚭Como é localmente
-            // const response = await fetch('http://localhost:3000/perfil',
+            //const response = await fetch('http://localhost:3000/perfil',
             {
                 headers: { Authorization: token }
             });

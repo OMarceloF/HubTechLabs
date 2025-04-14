@@ -1,3 +1,44 @@
+async function carregarInstrutores(coordenador) {
+  try {
+      if (!coordenador) {
+          console.warn("Coordenador não encontrado no localStorage.");
+          return;
+      }
+      //🚭Como era na Vercel
+      const response = await fetch(`https://hub-orcin.vercel.app/instrutores-por-coordenador?coordenador=${encodeURIComponent(coordenador)}`);
+      //🚭Como é localmente
+      //const response = await fetch(`http://localhost:3000/instrutores-por-coordenador?coordenador=${encodeURIComponent(coordenador)}`);
+
+      if (!response.ok) {
+          const erroTexto = await response.text();
+          console.error("❌ Erro no backend:", erroTexto);
+          return;
+      }
+
+      const instrutores = await response.json();
+
+      const selectElement = document.getElementById("instrutores");
+      selectElement.innerHTML = "";
+
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "Selecione um Instrutor";
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      selectElement.appendChild(defaultOption);
+
+      instrutores.forEach(instrutor => {
+          const option = document.createElement("option");
+          option.value = instrutor.id;
+          option.textContent = instrutor.name;
+          selectElement.appendChild(option);
+      });
+  } catch (error) {
+      console.error("Erro ao carregar instrutores:", error);
+  }
+}
+
+
 async function obterNomeUsuario() {
     try {
         const email = localStorage.getItem("email"); // Obtém o email armazenado
@@ -5,7 +46,10 @@ async function obterNomeUsuario() {
             throw new Error("Nenhum email encontrado no localStorage");
         }
 
-        const response = await fetch("https://hub-orcin.vercel.app/usuarios"); // Chama a API
+      //🚭Como era na Vercel
+      const response = await fetch("https://hub-orcin.vercel.app/usuarios");
+      //🚭Como é localmente
+      //const response = await fetch("http://localhost:3000/usuarios"); // Chama a API
         if (!response.ok) {
             throw new Error("Erro ao buscar usuários");
         }
@@ -19,52 +63,58 @@ async function obterNomeUsuario() {
             localStorage.setItem("nomeUsuario", usuarioEncontrado.name); // Salva o nome no localStorage
         } else {
         }
-    } catch (error) {
+    } catch (error) { console.error("Erro em X:", error); }
+    {
     }
 }
 
-async function carregarTurmas() {
-    try {
-        const response = await fetch("https://hub-orcin.vercel.app/dados"); // Requisição ao backend
-        if (!response.ok) {
-            throw new Error("Erro ao buscar as turmas");
-        }
-        const turmas = await response.json(); // Dados das turmas
+//...
+async function carregarTurmas(instrutorSelecionado = null) {
+  try {
+      //🚭Como era na Vercel
+      const response = await fetch("https://hub-orcin.vercel.app/dados");
+      //🚭Como é localmente
+      //const response = await fetch("http://localhost:3000/dados"); // Requisição ao backend
+      if (!response.ok) throw new Error("Erro ao buscar as turmas");
+      const turmas = await response.json();// Dados das turmas
 
-        const nomeUsuario = localStorage.getItem("nomeUsuario"); // Obtém o nome do instrutor
-        if (!nomeUsuario) {
-            throw new Error("Nome do usuário não encontrado no localStorage");
-        }
+      const nomeUsuario = localStorage.getItem("nomeUsuario");// Obtém o nome do instrutor
+      const tipoUsuario = localStorage.getItem("tipoUsuario");
 
-        // Filtra turmas onde o instrutor seja o usuário logado
-        const turmasFiltradas = Object.fromEntries(
-            Object.entries(turmas).filter(([_, turma]) => turma.instrutor === nomeUsuario)
-        );
+      const instrutorAlvo = tipoUsuario === "Coordenador" && instrutorSelecionado 
+          ? instrutorSelecionado
+          : nomeUsuario;
 
-        const selectElement = document.getElementById("turma-select");
-        selectElement.innerHTML = ""; // Limpa opções anteriores
+      // Filtra turmas onde o instrutor seja o usuário logado
+          const turmasFiltradas = Object.fromEntries(
+          Object.entries(turmas).filter(([_, turma]) => turma.instrutor === instrutorAlvo)
+      );
 
-        // Adiciona a opção inicial
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.textContent = "Escolha sua turma";
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        selectElement.appendChild(defaultOption);
+      const selectElement = document.getElementById("turma-select");
+      selectElement.innerHTML = ""; // Limpa opções anteriores
 
-        // Preenche o dropdown com as turmas filtradas
-        for (const nomeTurma in turmasFiltradas) {
-            const option = document.createElement("option");
-            option.value = nomeTurma;
-            option.textContent = nomeTurma;
-            selectElement.appendChild(option);
-        }
+      // Adiciona a opção inicial
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "Escolha sua turma";
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      selectElement.appendChild(defaultOption);
 
-        // Armazena os dados das turmas globalmente
-        window.turmas = turmasFiltradas;
-        window.presencaDados = [];
-    } catch (error) {
-    }
+      // Preenche o dropdown com as turmas filtradas
+      for (const nomeTurma in turmasFiltradas) {
+          const option = document.createElement("option");
+          option.value = nomeTurma;
+          option.textContent = nomeTurma;
+          selectElement.appendChild(option);
+      }
+      // Armazena os dados das turmas globalmente
+      window.turmas = turmasFiltradas;
+      window.presencaDados = [];
+
+  } catch (error) {
+      console.error("Erro ao carregar turmas:", error);
+  }
 }
 
 function obterListaDeAlunos(turmaSelecionada) {
@@ -98,18 +148,18 @@ async function carregarDatas() {
   }
 
   try {
-    const response = await fetch("https://hub-orcin.vercel.app/dados-presenca");
+      //🚭Como era na Vercel
+      const response = await fetch("https://hub-orcin.vercel.app/dados-presenca");
+      //🚭Como é localmente
+      //const response = await fetch("http://localhost:3000/dados-presenca");
     if (!response.ok) throw new Error("Erro ao buscar as datas");
-
     const presencas = await response.json();
 
-    // Acessar os dados da turma selecionada
-    const presencasDaTurma = presencas[turmaSelecionada]; // Acesse os dados de presença pela turma selecionada
 
-    // if (!presencasDaTurma || presencasDaTurma.length === 0) {
-    //     alert(`Nenhuma chamada encontrada para a turma ${turmaSelecionada}.`);
-    //     return;
-    // }
+    // Acessar os dados da turma selecionada
+    const presencasDaTurma = presencas[turmaSelecionada]; 
+    
+    // Acesse os dados de presença pela turma selecionada
 
     if (
       !presencas[turmaSelecionada] ||
@@ -138,7 +188,8 @@ async function carregarDatas() {
       option.textContent = dataFormatada;
       dataSelect.appendChild(option);
     });
-  } catch (error) {
+  } catch (error) { console.error("Erro em X:", error); }
+  {
   }
 }
 
@@ -153,17 +204,44 @@ async function carregarNotas() {
   }
 
   try {
-    const response = await fetch("https://hub-orcin.vercel.app/dados-presenca");
+      //🚭Como era na Vercel
+      const response = await fetch("https://hub-orcin.vercel.app/dados-presenca");
+      //🚭Como é localmente
+      //const response = await fetch("http://localhost:3000/dados-presenca");
     if (!response.ok) {
       throw new Error("Erro ao buscar as presenças");
     }
 
     const presencas = await response.json();
 
-    // Verifica se os dados de presença da turma e a data selecionada existem
-    const chamada = presencas[turmaSelecionada]?.filter(
-      (p) => p.data === dataSelecionada
-    ); // Usa filter para garantir que todas as presenças da data sejam selecionadas
+  // Verifica se os dados de presença da turma e a data selecionada existem
+    const chamada = presencas[turmaSelecionada]?.filter((p) => p.data === dataSelecionada);
+
+// Novo Tratamento
+
+const campoConteudo = document.getElementById("campo-conteudo-aula");
+const conteudoAula = chamada.find(c => c.conteudoAula)?.conteudoAula;
+
+campoConteudo.value = conteudoAula || "Sem conteúdo registrado para esta data.";
+document.getElementById("conteudo-aula-exibido").classList.remove("hidden");
+
+if (chamada && chamada.length > 0) {
+  const primeiroRegistro = chamada[0]; // pega o primeiro da data
+
+  if (primeiroRegistro.conteudoAula) {
+    campoConteudo.value = primeiroRegistro.conteudoAula;
+  } else {
+    campoConteudo.value = "Sem conteúdo registrado para esta data.";
+  }
+
+  document.getElementById("conteudo-aula-exibido").classList.remove("hidden");
+} else {
+  campoConteudo.value = "Sem conteúdo registrado para esta data.";
+  document.getElementById("conteudo-aula-exibido").classList.remove("hidden");
+}
+document.getElementById("campo-conteudo-aula").textContent = conteudoAula;
+
+// Usa filter para garantir que todas as presenças da data sejam selecionadas
 
     if (!chamada || chamada.length === 0) {
       alert("Não foram encontrados registros para essa data.");
@@ -216,12 +294,14 @@ async function carregarNotas() {
 
     document.getElementById("alunos-container").classList.remove("hidden");
     document.getElementById("salvar-btn").classList.remove("hidden");
-  } catch (error) {
+  } catch (error) { console.error("Erro em X:", error); }
+  {
   }
 }
 
 // Função para salvar as notas
 async function salvarNotas() {
+  console.log("🧪 Botão Salvar Alterações clicado");
   const turmaSelecionada = document.getElementById("turma-select").value;
   const dataSelecionada = document.getElementById("data-chamada").value;
 
@@ -236,21 +316,25 @@ async function salvarNotas() {
   // Itera sobre os alunos e captura as notas
   alunos.forEach((aluno) => {
     const nome = aluno.querySelector("td:first-child").textContent; // Nome do aluno
-    const nota = aluno.querySelector(".nota-select").value; // Nota selecionada
-    const observacao = aluno.querySelector(".observacao-input").value;
+    const nota = linha.querySelector(".nota-select")?.value || "";
+    const observacao = linha.querySelector(".observacao-input")?.value || "";
     novosDados.push({ nome, nota, observacao }); // Adiciona a nota ao array de novos dados
   });
 
   // Busca os dados atuais para manter o campo `dataSalvo`
   let chamadas = [];
   try {
+    //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/dados-presenca");
+    //🚭Como é localmente
+    //const response = await fetch("http://localhost:3000/dados-presenca");
     if (response.ok) {
       chamadas = await response.json(); // Carrega os dados de presença
     } else {
       throw new Error("Erro ao buscar dados de presença.");
     }
-  } catch (error) {
+  } catch (error) { console.error("Erro em X:", error); }
+  {
     return;
   }
 
@@ -286,7 +370,11 @@ async function salvarNotas() {
 
   // Envia os dados atualizados ao backend
   try {
-    const response = await fetch("https://hub-orcin.vercel.app/atualizar-notas", {
+      //🚭Como era na Vercel
+      const response = await fetch("https://hub-orcin.vercel.app/atualizar-notas",
+      //🚭Como é localmente
+      //const response = await fetch("http://localhost:3000/atualizar-notas", 
+      {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dadosAtualizados), // Envia os dados atualizados
@@ -299,7 +387,8 @@ async function salvarNotas() {
     } else {
       alert("Erro ao salvar as notas!");
     }
-  } catch (error) {
+  } catch (error) { console.error("Erro em X:", error); }
+  {
   }
 }
 
@@ -316,7 +405,7 @@ function exibirMensagem(mensagem, isError, callback) {
     }
   }, 2000); // 2 segundos
 }
-
+// teste ...
 document.addEventListener("DOMContentLoaded", () => {
     function getUserType() {
         return localStorage.getItem("tipoUsuario");
@@ -329,10 +418,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Verifica se é um Coordenador e bloqueia o acesso
-        if (tipoUsuario === 'Coordenador') {
-            window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
-        }
-        } catch (error) {
+        //if (tipoUsuario === 'Coordenador') {
+         //   window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+        //}
+        } catch (error) { console.error("Erro em X:", error); }
+        {
         }
     }
     verificarAcessoRestrito();
@@ -363,7 +453,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Função para carregar perfil do usuário logado
     async function carregarPerfil() {
         try {
-        const response = await fetch("https://hub-orcin.vercel.app/perfil", {
+      //🚭Como era na Vercel
+      const response = await fetch("https://hub-orcin.vercel.app/perfil",
+      //🚭Como é localmente
+      //const response = await fetch("http://localhost:3000/perfil", 
+        {
             headers: { Authorization: token },
         });
 
@@ -376,7 +470,8 @@ document.addEventListener("DOMContentLoaded", () => {
         // Atualiza os elementos do HTML com os dados do usuário
         document.getElementById("profile-photo").src =
             data.photo || "/projeto/Imagens/perfil.png";
-        } catch (error) {
+        } catch (error) { console.error("Erro em X:", error); }
+        {
         }
     }
     carregarPerfil();
@@ -408,14 +503,170 @@ document.addEventListener("click", (event) => {
   }
 });
 
-// Chamar a função ao carregar a página
-window.onload = async function() {
-  await obterNomeUsuario();
-  await carregarTurmas(); // Mantendo a função original
 
-  // Adiciona evento de mudança para atualizar os alunos ao selecionar a turma
+document.addEventListener("DOMContentLoaded", () => {
+  async function verificarAcessoRestrito() {
+    const tipoUsuario = localStorage.getItem("tipoUsuario");
+    const nomeUsuario = localStorage.getItem("nomeUsuario");
+
+    if (!tipoUsuario || !nomeUsuario) {
+        window.location.href = "/Login/login.html";
+        return;
+    }
+
+    if (tipoUsuario === "Coordenador") {
+        document.getElementById("div-coordenador").classList.remove("hidden");
+        await carregarInstrutores(nomeUsuario); // Chama a função com o nome
+        document.getElementById("instrutores").addEventListener("change", (e) => {
+            const instrutorSelecionado = e.target.options[e.target.selectedIndex].text;
+            carregarTurmas(instrutorSelecionado);
+        });
+    } else {
+        document.getElementById("div-coordenador").classList.add("hidden");
+        await carregarTurmas();
+    }
+}
+
+  verificarAcessoRestrito();
+});
+//...
+document.addEventListener("DOMContentLoaded", () => {
+  // Função para obter o tipo de usuário armazenado no localStorage
+  function getUserType() {
+      return localStorage.getItem("tipoUsuario");
+  }
+
+  // Função para verificar o acesso e exibir a div de Coordenador
+  async function verificarAcessoRestrito() {
+      const tipoUsuario = getUserType();
+
+      if (!tipoUsuario) {
+          window.location.href = "/Login/login.html"; // Redireciona para login se não houver tipo definido
+          return;
+      }
+
+      // Verifica se o tipo de usuário é Coordenador
+      if (tipoUsuario === 'Coordenador') {
+          // Exibe a div de coordenador se o tipo de usuário for Coordenador
+          document.getElementById('div-coordenador').classList.remove('hidden');
+          carregarInstrutores(); // Carrega os instrutores do coordenador logado
+      } else {
+          // Caso contrário, a div é escondida
+          document.getElementById('div-coordenador').classList.add('hidden');
+      }
+  }
+
+  // Função para carregar os instrutores vinculados ao coordenador logado
+  async function carregarInstrutores() {
+    try {
+        const coordenador = localStorage.getItem("nomeUsuario");
+        if (!coordenador) {
+            alert("Nome do coordenador não encontrado.");
+            return;
+        }
+  //🚭Como era na Vercel
+  const response = await fetch(`https://hub-orcin.vercel.app/instrutores-por-coordenador?coordenador=${encodeURIComponent(coordenador)}`);
+  //🚭Como é localmente
+  //const response = await fetch(`http://localhost:3000/instrutores-por-coordenador?coordenador=${encodeURIComponent(coordenador)}`);
+        
+
+        if (!response.ok) {
+            const text = await response.text(); // Lê como texto se falhou
+            console.error("❌ Erro no backend:", text);
+            return;
+        }
+
+        const instrutores = await response.json();
+
+        if (instrutores.length > 0) {
+            const selectElement = document.getElementById("instrutores");
+            selectElement.innerHTML = "";
+
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Selecione um Instrutor";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            selectElement.appendChild(defaultOption);
+
+            instrutores.forEach(instrutor => {
+                const option = document.createElement("option");
+                option.value = instrutor.id;
+                option.textContent = instrutor.name;
+                selectElement.appendChild(option);
+            });
+        } else {
+            alert("Nenhum instrutor encontrado para esse coordenador.");
+        }
+    } catch (error) {
+        console.error("Erro em X:", error);
+    }
+}
+  verificarAcessoRestrito(); // Executa a verificação ao carregar a página
+});
+//...
+
+// Chamar a função ao carregar a página
+window.onload = async function () {
+  await obterNomeUsuario(); // Sempre carrega o nome primeiro
+
   document.getElementById("turma-select").addEventListener("change", () => {
       const turmaSelecionada = document.getElementById("turma-select").value;
-      const alunos = obterListaDeAlunos(turmaSelecionada);
+      obterListaDeAlunos(turmaSelecionada);
   });
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+  const botaoSalvar = document.getElementById("salvarAlteracoes");
+
+  if (!botaoSalvar) {
+    console.warn("❗ Botão 'salvarAlteracoes' não encontrado!");
+    return;
+  }
+
+  botaoSalvar.addEventListener("click", async () => {
+    try {
+      // Pegando turma e data da URL ou do DOM (ajuste conforme necessário)
+      const turma = document.getElementById("turma-select").value;
+      const data = document.getElementById("data-chamada").value;
+
+
+      const linhas = document.querySelectorAll("table tbody tr");
+      const alunos = [];
+
+      linhas.forEach(linha => {
+        const nome = linha.querySelector("td:nth-child(1)").textContent.trim();
+        const nota = linha.querySelector(".nota-select")?.value || "";
+        const observacao = linha.querySelector(".observacao-input")?.value || "";
+
+
+        if (nome) {
+          alunos.push({ nome, nota, observacao });
+        }
+      });
+
+      if (alunos.length === 0) {
+        alert("Nenhum aluno encontrado.");
+        return;
+      }
+
+      const response = await fetch("/atualizar-notas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ turma, data, alunos })
+      });
+
+      const resultado = await response.json();
+
+      if (response.ok) {
+        alert("Alterações salvas com sucesso! Atualize a página!");
+      } else {
+        alert(`Erro: ${resultado.message}`);
+      }
+
+    } catch (erro) {
+      console.error("Erro ao salvar alterações:", erro);
+      alert("Erro ao salvar alterações.");
+    }
+  });
+});

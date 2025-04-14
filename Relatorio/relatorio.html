@@ -30,7 +30,9 @@
             <!-- <a href="http://localhost:3000/Login/login.html">Sair</a> -->
         </div>
     </header>
-
+    
+    
+    
     <div class="container" id="conteinerOpcao">
         <div class="card">
             <h2>Escolha o tipo de relatório:</h2>
@@ -42,8 +44,15 @@
     <div class="container" class="hidden" id="relatorio-aluno-container">
         <div class="card">
             <h2>Relatórios de Notas e Presença</h2>
+            <div id="coordenador-section" style="display: none;">
+                <label for="instrutor-select">Escolha um instrutor:</label>
+                <select id="instrutor-select">
+                    <option value="" disabled selected>Escolha um instrutor</option>
+                </select>
+            </div>
             <form id="form-relatorios">
                 <label for="turma-select">Selecione a Turma:</label>
+            
                 <select id="turma-select">
                     <option value="" disabled selected>Escolha uma turma</option>
                 </select>
@@ -83,6 +92,14 @@
     <div class="container" id="conteinerTurma" class="hidden">
         <div class="card">
             <h2>Relatório por Turma</h2>
+            <!-- Dentro do bloco Relatório por Turma -->
+            <div id="coordenador-section-turma" style="display: none;">
+            <label for="instrutor-select-turma">Escolha um instrutor:</label>
+        <select id="instrutor-select-turma">
+        <option value="" disabled selected>Escolha um instrutor</option>
+         </select>
+        </div>
+
             <form>
                 <label for="turma-turma-select">Selecione a Turma:</label>
                 <select id="turma-turma-select">

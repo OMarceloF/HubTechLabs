@@ -13,7 +13,7 @@ async function obterNomeUsuario() {
       //🚭Como era na Vercel
       const response = await fetch("https://hub-orcin.vercel.app/usuarios");
       //🚭Como é localmente
-      // const response = await fetch("http://localhost:3000/usuarios");
+      //const response = await fetch("http://localhost:3000/usuarios");
       if (!response.ok) {
           throw new Error("Erro ao buscar usuários");
       }
@@ -37,7 +37,7 @@ async function carregarTurmas() {
       //🚭Como era na Vercel
       const response = await fetch("https://hub-orcin.vercel.app/dados"); 
       //🚭Como é localmente
-      // const response = await fetch("http://localhost:3000/dados"); 
+      //const response = await fetch("http://localhost:3000/dados"); 
       if (!response.ok) {
           throw new Error("Erro ao buscar as turmas");
       }
@@ -89,7 +89,6 @@ function obterListaDeAlunos(turmaSelecionada) {
 }
 
 // Função para salvar os dados de presença e notas com data
-// Função para salvar os dados de presença e notas com data
 async function salvarDados() {
   const turmaSelecionada = document.getElementById("turma-select").value;
   const dataChamada = document.getElementById("data-chamada").value;
@@ -106,7 +105,7 @@ async function salvarDados() {
     //🚭Como era na Vercel
     const responseVerificacao = await fetch("https://hub-orcin.vercel.app/dados-presenca");
     //🚭Como é localmente
-    // const responseVerificacao = await fetch("http://localhost:3000/dados-presenca");
+    //const responseVerificacao = await fetch("http://localhost:3000/dados-presenca");
     
     if (!responseVerificacao.ok) {
       throw new Error("Erro ao verificar dados de presença existentes");
@@ -155,7 +154,7 @@ async function salvarDados() {
     //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/salvar-presenca", 
     //🚭Como é localmente
-    // const response = await fetch("http://localhost:3000/salvar-presenca", 
+    //const response = await fetch("http://localhost:3000/salvar-presenca", 
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -286,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
         //🚭Como era na Vercel
         const response = await fetch("https://hub-orcin.vercel.app/perfil", 
         //🚭Como é localmente
-        // const response = await fetch("http://localhost:3000/perfil",  
+        //const response = await fetch("http://localhost:3000/perfil",  
         {
             headers: { Authorization: token },
         });

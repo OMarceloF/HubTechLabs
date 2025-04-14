@@ -1,3 +1,43 @@
+async function carregarTurmas(instrutorFiltrado = null) {
+  try {
+    //🚭Como era na Vercel
+    const response = await fetch("https://hub-orcin.vercel.app/dados"); 
+    //🚭Como é localmente
+    //const response = await fetch("http://localhost:3000/dados");
+    if (!response.ok) throw new Error("Erro ao buscar as turmas");
+
+    const turmas = await response.json();
+    const tipoUsuario = localStorage.getItem("tipoUsuario");
+    const nomeUsuario = localStorage.getItem("nomeUsuario");
+
+    // Verifica se é coordenador e se um instrutor foi passado
+    const filtroInstrutor = tipoUsuario === "Coordenador" && instrutorFiltrado
+      ? instrutorFiltrado
+      : nomeUsuario;
+
+    const turmasFiltradas = Object.entries(turmas)
+      .filter(([_, turma]) => turma.instrutor === filtroInstrutor)
+      .map(([nomeTurma]) => nomeTurma);
+
+    const turmaSelects = ["turma-select", "turma-turma-select"].map(id =>
+      document.getElementById(id)
+    );
+
+    turmaSelects.forEach(select => {
+      select.innerHTML = '<option value="" disabled selected>Escolha uma turma</option>';
+      turmasFiltradas.forEach(nomeTurma => {
+        const option = document.createElement("option");
+        option.value = nomeTurma;
+        option.textContent = nomeTurma;
+        select.appendChild(option);
+      });
+    });
+  } catch (error) {
+    console.error("Erro ao carregar turmas:", error);
+  }
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
 
   const conteinerOpcao = document.getElementById("conteinerOpcao");
@@ -20,38 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
     conteinerOpcao.classList.add("hidden");
   });
 
-  async function carregarTurmas() {
-    try {
-        //🚭Como era na Vercel
-        const response = await fetch("https://hub-orcin.vercel.app/dados");
-        //🚭Como é localmente
-        // const response = await fetch("http://localhost:3000/dados");
-        if (!response.ok) throw new Error("Erro ao buscar as turmas");
 
-        const turmas = await response.json();
-        const nomeUsuario = localStorage.getItem("nomeUsuario");
-        if (!nomeUsuario) throw new Error("Nome do usuário não encontrado");
-
-        // Filtra apenas as turmas do instrutor logado
-        const turmasFiltradas = Object.entries(turmas)
-            .filter(([_, turma]) => turma.instrutor === nomeUsuario)
-            .map(([nomeTurma]) => nomeTurma);
-
-        const turmaSelects = ["turma-select", "turma-turma-select"].map(id => document.getElementById(id));
-
-        turmaSelects.forEach(select => {
-            select.innerHTML = '<option value="" disabled selected>Escolha uma turma</option>';
-            turmasFiltradas.forEach(nomeTurma => {
-                const option = document.createElement("option");
-                option.value = nomeTurma;
-                option.textContent = nomeTurma;
-                select.appendChild(option);
-            });
-        });
-    } catch (error) {
-        console.error("Erro ao carregar turmas:", error);
-    }
-  }
 
   async function gerarRelatorioTurma() {
     const turmaSelecionada = document.getElementById("turma-turma-select").value;
@@ -187,9 +196,9 @@ document.addEventListener("DOMContentLoaded", () => {
  async function carregarPerfil() {
      try {
      //🚭Como era na Vercel
-     const response = await fetch("https://hub-orcin.vercel.app/perfil",
+    const response = await fetch("https://hub-orcin.vercel.app/perfil",
      //🚭Como é localmente
-    //  const response = await fetch("http://localhost:3000/perfil", 
+    //const response = await fetch("http://localhost:3000/perfil", 
     {
          headers: { Authorization: token },
      });
@@ -223,9 +232,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Verifica se é um Coordenador e bloqueia o acesso
-    if (tipoUsuario === 'Coordenador') {
-        window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
-    }
+    //if (tipoUsuario === 'Coordenador') {
+      //  window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+    //}
     } catch (error) {
 
     }
@@ -243,7 +252,7 @@ try {
    //🚭Como era na Vercel
    const response = await fetch("https://hub-orcin.vercel.app/usuarios"); 
    //🚭Como é localmente
-  //  const response = await fetch("http://localhost:3000/usuarios");
+   //const response = await fetch("http://localhost:3000/usuarios");
    if (!response.ok) {
        throw new Error("Erro ao buscar usuários");
    }
@@ -263,56 +272,6 @@ try {
    console.error("Erro ao obter nome do usuário:", error);
 }
 }
-
-// async function carregarTurmas() {
-// try {
-//    //🚭Como era na Vercel
-//    //const response = await fetch("https://hub-orcin.vercel.app/dados");
-//    //🚭Como é localmente
-//    const response = await fetch("http://localhost:3000/dados");
-//    if (!response.ok) {
-//        throw new Error("Erro ao buscar as turmas");
-//    }
-//    const turmas = await response.json(); // Dados das turmas
-
-//    const nomeUsuario = localStorage.getItem("nomeUsuario"); // Obtém o nome do instrutor
-//    if (!nomeUsuario) {
-//        throw new Error("Nome do usuário não encontrado no localStorage");
-//    }
-
-//    // Filtra turmas onde o instrutor seja o usuário logado
-//    const turmasFiltradas = Object.fromEntries(
-//        Object.entries(turmas).filter(([_, turma]) => turma.instrutor === nomeUsuario)
-//    );
-
-//    const selectElement = document.getElementById("turma-select");
-//    selectElement.innerHTML = ""; // Limpa opções anteriores
-
-//    // Adiciona a opção inicial
-//    const defaultOption = document.createElement("option");
-//    defaultOption.value = "";
-//    defaultOption.textContent = "Escolha sua turma";
-//    defaultOption.disabled = true;
-//    defaultOption.selected = true;
-//    selectElement.appendChild(defaultOption);
-
-//    // Preenche o dropdown com as turmas filtradas
-//    for (const nomeTurma in turmasFiltradas) {
-//        const option = document.createElement("option");
-//        option.value = nomeTurma;
-//        option.textContent = nomeTurma;
-//        selectElement.appendChild(option);
-//    }
-
-//    // Armazena os dados das turmas globalmente
-//    window.turmas = turmasFiltradas;
-//    window.presencaDados = [];
-// } catch (error) {
-//    console.error("Erro ao carregar as turmas:", error);
-// }
-// }
-
-
 
 function obterListaDeAlunos(turmaSelecionada) {
 const turma = window.turmas[turmaSelecionada]; // Acesse diretamente a turma pela chave "nome"
@@ -662,9 +621,10 @@ async function exportarRelatorioPDF() {
           alert("Nenhum registro de presença encontrado para esse aluno.");
       }
 
+      /* Condição para ausência de notas para o Aluno
       if (registrosFiltradosNotas.length === 0) {
           alert("Nenhum registro de notas encontrado para esse aluno.");
-      }
+      }*/
 
       const doc = new jspdf.jsPDF("p", "mm", "a4");
       doc.setFont("helvetica", "bold");
@@ -739,20 +699,20 @@ async function exportarRelatorioPDF() {
       // **Tabela de Presenças e Notas por Aula**
       if (registrosFiltradosPresenca.length > 0) {
           const tabelaPresencaDesempenho = registrosFiltradosPresenca.map((registro) => {
-              if (!registro.data) return ["Data Inválida", registro.presenca, registro.nota || "-"];
+              if (!registro.data) return ["Data Inválida", registro.presenca, registro.nota, registro.conteudoAula || "-"];
 
               const data = new Date(registro.data);
 
               if (isNaN(data.getTime())) {
                   console.error("Erro ao processar data para PDF:", registro.data);
-                  return ["Data Inválida", registro.presenca, registro.nota || "-"];
+                  return ["Data Inválida", registro.presenca, registro.nota,registro.conteudoAula || "-"];
               }
 
               data.setDate(data.getDate() + 1);
 
               const dataFormatada = `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
 
-              return [dataFormatada, registro.presenca, registro.nota || "-"];
+              return [dataFormatada, registro.presenca, registro.nota, registro.conteudoAula || "-"];
           });
 
           doc.setFontSize(12);
@@ -761,7 +721,7 @@ async function exportarRelatorioPDF() {
 
           doc.autoTable({
               startY: yOffset,
-              head: [["Data", "Presença", "Nota"]],
+              head: [["Data", "Presença", "Nota", "Conteúdo da Aula"]],
               body: tabelaPresencaDesempenho,
               theme: "grid",
           });
@@ -929,5 +889,92 @@ document.getElementById("turma-select").addEventListener("change", () => {
 });
 };
 
+async function carregarInstrutoresParaCoordenador() {
+  try {
+    const nomeCoordenador = localStorage.getItem("nomeUsuario");
+     //🚭Como era na Vercel
+    const response = await fetch("https://hub-orcin.vercel.app/usuarios"); 
+    //🚭Como é localmente
+    //const response = await fetch("http://localhost:3000/usuarios");
+    const usuarios = await response.json();
+
+    const instrutores = usuarios.filter(
+      (u) => u.coordenador === nomeCoordenador && u.tipo === "Instrutor"
+    );
+
+    const select = document.getElementById("instrutor-select");
+    select.innerHTML = '<option value="" disabled selected>Escolha um instrutor</option>';
+
+    instrutores.forEach((instrutor) => {
+      const option = document.createElement("option");
+      option.value = instrutor.name;
+      option.textContent = instrutor.name;
+      select.appendChild(option);
+    });
+
+    document.getElementById("coordenador-section").style.display = "block";
+  } catch (error) {
+    console.error("Erro ao carregar instrutores (Aluno):", error);
+  }
+}
+
+async function carregarInstrutoresParaCoordenadorTurma() {
+  try {
+    const nomeCoordenador = localStorage.getItem("nomeUsuario");
+    //🚭Como era na Vercel
+    const response = await fetch("https://hub-orcin.vercel.app/usuarios"); 
+    //🚭Como é localmente
+    //const response = await fetch("http://localhost:3000/usuarios");
+    const usuarios = await response.json();
+
+    const instrutores = usuarios.filter(
+      (u) => u.coordenador === nomeCoordenador && u.tipo === "Instrutor"
+    );
+
+    const select = document.getElementById("instrutor-select-turma");
+    select.innerHTML = '<option value="" disabled selected>Escolha um instrutor</option>';
+
+    instrutores.forEach((instrutor) => {
+      const option = document.createElement("option");
+      option.value = instrutor.name;
+      option.textContent = instrutor.name;
+      select.appendChild(option);
+    });
+
+    document.getElementById("coordenador-section-turma").style.display = "block";
+  } catch (error) {
+    console.error("Erro ao carregar instrutores (Turma):", error);
+  }
+}
+window.onload = async function () {
+  await obterNomeUsuario();
+
+  const tipoUsuario = localStorage.getItem("tipoUsuario");
+
+  if (tipoUsuario === "Coordenador") {
+    await carregarInstrutoresParaCoordenador();         // Mostra seção por Aluno
+    await carregarInstrutoresParaCoordenadorTurma();    // Mostra seção por Turma
+  }
+
+  await carregarTurmas();
+
+  document.getElementById("turma-select").addEventListener("change", () => {
+    const turmaSelecionada = document.getElementById("turma-select").value;
+    const alunos = obterListaDeAlunos(turmaSelecionada);
+    console.log("Alunos carregados:", alunos);
+  });
+};
+
+// Relatório por aluno
+document.getElementById("instrutor-select").addEventListener("change", async function () {
+  const instrutorSelecionado = this.value;
+  await carregarTurmas(instrutorSelecionado);
+});
+
+// Relatório por turma
+document.getElementById("instrutor-select-turma").addEventListener("change", async function () {
+  const instrutorSelecionado = this.value;
+  await carregarTurmas(instrutorSelecionado);
+});
 
 

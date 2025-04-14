@@ -22,7 +22,11 @@ document.addEventListener("DOMContentLoaded", () => {
     
     async function carregarPerfil() {
         try {
-            const response = await fetch('https://hub-orcin.vercel.app/perfil', {
+            //🚭Como era na Vercel
+            const response = await fetch("https://hub-orcin.vercel.app/perfil",
+            //🚭Como é localmente
+            //const response = await fetch("http://localhost:3000/perfil",
+                {
                 headers: { 'Authorization': token }
             });
     
@@ -64,7 +68,11 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         try {
-            const response = await fetch('https://hub-orcin.vercel.app/atualizar-perfil', {
+            //🚭Como era na Vercel
+            const response = await fetch("https://hub-orcin.vercel.app/perfil",
+            //🚭Como é localmente
+            //const response = await fetch("http://localhost:3000/perfil",
+                {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
