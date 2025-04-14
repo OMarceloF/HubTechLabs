@@ -7,6 +7,7 @@ const cors = require('cors');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
+const valorCoordenador = coordenador && coordenador.trim() !== "" ? coordenador : null;
 
 const app = express();
 const mysql = require('mysql2/promise');
@@ -756,7 +757,7 @@ app.post('/cadastro', async (req, res) => {
         const sql = `INSERT INTO usuarios (email, senha, tipo, name, phone, city, state, unit, photo, coordenador) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-        const params = [email, senha, tipo, name, phone, city, state, unit, photo, coordenador];
+        const params = [email, senha, tipo, name, phone, city, state, unit, photo, valorCoordenador];
 
         console.log("📝 Executando query SQL com os parâmetros:", params); // Log da query
 
@@ -1105,50 +1106,6 @@ function verificarToken(req, res, next) {
         next();
     });
 }
-
-
-
-// Middleware para verificar permissão usando arquivo `usuarios.json`
-// function verificarPermissao(permissoes) {
-//     return async(req, res, next) => {
-//         const email = req.user ?.email;
-
-
-//         if (!email) {
-//             return res.status(400).send({ message: 'E-mail do usuário não encontrado na requisição.' });
-//         }
-
-//         try {
-//             // Conectar ao banco de dados
-//             const connection = await mysql.createConnection(dbConfig);
-
-//             // Consultar o usuário pelo e-mail
-//             const [usuarios] = await connection.query(
-//                 'SELECT tipo FROM usuarios WHERE email = ?', [email]
-//             );
-
-//             // Fechar a conexão
-//             await connection.end();
-
-//             // Verificar se o usuário existe
-//             if (usuarios.length === 0) {
-//                 return res.status(404).send({ message: 'Usuário não encontrado!' });
-//             }
-
-//             const usuario = usuarios[0];
-
-//             // Verificar se o tipo de usuário tem permissão
-//             if (permissoes.includes(usuario.tipo) || usuario.tipo === 'Diretor/Coordenador') {
-//                 next();
-//             } else {
-//                 res.status(403).send({ message: 'Acesso negado!' });
-//             }
-//         } catch (error) {
-//             console.error("Erro ao verificar permissão:", error);
-//             res.status(500).send({ message: 'Erro ao verificar permissão.' });
-//         }
-//     };
-// }
 
 // Função para carregar usuários
 async function carregarUsuarios() {
