@@ -1,3 +1,34 @@
+// Função para carregar as turmas do backend
+async function obterNomeUsuario() {
+    try {
+        const email = localStorage.getItem("email"); // Obtém o email armazenado
+        if (!email) {
+            throw new Error("Nenhum email encontrado no localStorage");
+        }
+
+        //🚭Como era na Vercel
+        const response = await fetch("https://hub-orcin.vercel.app/usuarios");
+        //🚭Como é localmente
+        //const response = await fetch("http://localhost:3000/usuarios");// Chama a API
+        if (!response.ok) {
+            throw new Error("Erro ao buscar usuários");
+        }
+
+        const usuarios = await response.json(); // Converte a resposta em JSON
+        
+        // Filtra o usuário correspondente ao email armazenado
+        const usuarioEncontrado = usuarios.find(usuario => usuario.email === email);
+        
+        if (usuarioEncontrado) {
+            localStorage.setItem("nomeUsuario", usuarioEncontrado.name); // Salva o nome no localStorage
+        } else {
+            console.warn("Usuário não encontrado");
+        }
+    } catch (error) {
+        console.error("Erro ao obter nome do usuário:", error);
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     function getUserType() {
         return localStorage.getItem("tipoUsuario");
@@ -28,37 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmarExclusaoBtn = document.getElementById("confirmar-exclusao");
     const cancelarExclusaoBtn = document.getElementById("cancelar-exclusao");
 
-    // Função para carregar as turmas do backend
-    async function obterNomeUsuario() {
-        try {
-            const email = localStorage.getItem("email"); // Obtém o email armazenado
-            if (!email) {
-                throw new Error("Nenhum email encontrado no localStorage");
-            }
-    
-            //🚭Como era na Vercel
-            const response = await fetch("https://hub-orcin.vercel.app/usuarios");
-            //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/usuarios");// Chama a API
-            if (!response.ok) {
-                throw new Error("Erro ao buscar usuários");
-            }
-    
-            const usuarios = await response.json(); // Converte a resposta em JSON
-            
-            // Filtra o usuário correspondente ao email armazenado
-            const usuarioEncontrado = usuarios.find(usuario => usuario.email === email);
-            
-            if (usuarioEncontrado) {
-                localStorage.setItem("nomeUsuario", usuarioEncontrado.name); // Salva o nome no localStorage
-            } else {
-                console.warn("Usuário não encontrado");
-            }
-        } catch (error) {
-            console.error("Erro ao obter nome do usuário:", error);
-        }
-    }
-    
+       
     async function carregarTurmas() {
         try { 
             //🚭Como era na Vercel
@@ -199,7 +200,7 @@ salvarTurmaBtn.addEventListener("click", async () => {
 
     try {
         //Como é na Versel
-        const response = await fetch("http://hub-orcin.vercel.app/editar-turma", 
+        const response = await fetch("https://hub-orcin.vercel.app/editar-turmas", 
         //Como é Localmente
         //const response = await fetch("http://localhost:3000/editar-turma", 
             {
