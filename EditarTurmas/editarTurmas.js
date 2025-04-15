@@ -1,170 +1,112 @@
-// Função para carregar as turmas do backend
+// 🔹 Função para obter nome do usuário logado
 async function obterNomeUsuario() {
     try {
-        const email = localStorage.getItem("email"); // Obtém o email armazenado
-        if (!email) {
-            throw new Error("Nenhum email encontrado no localStorage");
-        }
+        const email = localStorage.getItem("email");
+        if (!email) throw new Error("Nenhum email encontrado");
 
-        //🚭Como era na Vercel
         const response = await fetch("https://hub-orcin.vercel.app/usuarios");
-        //🚭Como é localmente
-        //const response = await fetch("http://localhost:3000/usuarios");// Chama a API
-        if (!response.ok) {
-            throw new Error("Erro ao buscar usuários");
-        }
+        if (!response.ok) throw new Error("Erro ao buscar usuários");
 
-        const usuarios = await response.json(); // Converte a resposta em JSON
-        
-        // Filtra o usuário correspondente ao email armazenado
-        const usuarioEncontrado = usuarios.find(usuario => usuario.email === email);
-        
-        if (usuarioEncontrado) {
-            localStorage.setItem("nomeUsuario", usuarioEncontrado.name); // Salva o nome no localStorage
+        const usuarios = await response.json();
+        const usuario = usuarios.find(user => user.email === email);
+
+        if (usuario) {
+            localStorage.setItem("nomeUsuario", usuario.name);
         } else {
             console.warn("Usuário não encontrado");
         }
-    } catch (error) {
-        console.error("Erro ao obter nome do usuário:", error);
+    } catch (err) {
+        console.error("Erro ao obter nome:", err);
     }
 }
 
+// 🔹 Função para carregar turmas do instrutor logado
 async function carregarTurmas() {
-    try { 
-        //🚭Como era na Vercel
+    try {
         const response = await fetch("https://hub-orcin.vercel.app/dados");
-        //🚭Como é localmente
-        //const response = await fetch("http://localhost:3000/dados");// Requisição ao backend
-        if (!response.ok) {
-            throw new Error("Erro ao buscar as turmas");
-        }
-        const turmas = await response.json(); // Dados das turmas
+        if (!response.ok) throw new Error("Erro ao buscar turmas");
 
-        const nomeUsuario = localStorage.getItem("nomeUsuario"); // Obtém o nome do instrutor
-        if (!nomeUsuario) {
-            throw new Error("Nome do usuário não encontrado no localStorage");
-        }
+        const turmas = await response.json();
+        const nomeUsuario = localStorage.getItem("nomeUsuario");
+        if (!nomeUsuario) throw new Error("Nome do usuário não encontrado");
 
-        // Filtra turmas onde o instrutor seja o usuário logado
         const turmasFiltradas = Object.fromEntries(
             Object.entries(turmas).filter(([_, turma]) => turma.instrutor === nomeUsuario)
         );
 
-        const selectElement = document.getElementById("turma-select");
-        selectElement.innerHTML = ""; // Limpa opções anteriores
-
-        // Adiciona a opção inicial
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.textContent = "Escolha sua turma";
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        selectElement.appendChild(defaultOption);
-
-        // Preenche o dropdown com as turmas filtradas
+        const select = document.getElementById("turma-select");
+        select.innerHTML = `<option disabled selected>Escolha sua turma</option>`;
         for (const nomeTurma in turmasFiltradas) {
             const option = document.createElement("option");
             option.value = nomeTurma;
             option.textContent = nomeTurma;
-            selectElement.appendChild(option);
+            select.appendChild(option);
         }
 
-        // Armazena os dados das turmas globalmente
         window.turmas = turmasFiltradas;
-        window.presencaDados = [];
-    } catch (error) {
-        console.error("Erro ao carregar as turmas:", error);
+    } catch (err) {
+        console.error("Erro ao carregar turmas:", err);
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    function getUserType() {
-        return localStorage.getItem("tipoUsuario");
-    }
-    async function verificarAcessoRestrito() {
-        try {
-        const tipoUsuario = getUserType();
+// 🔹 Inicialização
+document.addEventListener("DOMContentLoaded", async () => {
+    const tipoUsuario = localStorage.getItem("tipoUsuario");
+    if (tipoUsuario === "Coordenador") window.location.href = "/Erro/erro.html";
 
-        if (!tipoUsuario) {
-        }
-
-        // Verifica se é um Coordenador e bloqueia o acesso
-        if (tipoUsuario === 'Coordenador') {
-            window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
-        }
-        } catch (error) {
-        }
+    const token = document.cookie.split("; ").find(row => row.startsWith("token="))?.split("=")[1];
+    if (!token) {
+        alert("Você precisa estar logado.");
+        window.location.href = "/Login/login.html";
+        return;
     }
-    verificarAcessoRestrito();
 
     const turmaSelect = document.getElementById("turma-select");
     const alunosList = document.getElementById("alunos-list");
     const turmaDetails = document.getElementById("turma-details");
-    const adicionarAlunoBtn = document.getElementById("adicionar-aluno");
-    const excluirTurmaBtn = document.getElementById("excluir-turma");
-    const salvarTurmaBtn = document.getElementById("salvar-turma");
-    const confirmacaoExclusao = document.getElementById("confirmacao-exclusao");
-    const confirmarExclusaoBtn = document.getElementById("confirmar-exclusao");
-    const cancelarExclusaoBtn = document.getElementById("cancelar-exclusao");
 
-       
-    
-    
-    function obterListaDeAlunos(turmaSelecionada) {
-        const turma = window.turmas[turmaSelecionada]; // Acesse diretamente a turma pela chave "nome"
-        if (turma && turma.alunos) {
-            return turma.alunos;
-        } else {
-            return [];
-        }
+    // 🔹 Perfil
+    try {
+        const res = await fetch("https://hub-orcin.vercel.app/perfil", {
+            headers: { Authorization: token }
+        });
+        const perfil = await res.json();
+        document.getElementById("profile-photo").src = perfil.photo || "/projeto/Imagens/perfil.png";
+    } catch (err) {
+        console.error("Erro ao carregar perfil:", err);
     }
 
-    // Evento de seleção de turma
+    await obterNomeUsuario();
+    await carregarTurmas();
+
+    // 🔹 Ao selecionar turma
     turmaSelect.addEventListener("change", async () => {
-        const turmaSelecionada = turmaSelect.value;
-        
-        if (!turmaSelecionada) return;
+        const turma = turmaSelect.value;
+        const response = await fetch("https://hub-orcin.vercel.app/dados");
+        const dados = await response.json();
 
-        // Carregar os alunos dessa turma
-        try {
-            //🚭Como era na Vercel
-            const response = await fetch("https://hub-orcin.vercel.app/dados");
-            //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/dados"); // Rota para buscar os dados da turma
-            const dados = await response.json();
-
-            // Acessa os dados da turma selecionada corretamente
-            const turma = dados[turmaSelecionada];
-
-            if (!turma || !turma.alunos) {
-                alunosList.innerHTML = "<p>Não há alunos cadastrados para esta turma.</p>";
-                turmaDetails.classList.add("hidden");
-                return;
-            }
-
-            const alunosOrdenados = turma.alunos.sort((a, b) => a.localeCompare(b));
-
-            // Exibe os detalhes da turma
-            turmaDetails.classList.remove("hidden");
-            alunosList.innerHTML = ""; // Limpa a lista de alunos
-
-            alunosOrdenados.forEach(aluno => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <input type="text" value="${aluno}" readonly>
-                    <button class="remover-aluno">Remover</button>
-                `;
-                alunosList.appendChild(li);
-            });
-        } catch (error) {
-            console.error('Erro ao carregar dados da turma:', error);
+        if (!dados[turma]?.alunos) {
+            alunosList.innerHTML = "<p>Não há alunos cadastrados.</p>";
+            turmaDetails.classList.add("hidden");
+            return;
         }
+
+        alunosList.innerHTML = "";
+        turmaDetails.classList.remove("hidden");
+
+        dados[turma].alunos.sort().forEach(aluno => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <input type="text" value="${aluno}" readonly>
+                <button class="remover-aluno">Remover</button>
+            `;
+            alunosList.appendChild(li);
+        });
     });
 
-
-    // Adicionar aluno
-    adicionarAlunoBtn.addEventListener("click", () => {
-        const li = document.createElement('li');
+    // 🔹 Adicionar aluno
+    document.getElementById("adicionar-aluno").addEventListener("click", () => {
+        const li = document.createElement("li");
         li.innerHTML = `
             <input type="text" placeholder="Nome do Aluno">
             <button class="remover-aluno">Remover</button>
@@ -172,191 +114,91 @@ document.addEventListener("DOMContentLoaded", () => {
         alunosList.appendChild(li);
     });
 
-    // Remover aluno
-    alunosList.addEventListener("click", (event) => {
-        if (event.target.classList.contains("remover-aluno")) {
-            event.target.parentElement.remove();
+    // 🔹 Remover aluno
+    alunosList.addEventListener("click", (e) => {
+        if (e.target.classList.contains("remover-aluno")) {
+            e.target.parentElement.remove();
         }
     });
 
-    // Salvar alterações
-    // Salvar alterações
-salvarTurmaBtn.addEventListener("click", async () => {
-    const turma = turmaSelect.value.trim(); // ⚠️ Remove espaços extras
-    let alunos = Array.from(alunosList.querySelectorAll("input"))
-        .map(input => input.value.trim())
-        .filter(aluno => aluno !== "");
+    // 🔹 Salvar alterações
+    document.getElementById("salvar-turma").addEventListener("click", async () => {
+        const turma = turmaSelect.value.trim();
+        const alunos = Array.from(alunosList.querySelectorAll("input"))
+            .map(i => i.value.trim())
+            .filter(Boolean)
+            .sort();
 
-    // 🔎 Debug: mostra os dados antes de enviar
-    console.log("🔎 Dados enviados para salvar turma:", { turma, alunos });
+        if (!turma || alunos.length === 0) {
+            alert("Selecione uma turma e adicione pelo menos um aluno.");
+            return;
+        }
 
-    if (!turma || alunos.length === 0) {
-        alert("Selecione uma turma e adicione pelo menos um aluno.");
-        return;
-    }
+        try {
+            const res = await fetch("https://hub-orcin.vercel.app/editar-turma", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ turma, alunos })
+            });
 
-    // Ordena os nomes dos alunos
-    alunos = alunos.sort((a, b) => a.localeCompare(b));
+            const text = await res.text();
 
-    const dadosAtualizados = { turma, alunos };
+            if (res.ok) {
+                document.getElementById("mensagem-atualizacao").classList.remove("hidden");
+                setTimeout(() => {
+                    document.getElementById("mensagem-atualizacao").classList.add("hidden");
+                    turmaDetails.classList.add("hidden");
+                    alunosList.innerHTML = "";
+                    turmaSelect.value = "";
+                }, 2000);
+            } else {
+                console.error("Erro:", text);
+                alert("Erro ao atualizar a turma: " + text);
+            }
+        } catch (err) {
+            console.error("Erro ao salvar:", err);
+            alert("Erro ao enviar os dados para o servidor.");
+        }
+    });
 
-    try {
-        //Como é na Versel
-        const response = await fetch("https://hub-orcin.vercel.app/editar-turmas", 
-        //Como é Localmente
-        //const response = await fetch("http://localhost:3000/editar-turmas", 
-            {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dadosAtualizados)
+    // 🔹 Excluir turma
+    document.getElementById("excluir-turma").addEventListener("click", () => {
+        document.getElementById("confirmacao-exclusao").classList.remove("hidden");
+    });
+
+    document.getElementById("confirmar-exclusao").addEventListener("click", async () => {
+        const turma = turmaSelect.value;
+        const res = await fetch("https://hub-orcin.vercel.app/excluir-turma", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ turma })
         });
 
-        const responseData = await response.json();
-
-        if (response.ok) {
-            console.log("✅ Resposta do backend:", responseData);
-
-            const mensagemAtualizacao = document.getElementById("mensagem-atualizacao");
-            mensagemAtualizacao.classList.remove("hidden");
-
-            setTimeout(() => {
-                mensagemAtualizacao.classList.add("hidden");
-                turmaDetails.classList.add("hidden");
-                alunosList.innerHTML = "";
-            }, 2000);
-
-            turmaSelect.value = "";
-        } else {
-            console.error("❌ Erro ao atualizar turma:", responseData.message);
-            alert("Erro ao atualizar a turma: " + responseData.message);
+        if (res.ok) {
+            await carregarTurmas();
+            turmaDetails.classList.add("hidden");
+            document.getElementById("confirmacao-exclusao").classList.add("hidden");
         }
-    } catch (error) {
-        console.error("❌ Erro na comunicação com o backend:", error);
-        alert("Erro ao enviar os dados para o servidor.");
-    }
+    });
+
+    document.getElementById("cancelar-exclusao").addEventListener("click", () => {
+        document.getElementById("confirmacao-exclusao").classList.add("hidden");
+    });
 });
 
-
-    // Exibir a confirmação ao clicar em "Excluir Turma"
-    excluirTurmaBtn.addEventListener("click", () => {
-        confirmacaoExclusao.classList.remove("hidden");
-    });
-
-    // Confirmar exclusão
-    confirmarExclusaoBtn.addEventListener("click", async () => {
-        const turma = turmaSelect.value;
-
-        try {
-            //🚭Como era na Vercel
-            const response = await fetch("https://hub-orcin.vercel.app/excluir-turma",
-            //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/excluir-turma",
-                {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ turma })
-            });
-
-            if (response.ok) {
-                carregarTurmas();  // Atualiza a lista de turmas
-                turmaDetails.classList.add("hidden");  // Oculta a seção de edição
-                confirmacaoExclusao.classList.add("hidden");  // Oculta a confirmação de exclusão
-            } else {
-                console.error("Erro ao excluir a turma.");
-            }
-        } catch (error) {
-            console.error("Erro ao excluir a turma:", error);
-        }
-    });
-
-    // Cancelar exclusão
-    cancelarExclusaoBtn.addEventListener("click", () => {
-        confirmacaoExclusao.classList.add("hidden");  // Oculta a confirmação
-    });
-
-    // Função para obter token do cookie
-    function getTokenFromCookie() {
-        const cookies = document.cookie.split("; ");
-        for (const cookie of cookies) {
-            const [key, value] = cookie.split("=");
-            if (key === "token") {
-                return value;
-            }
-        }
-        return null;
-    }
-
-    const token = getTokenFromCookie();
-    if (!token) {
-        alert("Você precisa estar logado para acessar esta página.");
-        window.location.href = "/Login/login.html";
-        return;
-    }
-
-    async function carregarPerfil() {
-        try {
-            //🚭Como era na Vercel
-            const response = await fetch("https://hub-orcin.vercel.app/perfil",
-            //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/perfil",
-            {
-                headers: { Authorization: token }
-            });
-
-            if (!response.ok) {
-                throw new Error("Erro ao carregar os dados do perfil");
-            }
-
-            const data = await response.json();
-
-            // Atualiza os elementos do HTML com os dados do usuário
-            document.getElementById("profile-photo").src = data.photo || "/projeto/Imagens/perfil.png";
-        } catch (error) {
-            console.error("Erro ao carregar perfil:", error);
-            alert("Erro ao carregar os dados do perfil.");
-        }
-    }
-
-    carregarPerfil();
-
-    carregarTurmas();  // Carregar as turmas ao carregar a página
-});
-
+// 🔹 Alterna o menu do perfil
 function toggleMudarPerfil() {
-    const mudarPerfil = document.getElementById("mudarPerfil");
-    // Alterna entre mostrar e esconder
-    if (mudarPerfil.style.display === "none" || !mudarPerfil.style.display) {
-        mudarPerfil.style.display = "block"; // Mostra a caixa
-        mudarPerfil.style.display = "flex"; 
-    } else {
-        mudarPerfil.style.display = "none"; // Esconde a caixa
-    }
+    const box = document.getElementById("mudarPerfil");
+    box.style.display = box.style.display === "flex" ? "none" : "flex";
 }
 
-// Fecha a caixa ao clicar fora dela
-document.addEventListener("click", (event) => {
-    const mudarPerfil = document.getElementById("mudarPerfil");
+document.addEventListener("click", (e) => {
+    const perfilBox = document.getElementById("mudarPerfil");
     const userInfo = document.getElementById("user-info");
 
-    // Verifica se o clique foi fora da caixa ou da imagem
-    if (
-        mudarPerfil.style.display === "flex" &&
-        !mudarPerfil.contains(event.target) &&
-        !userInfo.contains(event.target)
-    ) {
-        mudarPerfil.style.display = "none";
+    if (perfilBox.style.display === "flex" &&
+        !perfilBox.contains(e.target) &&
+        !userInfo.contains(e.target)) {
+        perfilBox.style.display = "none";
     }
 });
-
-// Chamar a função ao carregar a página
-window.onload = async function() {
-    await obterNomeUsuario();
-    await carregarTurmas(); // Mantendo a função original
-
-    // Adiciona evento de mudança para atualizar os alunos ao selecionar a turma
-    document.getElementById("turma-select").addEventListener("change", () => {
-        const turmaSelecionada = document.getElementById("turma-select").value;
-        const alunos = obterListaDeAlunos(turmaSelecionada);
-    });
-};
-

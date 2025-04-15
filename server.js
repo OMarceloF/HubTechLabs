@@ -906,7 +906,7 @@ app.get('/avaliacoes', async(req, res) => {
     }
 });
 
-app.put('/editar-turmas', async(req, res) => {
+app.put('/editar-turma', async(req, res) => {
     const { turma, alunos } = req.body;
 
     if (!turma || !alunos || alunos.length === 0) {
