@@ -95,14 +95,14 @@ app.post('/salvar-turma', async (req, res) => {
 
         // Inserir os alunos associados à turma
         const updates = alunos.map(aluno => {
+            const { nome, nota, observacao } = aluno;
             return connection.execute(
                 'UPDATE presencas SET nota = ?, observacao = ? WHERE turma_id = ? AND data = ? AND aluno = ?',
-                [aluno.nota, aluno.observacao || '', turmaId, dataFormatada, aluno.nome]
+                [nota, observacao || '', turmaId, dataFormatada, nome]
             );
         });
 
         await Promise.all(updates);
-
 
         await connection.end();
         res.status(201).json({ message: 'Turma cadastrada com sucesso!' });
@@ -585,7 +585,6 @@ app.post('/atualizar-notas', async (req, res) => {
     }
 
     try {
-        // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
 
         // Obter o ID da turma
@@ -594,79 +593,39 @@ app.post('/atualizar-notas', async (req, res) => {
         );
 
         if (turmaResult.length === 0) {
+            await connection.end();
             return res.status(404).send({ message: `Turma "${turma}" não encontrada.` });
         }
 
         const turmaId = turmaResult[0].id;
-        console.log(`ID da turma "${turma}": ${turmaId}`);
+        const dataFormatada = new Date(data).toISOString().split('T')[0];
 
-        // Converte a data para o formato YYYY-MM-DD (sem horário)
-        const dataFormatada = new Date(data).toISOString().split('T')[0]; // Formato YYYY-MM-DD
-        console.log(`Data formatada para o banco de dados: ${dataFormatada}`);
+        // Executa todas as atualizações em paralelo com Promise.all
+        const updates = alunos.map(aluno => {
+            const { nome, nota, observacao } = aluno;
 
-        // Atualizar as notas na tabela `presencas`
-        for (const aluno of alunos) {
-            if (typeof aluno.nota === "undefined" || aluno.nota === null) {
-                return res.status(400).send({ message: `Nota não fornecida para o aluno ${aluno.nome}.` });
+            // Validações opcionais
+            if (typeof nota === "undefined" || isNaN(nota)) {
+                return Promise.resolve(); // Ignora aluno inválido
             }
 
-            if (isNaN(aluno.nota)) {
-                return res.status(400).send({ message: `A nota para o aluno ${aluno.nome} não é válida.` });
-            }
-
-            // Verifica se o aluno existe na tabela presencas para a turma e data especificados
-            const [presenca] = await connection.execute(
-                'SELECT * FROM presencas WHERE turma_id = ? AND data = ? AND aluno = ?', [turmaId, dataFormatada, aluno.nome] // Usando a data formatada sem o horário
-            );
-
-            console.log(`Consultando presença para aluno ${aluno.nome}:`, presenca);
-
-            if (presenca.length === 0) {
-                console.log(`Aluno "${aluno.nome}" não encontrado para a turma "${turma}" na data "${dataFormatada}"`);
-                continue; // Pula para o próximo aluno, se não for encontrado
-            }
-
-            // Se o aluno existir, realiza o UPDATE
-            const [updateResult] = await connection.execute(
+            return connection.execute(
                 'UPDATE presencas SET nota = ?, observacao = ? WHERE turma_id = ? AND data = ? AND aluno = ?',
-                [aluno.nota, aluno.observacao, turmaId, dataFormatada, aluno.nome]
+                [nota, observacao || '', turmaId, dataFormatada, nome]
             );
+        });
 
-            if (updateResult.affectedRows === 0) {
-                console.log(`Não foi possível atualizar a nota para o aluno ${aluno.nome} na turma ${turma} na data ${dataFormatada}`);
-            } else {
-                console.log(`Nota do aluno "${aluno.nome}" atualizada com sucesso!`);
-            }
+        await Promise.all(updates);
 
-            // Atualizar as notas e observações na tabela `presencas`
-            for (const aluno of alunos) {
-                const { nome, nota, observacao } = aluno;
-
-                if (!nome || typeof nota === 'undefined' || !data) {
-                    console.error(`Dados inválidos para o aluno:`, aluno);
-                    continue;
-                }
-
-                const [updateResult] = await connection.execute(
-                    'UPDATE presencas SET nota = ?, observacao = ? WHERE turma_id = ? AND data = ? AND aluno = ?',
-                    [nota, observacao || '', turmaId, data, nome]
-                );
-
-                if (updateResult.affectedRows === 0) {
-                    console.log(`Não foi possível atualizar as informações do aluno ${nome}.`);
-                }
-            }
-        }
-
-        // Fechar a conexão
         await connection.end();
-
         res.status(200).send({ message: "Notas atualizadas com sucesso!" });
+
     } catch (error) {
         console.error("Erro ao atualizar notas:", error);
         res.status(500).send({ message: "Erro ao atualizar as notas." });
     }
 });
+
 
 const avaliacoesPath = path.join(__dirname, 'output', 'avaliacoes.json'); // Caminho atualizado para a pasta /output
 
