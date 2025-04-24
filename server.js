@@ -43,7 +43,7 @@ const usuariosPath = path.join(__dirname, 'output', 'usuarios.json');
 
 //🚭Como era na Vercel
 const dbConfig = {
-   host: process.env.DB_HOST,
+    host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
@@ -51,12 +51,12 @@ const dbConfig = {
 };
 
 //🚭Como é localmente
- //const dbConfig = {
-   //  host: 'localhost',
-     //user: 'root',
-     //password: '',
-     //database: 'bcufmlxvmlcgun7cszbu'
- //};
+//const dbConfig = {
+//  host: 'localhost',
+//user: 'root',
+//password: '',
+//database: 'bcufmlxvmlcgun7cszbu'
+//};
 
 app.post('/salvar-turma', async (req, res) => {
     const { unidade_id, turma, instrutor, alunos } = req.body;
@@ -94,12 +94,15 @@ app.post('/salvar-turma', async (req, res) => {
         const turmaId = result.insertId;
 
         // Inserir os alunos associados à turma
-        for (const aluno of alunos) {
-            await connection.execute(
-                'INSERT INTO alunos (turma_id, nome) VALUES (?, ?)',
-                [turmaId, aluno]
+        const updates = alunos.map(aluno => {
+            return connection.execute(
+                'UPDATE presencas SET nota = ?, observacao = ? WHERE turma_id = ? AND data = ? AND aluno = ?',
+                [aluno.nota, aluno.observacao || '', turmaId, dataFormatada, aluno.nome]
             );
-        }
+        });
+
+        await Promise.all(updates);
+
 
         await connection.end();
         res.status(201).json({ message: 'Turma cadastrada com sucesso!' });
@@ -111,7 +114,7 @@ app.post('/salvar-turma', async (req, res) => {
 });
 
 // Rota para salvar os dados de presença 
-app.post('/salvar-presenca', async(req, res) => {
+app.post('/salvar-presenca', async (req, res) => {
     const { turma, data, dataSalvo, conteudoAula, alunos } = req.body;
 
     if (!turma || !data || !conteudoAula || !alunos || alunos.length === 0) {
@@ -147,7 +150,7 @@ app.post('/salvar-presenca', async(req, res) => {
         await connection.query(
             'INSERT INTO presencas (turma_id, data, aluno, presenca, nota, observacao, conteudoAula) VALUES ?',
             [presencas]
-        );        
+        );
 
         // Fechar a conexão
         await connection.end();
@@ -208,7 +211,7 @@ app.get('/Cadastro/cadastro.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'Cadastro', 'cadastro.js'));
 });
 
-app.get('/Perfil/perfil.html',(req, res) => {
+app.get('/Perfil/perfil.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'Perfil', 'perfil.html'));
 });
 
@@ -405,7 +408,7 @@ app.get('/conteudo-aula', async (req, res) => {
 
 // Inicializa o servidor
 app.listen(port, () => {
-    console.log(`Servidor rodando em https://ub-orcin.vercel.app:${port}/Login/login.html`);	
+    console.log(`Servidor rodando em https://ub-orcin.vercel.app:${port}/Login/login.html`);
     //console.log(`Servidor rodando em http://localhost:${port}/Login/login.html`);
 });
 
@@ -449,7 +452,7 @@ app.get('/NotasAvaliacoes/notasavaliacoes.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'NotasAvaliacoes', 'notasAvaliacoes.js'));
 });
 
-app.get('/NotasAvaliacoes/notasavaliacoes.html',  (req, res) => {
+app.get('/NotasAvaliacoes/notasavaliacoes.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'NotasAvaliacoes', 'notasAvaliacoes.html'));
 });
 
@@ -498,7 +501,7 @@ app.get('/VisualizarAvaliacao/visualizarAvaliacao.js', (req, res) => {
 });
 
 
-app.get('/dados', async(req, res) => {
+app.get('/dados', async (req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -534,12 +537,12 @@ app.get('/dados', async(req, res) => {
 app.get('/unidades', async (req, res) => {
     try {
         const connection = await mysql.createConnection(dbConfig);
-        
+
         // Buscar todas as unidades cadastradas
         const [unidades] = await connection.query('SELECT id, unidade FROM unidades');
 
         await connection.end();
-        
+
         // Estruturar os dados para fácil acesso
         const unidadesMap = {};
         unidades.forEach(u => {
@@ -554,7 +557,7 @@ app.get('/unidades', async (req, res) => {
 });
 
 
-app.get('/listar-turmas', async(req, res) => {
+app.get('/listar-turmas', async (req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -574,7 +577,7 @@ app.get('/listar-turmas', async(req, res) => {
     }
 });
 
-app.post('/atualizar-notas', async(req, res) => {
+app.post('/atualizar-notas', async (req, res) => {
     const { turma, data, alunos } = req.body;
 
     if (!turma || !data || !alunos || alunos.length === 0) {
@@ -668,7 +671,7 @@ app.post('/atualizar-notas', async(req, res) => {
 const avaliacoesPath = path.join(__dirname, 'output', 'avaliacoes.json'); // Caminho atualizado para a pasta /output
 
 // Rota para salvar avaliação
-app.post('/salvar-avaliacao', async(req, res) => {
+app.post('/salvar-avaliacao', async (req, res) => {
     const { turma, nomeAvaliacao, dataAvaliacao, conteudoAvaliacao } = req.body;
 
     if (!turma || !nomeAvaliacao || !dataAvaliacao || !conteudoAvaliacao) {
@@ -732,7 +735,7 @@ async function carregarUsuarios() {
 
 app.post('/cadastro', async (req, res) => {
     const { email, senha, tipo, name, phone, city, state, unit, photo, coordenador } = req.body;
-    
+
     console.log("📦 Dados recebidos:", req.body); // Log dos dados recebidos
 
     // Verifica se os dados obrigatórios estão presentes
@@ -775,10 +778,10 @@ app.post('/cadastro', async (req, res) => {
 });
 
 
-  
+
 
 // Rota para verificar o tipo de usuário
-app.get('/verificar-acesso', async(req, res) => {
+app.get('/verificar-acesso', async (req, res) => {
     const { email } = req.query;
 
     if (!email) {
@@ -812,7 +815,7 @@ app.get('/verificar-acesso', async(req, res) => {
 
 
 // Rota para salvar notas
-app.post('/salvar-notas-avaliacoes', async(req, res) => {
+app.post('/salvar-notas-avaliacoes', async (req, res) => {
     const { turma, avaliacao, notas } = req.body;
 
     if (!turma || !avaliacao || !notas || notas.length === 0) {
@@ -872,7 +875,7 @@ app.post('/salvar-notas-avaliacoes', async(req, res) => {
 
 
 // Rota para obter as avaliações
-app.get('/avaliacoes', async(req, res) => {
+app.get('/avaliacoes', async (req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -906,7 +909,7 @@ app.get('/avaliacoes', async(req, res) => {
     }
 });
 
-app.put('/editar-turma', async(req, res) => {
+app.put('/editar-turma', async (req, res) => {
     const { turma, alunos } = req.body;
 
     if (!turma || !alunos || alunos.length === 0) {
@@ -949,7 +952,7 @@ app.put('/editar-turma', async(req, res) => {
     }
 });
 
-app.delete('/excluir-turma', async(req, res) => {
+app.delete('/excluir-turma', async (req, res) => {
     const { turma } = req.body;
 
     if (!turma) {
@@ -988,7 +991,7 @@ app.delete('/excluir-turma', async(req, res) => {
 
 
 // Rota para obter as notas das avaliações
-app.get('/notasavaliacoes', async(req, res) => {
+app.get('/notasavaliacoes', async (req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -1038,7 +1041,7 @@ app.get('/notasavaliacoes', async(req, res) => {
 });
 
 // Rota para obter as presenças
-app.get('/dados-presenca', async(req, res) => {
+app.get('/dados-presenca', async (req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -1127,7 +1130,7 @@ async function carregarUsuarios() {
 }
 
 // Rota protegida para criação de turma (apenas DEV e Coordenador)
-app.post('/salvar-turma', verificarToken, async(req, res) => {
+app.post('/salvar-turma', verificarToken, async (req, res) => {
     const { turma, instrutor, alunos } = req.body;
 
     if (!turma || !instrutor || !alunos || alunos.length === 0) {
@@ -1221,7 +1224,7 @@ app.get("/instrutores-por-coordenador", async (req, res) => {
 // });
 
 // Rota para obter os dados do usuário logado
-app.get('/usuario-logado', async(req, res) => {
+app.get('/usuario-logado', async (req, res) => {
     const token = req.headers.authorization;
 
     if (!token) {
@@ -1265,7 +1268,7 @@ app.get('/usuario-logado', async(req, res) => {
 
 
 
-app.post('/login', async(req, res) => {
+app.post('/login', async (req, res) => {
     const { email, senha } = req.body;
 
     if (!email || !senha) {
@@ -1350,7 +1353,7 @@ async function atualizarUsuario(email, novosDados) {
     }
 }
 
-app.get('/perfil', async(req, res) => {
+app.get('/perfil', async (req, res) => {
     const token = req.headers.authorization;
 
     if (!token) {
@@ -1434,7 +1437,7 @@ async function atualizarUsuario(email, novosDados) {
 }
 
 // Rota para atualizar o perfil do usuário
-app.post('/atualizar-perfil', async(req, res) => {
+app.post('/atualizar-perfil', async (req, res) => {
     const token = req.headers.authorization;
 
     if (!token) {
@@ -1541,7 +1544,7 @@ app.post('/upload-image', upload.single('photo'), (req, res) => {
     res.status(200).send({ imageUrl });
 });
 
-app.get('/usuarios', async(req, res) => {
+app.get('/usuarios', async (req, res) => {
     try {
         // Conectar ao banco de dados
         const connection = await mysql.createConnection(dbConfig);
@@ -1565,7 +1568,7 @@ app.get('/listar-unidades', async (req, res) => {
         const connection = await mysql.createConnection(dbConfig);
         const [rows] = await connection.execute('SELECT id, unidade, photo FROM unidades');
         await connection.end();
-        
+
         res.status(200).json(rows);
     } catch (error) {
         console.error('Erro ao buscar unidades:', error);
@@ -1575,7 +1578,7 @@ app.get('/listar-unidades', async (req, res) => {
 
 
 // Atualizar a rota de criar turma para associar a unidade
-app.post('/salvar-turma', async(req, res) => {
+app.post('/salvar-turma', async (req, res) => {
     const { turma, instrutor, alunos, unidade_id } = req.body;
 
     if (!turma || !instrutor || !unidade_id || !alunos || alunos.length === 0) {
@@ -1623,7 +1626,7 @@ app.post("/cadastrar-unidade", async (req, res) => {
 
         const connection = await mysql.createConnection(dbConfig);
         await connection.execute(
-            "INSERT INTO unidades (unidade, escola, cidade, coordenador) VALUES (?, ?, ?, ?)", 
+            "INSERT INTO unidades (unidade, escola, cidade, coordenador) VALUES (?, ?, ?, ?)",
             [unidade, escola, cidade, coordenador]
         );
         await connection.end();
@@ -1658,7 +1661,7 @@ app.get('/listar-unidades', async (req, res) => {
 app.get("/listar-coordenadores", async (req, res) => {
     try {
         const connection = await mysql.createConnection(dbConfig);
-        
+
         // Buscar apenas usuários que são Coordenadores
         const [coordenadores] = await connection.execute(
             "SELECT name, email FROM usuarios WHERE tipo = 'Coordenador'"
@@ -1677,7 +1680,7 @@ app.get("/listar-coordenadores", async (req, res) => {
 app.get("/listar-instrutores", async (req, res) => {
     try {
         const connection = await mysql.createConnection(dbConfig);
-        
+
         // Buscar apenas usuários que são Instrutores
         const [instrutores] = await connection.execute(
             "SELECT name, email FROM usuarios WHERE tipo = 'Instrutor'"
@@ -1693,7 +1696,7 @@ app.get("/listar-instrutores", async (req, res) => {
 });
 app.get("/instrutores-por-coordenador", async (req, res) => {
     const coordenador = req.query.coordenador; // Obtém o nome do coordenador do query string
-    
+
     if (!coordenador) {
         return res.status(400).send("Coordenador não fornecido");
     }
