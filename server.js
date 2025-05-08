@@ -93,14 +93,19 @@ app.post('/salvar-turma', async (req, res) => {
 
         const turmaId = result.insertId;
 
-        // Inserir os alunos associados à turma
+        /*// Inserir os alunos associados à turma
         const updates = alunos.map(aluno => {
             const { nome, nota, observacao } = aluno;
             return connection.execute(
                 'UPDATE presencas SET nota = ?, observacao = ? WHERE turma_id = ? AND data = ? AND aluno = ?',
                 [nota, observacao || '', turmaId, dataFormatada, nome]
             );
-        });
+        });*/
+
+        // Inserir alunos na tabela `alunos`
+        const alunoValues = alunos.map(nome => [nome, turmaId]);
+        await connection.query('INSERT INTO alunos (nome, turma_id) VALUES ?', [alunoValues]);
+
 
         await Promise.all(updates);
 
