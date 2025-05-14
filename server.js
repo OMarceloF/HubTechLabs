@@ -16,10 +16,6 @@ const mysql = require('mysql2/promise');
 const port = 3000;
 const secretKey = "sua_chave_secreta_super_segura";
 
-// importação login
-// gpt pediu para apagar essa linha-> import express from "express";
-//import path from "path";
-
 
 // 👇 Aqui você define a pasta pública
 app.use(express.static(path.join(__dirname, "../public")));
@@ -55,97 +51,38 @@ const dbConfig = {
 //  host: 'localhost',
 //user: 'root',
 //password: '',
-//database: 'bcufmlxvmlcgun7cszbu'
+//database: 'buldjoxpabj83wr7hks0'
 //};
 
 app.post('/salvar-turma', async (req, res) => {
     const { turma, instrutor, alunos, unidade_id } = req.body;
-  
-    if (!turma || !instrutor || !unidade_id || !alunos || alunos.length === 0) {
-      return res.status(400).send({ message: 'Preencha todos os campos obrigatórios!' });
-    }
-  
-    try {
-      const connection = await mysql.createConnection(dbConfig);
-  
-      const [result] = await connection.execute(
-        'INSERT INTO turmas (nome, instrutor, unidade_id) VALUES (?, ?, ?)',
-        [turma, instrutor, unidade_id]
-      );
-  
-      const turmaId = result.insertId;
-  
-      const alunoValues = alunos.map(nome => [nome, turmaId]);
-      await connection.query('INSERT INTO alunos (nome, turma_id) VALUES ?', [alunoValues]);
-  
-      await connection.end();
-  
-      res.status(201).send({ message: 'Turma salva com sucesso!' });
-    } catch (error) {
-      console.error('Erro ao salvar a turma:', error);
-      res.status(500).send({ message: 'Erro ao salvar a turma.' });
-    }
-  });
-  
-/*app.post('/salvar-turma', async (req, res) => {
-    const { unidade_id, turma, instrutor, alunos } = req.body;
 
-    if (!unidade_id || !turma || !instrutor || alunos.length === 0) {
-        return res.status(400).json({ message: 'Todos os campos são obrigatórios!' });
+    if (!turma || !instrutor || !unidade_id || !alunos || alunos.length === 0) {
+        return res.status(400).send({ message: 'Preencha todos os campos obrigatórios!' });
     }
 
     try {
         const connection = await mysql.createConnection(dbConfig);
 
-        let finalUnidadeId = unidade_id;
-
-        // Verifica se a unidade já existe no banco
-        const [unidadeExistente] = await connection.execute(
-            'SELECT id FROM unidades WHERE id = ?',
-            [unidade_id]
-        );
-
-        // Se a unidade não existir, cria uma nova e pega o ID gerado
-        if (unidadeExistente.length === 0) {
-            const [novaUnidade] = await connection.execute(
-                'INSERT INTO unidades (unidade) VALUES (?)',
-                [unidade_id]
-            );
-            finalUnidadeId = novaUnidade.insertId; // Pega o novo ID da unidade criada
-        }
-
-        // Inserir a turma associada à unidade
         const [result] = await connection.execute(
-            'INSERT INTO turmas (unidade_id, nome, instrutor) VALUES (?, ?, ?)',
-            [finalUnidadeId, turma, instrutor]
+            'INSERT INTO turmas (nome, instrutor, unidade_id) VALUES (?, ?, ?)',
+            [turma, instrutor, unidade_id]
         );
 
         const turmaId = result.insertId;
 
-        /* // Inserir os alunos associados à turma
-        const updates = alunos.map(aluno => {
-            const { nome, nota, observacao } = aluno;
-            return connection.execute(
-                'UPDATE presencas SET nota = ?, observacao = ? WHERE turma_id = ? AND data = ? AND aluno = ?',
-                [nota, observacao || '', turmaId, dataFormatada, nome]
-            );
-        });*/
-
-     /*   // Inserir alunos na tabela `alunos`
         const alunoValues = alunos.map(nome => [nome, turmaId]);
         await connection.query('INSERT INTO alunos (nome, turma_id) VALUES ?', [alunoValues]);
 
-
-        await Promise.all(updates);
-
         await connection.end();
-        res.status(201).json({ message: 'Turma cadastrada com sucesso!' });
 
+        res.status(201).send({ message: 'Turma salva com sucesso!' });
     } catch (error) {
-        console.error('Erro ao cadastrar turma:', error);
-        res.status(500).json({ message: 'Erro ao cadastrar a turma.' });
+        console.error('Erro ao salvar a turma:', error);
+        res.status(500).send({ message: 'Erro ao salvar a turma.' });
     }
-}); */
+});
+
 
 // Rota para salvar os dados de presença 
 app.post('/salvar-presenca', async (req, res) => {
@@ -442,7 +379,7 @@ app.get('/conteudo-aula', async (req, res) => {
 
 // Inicializa o servidor
 app.listen(port, () => {
-    console.log(`Servidor rodando em https://ub-orcin.vercel.app:${port}/Login/login.html`);
+    console.log(`Servidor rodando em https://hub-orcin.vercel.app:${port}/Login/login.html`);
     //console.log(`Servidor rodando em http://localhost:${port}/Login/login.html`);
 });
 
@@ -460,6 +397,18 @@ app.get('/CriarTurmas/criarTurmas.js', (req, res) => {
 
 app.get('/EditarTurmas/editarTurmas.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'EditarTurmas', 'editarTurmas.html'));
+});
+
+app.get('/EditarTurmas/alterarAlunos.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'EditarTurmas', 'alterarAlunos.html'));
+});
+
+app.get('/EditarTurmas/alterarAlunos.css', (req, res) => {
+    res.sendFile(path.join(__dirname, 'EditarTurmas', 'alterarAlunos.css'));
+});
+
+app.get('/EditarTurmas/alterarAlunos.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'EditarTurmas', 'alterarAlunos.js'));
 });
 
 app.get('/EditarTurmas/editarTurmas.css', (req, res) => {
@@ -553,6 +502,7 @@ app.get('/dados', async (req, res) => {
         const turmasEstruturadas = {};
         turmas.forEach(turma => {
             turmasEstruturadas[turma.nome] = {
+                id: turma.id,
                 instrutor: turma.instrutor,
                 unidade_id: turma.unidade_id,
                 alunos: alunos
@@ -944,6 +894,28 @@ app.put('/editar-turma', async (req, res) => {
         res.status(500).send({ message: "Erro ao editar a turma." });
     }
 });
+app.put('/atualizar-presencas-aluno', async (req, res) => {
+    const { aluno, turmaIdAntiga, turmaIdNova } = req.body;
+
+    if (!aluno || !turmaIdAntiga || !turmaIdNova) {
+        return res.status(400).json({ message: 'Dados incompletos para atualizar presença.' });
+    }
+
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        await connection.execute(
+            'UPDATE presencas SET turma_id = ? WHERE aluno = ? AND turma_id = ?',
+            [turmaIdNova, aluno, turmaIdAntiga]
+        );
+        await connection.end();
+
+        res.status(200).json({ message: 'Presenças atualizadas com sucesso.' });
+    } catch (error) {
+        console.error('Erro ao atualizar presenças:', error);
+        res.status(500).json({ message: 'Erro ao atualizar presenças.' });
+    }
+});
+
 
 app.delete('/excluir-turma', async (req, res) => {
     const { turma } = req.body;
@@ -1122,51 +1094,6 @@ async function carregarUsuarios() {
     }
 }
 
-// Rota protegida para criação de turma (apenas DEV e Coordenador)
-/*app.post('/salvar-turma', verificarToken, async (req, res) => {
-    const { turma, instrutor, alunos } = req.body;
-
-    if (!turma || !instrutor || !alunos || alunos.length === 0) {
-        return res.status(400).send({ message: "Nome da turma, nome do instrutor ou lista de alunos está vazia." });
-    }
-
-    try {
-        // Conectar ao banco de dados
-        const connection = await mysql.createConnection(dbConfig);
-
-        // Verificar se a turma já existe
-        const [turmaExistente] = await connection.query(
-            'SELECT id FROM turmas WHERE nome = ?', [turma]
-        );
-
-        if (turmaExistente.length > 0) {
-            await connection.end();
-            return res.status(400).send({ message: "A turma já existe." });
-        }
-
-        // Inserir a turma na tabela `turmas`
-        const [turmaResult] = await connection.execute(
-            'INSERT INTO turmas (nome, instrutor) VALUES (?, ?)', [turma, instrutor]
-        );
-
-        const turmaId = turmaResult.insertId;
-
-        // Inserir os alunos na tabela `alunos`
-        const alunosValores = alunos.map(aluno => [aluno, turmaId]);
-        await connection.query(
-            'INSERT INTO alunos (nome, turma_id) VALUES ?', [alunosValores]
-        );
-
-        // Fechar a conexão
-        await connection.end();
-
-        res.status(200).send({ message: "Turma salva com sucesso!" });
-    } catch (error) {
-        console.error("Erro ao salvar a turma:", error);
-        res.status(500).send({ message: "Erro ao salvar a turma." });
-    }
-});*/
-
 // Rota para acessar diário (Instrutor e Coordenador têm acesso)
 app.get('/Diario/indexDiario.html', verificarToken, (req, res) => {
     try {
@@ -1205,16 +1132,6 @@ app.get("/instrutores-por-coordenador", async (req, res) => {
         return res.status(500).send("Erro interno do servidor.");
     }
 });
-//...
-
-// app.get('/usuario-logado', verificarToken, (req, res) => {
-//     const usuarios = JSON.parse(fs.readFileSync(path.join(__dirname, 'output', 'usuarios.json'), 'utf8'));
-//     const usuario = usuarios.find(u => u.email === req.user.email);
-//     if (!usuario) {
-//         return res.status(404).send({ message: 'Usuário não encontrado!' });
-//     }
-//     res.status(200).send({ email: usuario.email, tipo: usuario.tipo });
-// });
 
 // Rota para obter os dados do usuário logado
 app.get('/usuario-logado', async (req, res) => {
@@ -1223,6 +1140,7 @@ app.get('/usuario-logado', async (req, res) => {
     if (!token) {
         return res.status(401).send({ message: 'Token não fornecido!' });
     }
+
 
     try {
         // Verificar e decodificar o token
@@ -1568,39 +1486,6 @@ app.get('/listar-unidades', async (req, res) => {
         res.status(500).json({ message: 'Erro ao buscar unidades.' });
     }
 });
-
-
-// Atualizar a rota de criar turma para associar a unidade
-/*app.post('/salvar-turma', async (req, res) => {
-    const { turma, instrutor, alunos, unidade_id } = req.body;
-
-    if (!turma || !instrutor || !unidade_id || !alunos || alunos.length === 0) {
-        return res.status(400).send({ message: 'Preencha todos os campos obrigatórios!' });
-    }
-
-    try {
-        const connection = await mysql.createConnection(dbConfig);
-        const [result] = await connection.execute(
-            'INSERT INTO turmas (nome, instrutor, unidade_id) VALUES (?, ?, ?)', [turma, instrutor, unidade_id]
-        );
-        const turmaId = result.insertId;
-
-        const alunoValues = alunos.map(aluno => [aluno, turmaId]);
-        //..
-        const [rows] = await connection.execute('SELECT MAX(id) AS last_id FROM usuarios');
-        const lastId = rows[0].last_id || 0; // Se não houver nenhum ID, começamos com 0
-        const newId = lastId + 1; // Incrementa o último ID
-        //..
-        await connection.query('INSERT INTO alunos (nome, turma_id) VALUES ?', [alunoValues]);
-
-        await connection.end();
-
-        res.status(201).send({ message: 'Turma salva com sucesso!' });
-    } catch (error) {
-        console.error('Erro ao salvar a turma:', error);
-        res.status(500).send({ message: 'Erro ao salvar a turma.' });
-    }
-});*/
 
 // Middleware para processar formulários sem JSON
 app.use(cors());

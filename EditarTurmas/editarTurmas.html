@@ -12,10 +12,12 @@
     <header class="header">
         <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
         <div class="logo-container">
-            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo"></a>
+            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa"
+                    class="logo"></a>
         </div>
         <div class="user-info" id="user-info">
-            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo" onclick="toggleMudarPerfil()">
+            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo"
+                onclick="toggleMudarPerfil()">
         </div>
 
         <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
@@ -39,13 +41,15 @@
                 <ul id="alunos-list" class="alunos-list"></ul>
                 <button type="button" class="primary-button" id="adicionar-aluno">Adicionar Aluno</button>
                 <br><br>
+                <button class="primary-button" id="alterar-alunos">Alterar Alunos</button>
+                <br><br>
                 <button type="button" class="danger-button" id="excluir-turma">Excluir Turma</button>
                 <br><br>
                 <div id="confirmacao-exclusao" class="hidden">
                     <p>Tem certeza que deseja excluir esta turma?</p>
                     <button id="confirmar-exclusao" class="danger-button1">Sim</button>
                     <button id="cancelar-exclusao" class="primary-button">Não</button>
-                </div>                
+                </div>
                 <button type="button" class="primary-button" id="salvar-turma">Salvar Alterações</button>
                 <div id="mensagem-atualizacao" class="mensagem-sucesso hidden">Atualizações salvas com sucesso!</div>
 

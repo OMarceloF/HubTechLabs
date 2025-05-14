@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Aluno de Turma</title>
+    <link rel="stylesheet" href="alterarAlunos.css">
+</head>
+<body>
+
+    <header class="header">
+        <a href="/EditarTurmas/editarTurmas.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
+        <div class="logo-container">
+            <a href="/projeto/public/index.html">
+                <img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo">
+            </a>
+        </div>
+        <div class="user-info" id="user-info">
+            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo"
+                 onclick="toggleMudarPerfil()">
+        </div>
+
+        <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
+            <a href="/Perfil/perfil.html">Editar Perfil</a><br>
+            <a href="/Login/login.html">Sair</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Alterar Alunos de Turmas</h2>
+
+            <div class="form-group">
+                <label for="turma-origem">Turma de Origem:</label>
+                <select id="turma-origem">
+                    <option selected disabled>Selecione a turma</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="aluno">Aluno:</label>
+                <select id="aluno">
+                    <option selected disabled>Selecione o aluno</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="turma-destino">Turma de Destino:</label>
+                <select id="turma-destino">
+                    <option selected disabled>Selecione a nova turma</option>
+                </select>
+            </div>
+
+            <button id="mover-aluno" class="primary-button">Mover Aluno</button>
+            <div id="mensagem" class="mensagem-sucesso hidden"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 Hub Tech Labs. Todos os direitos reservados.</p>
+    </footer>
+
+    <script src="alterarAlunos.js"></script>
+</body>
+</html>

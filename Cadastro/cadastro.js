@@ -147,7 +147,9 @@ tipoSelect.addEventListener("change", async () => {
         return null;
     }
 
-    const token = getTokenFromCookie();
+    const token = localStorage.getItem('token');
+    //const token = getTokenFromCookie();
+
     if (!token) {
         alert("Você precisa estar logado para acessar esta página.");
         window.location.href = "/Login/login.html";

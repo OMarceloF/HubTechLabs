@@ -1,21 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // function getUserType() {
-    //     return localStorage.getItem("tipoUsuario");
-    // }
-    // async function verificarAcessoRestrito() {
-    //     try {
-    //     const tipoUsuario = getUserType();
-    //     if (!tipoUsuario) {
-    //     }
 
-    //     // Verifica se é um Instrutor e bloqueia o acesso
-    //     if (tipoUsuario === 'Instrutor') {
-    //         window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
-    //     }
-    //     } catch (error) {
-    //     }
-    // }
-    // verificarAcessoRestrito();
 
     const formAvaliacao = document.getElementById("form-avaliacao");
 
@@ -137,7 +121,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return null;
     }
 
-    const token = getTokenFromCookie();
+    const token = localStorage.getItem('token');
+    //const token = getTokenFromCookie();
+
     if (!token) {
         alert("Você precisa estar logado para acessar esta página.");
         window.location.href = "/Login/login.html";

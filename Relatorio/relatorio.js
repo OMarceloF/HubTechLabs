@@ -1,3 +1,48 @@
+let presencasAlunoGlobal = [];
+let notasAlunoGlobal = [];
+let alunoSelecionadoGlobal = "";
+
+document.getElementById("aluno-select").addEventListener("change", async function () {
+  const turmaSelecionada = document.getElementById("turma-select").value;
+  const alunoSelecionado = this.value;
+
+  alunoSelecionadoGlobal = alunoSelecionado;
+
+  const msgErro = document.getElementById("msg-erro");
+  const btnExportar = document.getElementById("exportar-relatorio");
+
+  try {
+    const [notasRes, presencasRes] = await Promise.all([
+      fetch("/notasavaliacoes"),
+      fetch("/dados-presenca")
+    ]);
+
+    if (!notasRes.ok || !presencasRes.ok) throw new Error("Erro ao buscar dados.");
+
+    const notasData = await notasRes.json();
+    const presencaData = await presencasRes.json();
+
+    notasAlunoGlobal = notasData[turmaSelecionada]?.filter(n => n.aluno === alunoSelecionado) || [];
+    presencasAlunoGlobal = presencaData[turmaSelecionada]?.filter(p => p.aluno === alunoSelecionado) || [];
+
+    if (!notasAlunoGlobal.length && !presencasAlunoGlobal.length) {
+      msgErro.textContent = "Nenhuma nota ou presença registrada para o aluno selecionado.";
+      msgErro.style.display = "block";
+      btnExportar?.classList.add("hidden");
+    } else {
+      msgErro.style.display = "none";
+      btnExportar?.classList.remove("hidden");
+    }
+
+    // NÃO mostra os gráficos ainda
+
+  } catch (err) {
+    console.error("Erro ao buscar dados:", err);
+    msgErro.textContent = "Erro ao carregar os dados do aluno.";
+    msgErro.style.display = "block";
+  }
+});
+
 async function carregarTurmas(instrutorFiltrado = null) {
   try {
     //🚭Como era na Vercel
@@ -7,6 +52,7 @@ async function carregarTurmas(instrutorFiltrado = null) {
     if (!response.ok) throw new Error("Erro ao buscar as turmas");
 
     const turmas = await response.json();
+    window.turmas = turmas;
     const tipoUsuario = localStorage.getItem("tipoUsuario");
     const nomeUsuario = localStorage.getItem("nomeUsuario");
 
@@ -36,6 +82,112 @@ async function carregarTurmas(instrutorFiltrado = null) {
     console.error("Erro ao carregar turmas:", error);
   }
 }
+function criarDataLocal(dateStr) {
+  if (!dateStr) return new Date(NaN);
+  // Remover hora se presente
+  const base = dateStr.split("T")[0]; // mantém apenas o YYYY-MM-DD
+  const [ano, mes, dia] = base.split("-");
+  return new Date(ano, mes - 1, dia);
+}
+
+
+function gerarRelatorioTurma() {
+  const turmaNome = document.getElementById("turma-turma-select").value.trim();
+  const dataInicio = document.getElementById("data-inicio-turma").value;
+  const dataFim = document.getElementById("data-fim-turma").value;
+
+  if (!turmaNome) {
+    alert("Selecione uma turma.");
+    return;
+  }
+
+  fetch("/dados")
+    .then((res) => res.json())
+    .then((turmasData) => {
+      fetch("/dados-presenca")
+        .then((res) => res.json())
+        .then((presencaData) => {
+          fetch("/notasavaliacoes")
+            .then((res) => res.json())
+            .then((notasData) => {
+              const alunosPresenca = presencaData[turmaNome] || [];
+              const alunosNotas = notasData[turmaNome] || [];
+
+              const inicio = dataInicio ? new Date(dataInicio) : null;
+              const fim = dataFim ? new Date(dataFim) : null;
+
+              const dadosAlunos = {};
+
+              alunosPresenca.forEach((registro) => {
+                const dataRegistro = new Date(registro.data);
+                if ((inicio && dataRegistro < inicio) || (fim && dataRegistro > fim)) return;
+
+                if (!dadosAlunos[registro.aluno]) {
+                  dadosAlunos[registro.aluno] = {
+                    totalPresencas: 0,
+                    totalAulas: 0,
+                    somaNotasAulas: 0,
+                    totalNotasAulas: 0,
+                    somaNotasAvaliacoes: 0,
+                    totalNotasAvaliacoes: 0,
+                  };
+                }
+
+                if (registro.presenca === "Presente") {
+                  dadosAlunos[registro.aluno].totalPresencas++;
+                  if (registro.nota) {
+                    dadosAlunos[registro.aluno].somaNotasAulas += parseFloat(registro.nota);
+                    dadosAlunos[registro.aluno].totalNotasAulas++;
+                  }
+                }
+
+                dadosAlunos[registro.aluno].totalAulas++;
+              });
+
+              alunosNotas.forEach((nota) => {
+                if (!dadosAlunos[nota.aluno]) return;
+
+                dadosAlunos[nota.aluno].somaNotasAvaliacoes += parseFloat(nota.nota) || 0;
+                dadosAlunos[nota.aluno].totalNotasAvaliacoes++;
+              });
+
+              const tbody = document.querySelector("#tabela-relatorio-turma tbody");
+              tbody.innerHTML = "";
+
+              Object.keys(dadosAlunos).forEach((nomeAluno) => {
+                const aluno = dadosAlunos[nomeAluno];
+                const mediaPresenca =
+                  aluno.totalAulas > 0
+                    ? ((aluno.totalPresencas / aluno.totalAulas) * 100).toFixed(1) + "%"
+                    : "-";
+                const mediaNotasAulas =
+                  aluno.totalNotasAulas > 0
+                    ? (aluno.somaNotasAulas / aluno.totalNotasAulas).toFixed(2)
+                    : "-";
+                const mediaAvaliacoes =
+                  aluno.totalNotasAvaliacoes > 0
+                    ? (aluno.somaNotasAvaliacoes / aluno.totalNotasAvaliacoes).toFixed(2)
+                    : "-";
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                  <td>${nomeAluno}</td>
+                  <td>${mediaPresenca}</td>
+                  <td>${mediaNotasAulas}</td>
+                  <td>${mediaAvaliacoes}</td>
+                `;
+                tbody.appendChild(tr);
+              });
+
+              document.getElementById("relatorio-turma-container").classList.remove("hidden");
+            });
+        });
+    })
+    .catch((error) => {
+      console.error("Erro ao gerar relatório da turma:", error);
+      alert("Erro ao gerar o relatório da turma.");
+    });
+}
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -62,179 +214,121 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-  async function gerarRelatorioTurma() {
-    const turmaSelecionada = document.getElementById("turma-turma-select").value;
-    if (!turmaSelecionada) {
-        alert("Selecione uma turma!");
-        return;
+  function gerarRelatorioAluno() {
+    const dataInicio = document.getElementById("data-inicio-aluno").value;
+    const dataFim = document.getElementById("data-fim-aluno").value;
+    const graficosContainer = document.getElementById("graficos-aluno-container");
+
+    if (!alunoSelecionadoGlobal || (!presencasAlunoGlobal.length && !notasAlunoGlobal.length)) {
+      alert("Selecione um aluno com dados antes de gerar o relatório.");
+      return;
     }
 
-    try {
-        const [presencaResponse, notasResponse] = await Promise.all([
-            fetch("/dados-presenca"),
-            fetch("/notasavaliacoes")
-        ]);
+    const inicio = dataInicio ? new Date(dataInicio) : null;
+    const fim = dataFim ? new Date(dataFim) : null;
 
-        if (!presencaResponse.ok || !notasResponse.ok) {
-            throw new Error("Erro ao buscar dados");
-        }
+    const presencasFiltradas = presencasAlunoGlobal.filter(p => {
+      const data = new Date(p.data);
+      return (!inicio || data >= inicio) && (!fim || data <= fim);
+    });
 
-        const presencaData = await presencaResponse.json();
-        const notasData = await notasResponse.json();
+    const notasFiltradas = notasAlunoGlobal.map(n => parseFloat(n.nota) || 0);
 
-        const alunos = presencaData[turmaSelecionada] || [];
-
-        if (alunos.length === 0) {
-            alert("Nenhum dado encontrado para essa turma!");
-            return;
-        }
-
-        // Criando um objeto para armazenar os dados por aluno
-        const dadosAlunos = {};
-
-        // let totalPresencas = 0;
-
-        alunos.forEach(aluno => {
-            if (!dadosAlunos[aluno.aluno]) {
-                dadosAlunos[aluno.aluno] = {
-                    totalPresencas: 0,
-                    totalAulas: 0,
-                    somaNotasAulas: 0,
-                    totalNotasAulas: 0,
-                    somaNotasAvaliacoes: 0,
-                    totalNotasAvaliacoes: 0,
-                    somaNotasAulasPresentes: 0
-                };
-            }
-
-            // Contabiliza presença
-            if (aluno.presenca === "Presente") {
-                dadosAlunos[aluno.aluno].totalPresencas++;
-                dadosAlunos[aluno.aluno].somaNotasAulasPresentes += parseFloat(aluno.nota) || 0;
-                
-                // Soma apenas notas das aulas em que o aluno esteve presente
-                if (aluno.nota) {
-                    dadosAlunos[aluno.aluno].somaNotasAulas += parseFloat(aluno.nota);
-                    dadosAlunos[aluno.aluno].totalNotasAulas++;
-                }
-            }
-
-            dadosAlunos[aluno.aluno].totalAulas++;
-        });
-
-        // registrosFiltradosPresenca.forEach((registro) => {
-        //   if (registro.presenca === "Presente") {
-        //     totalPresencas++;
-        //     somaNotasAulasPresentes += parseFloat(registro.nota) || 0;
-        //   } else {
-        //     totalFaltas++;
-        //   }
-        // });
-
-        // Processa as notas das avaliações
-        if (notasData[turmaSelecionada]) {
-            notasData[turmaSelecionada].forEach(nota => {
-                if (dadosAlunos[nota.aluno]) {
-                    dadosAlunos[nota.aluno].somaNotasAvaliacoes += parseFloat(nota.nota) || 0;
-                    dadosAlunos[nota.aluno].totalNotasAvaliacoes++;
-                }
-            });
-          }
-
-        // Limpa a tabela antes de preenchê-la
-        const tabelaBody = document.querySelector("#tabela-relatorio-turma tbody");
-        tabelaBody.innerHTML = "";
-
-        Object.keys(dadosAlunos).forEach(nomeAluno => {
-            const alunoData = dadosAlunos[nomeAluno];
-
-            const mediaPresenca = alunoData.totalAulas > 0 ? (alunoData.totalPresencas / alunoData.totalAulas) * 100 : 0;
-            const mediaNotasAulas = alunoData.totalNotasAulas > 0 ? (alunoData.somaNotasAulas / alunoData.totalPresencas) : 0;
-            const mediaNotasAvaliacoes = alunoData.totalNotasAvaliacoes > 0 ? (alunoData.somaNotasAvaliacoes / alunoData.totalNotasAvaliacoes) : 0;
-
-            const row = tabelaBody.insertRow();
-            row.insertCell(0).textContent = nomeAluno;
-            row.insertCell(1).textContent = `${mediaPresenca.toFixed(1)}%`;
-            row.insertCell(2).textContent = mediaNotasAulas.toFixed(2);
-            row.insertCell(3).textContent = mediaNotasAvaliacoes.toFixed(2);
-        });
-
-        relatorioTurmaContainer.classList.remove("hidden");
-
-    } catch (error) {
-        console.error("Erro ao gerar relatório:", error);
+    if (!presencasFiltradas.length && !notasFiltradas.length) {
+      document.getElementById("msg-erro").textContent = "Nenhum dado encontrado no período selecionado.";
+      document.getElementById("msg-erro").style.display = "block";
+      graficosContainer?.classList.add("hidden");
+      return;
     }
-}
 
+    document.getElementById("msg-erro").style.display = "none";
 
+    const datasAulas = presencasFiltradas.map(p => {
+      const d = new Date(p.data);
+      d.setDate(d.getDate() + 1);
+      return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}/${d.getFullYear()}`;
+    });
 
+    const statusPresencas = presencasFiltradas.map(p => p.presenca === "Presente" ? 1 : 0);
+
+    criarGraficoNotasAluno(notasFiltradas);
+    criarGraficoPresencaData(datasAulas, statusPresencas);
+    criarGraficoNotasTodasAulas(presencasFiltradas, alunoSelecionadoGlobal);
+
+    graficosContainer?.classList.remove("hidden");
+    document.getElementById("exportar-relatorio")?.classList.remove("hidden");
+
+  }
+  document.getElementById("carregar-relatorio").addEventListener("click", gerarRelatorioAluno);
   document.getElementById("gerar-relatorio-turma").addEventListener("click", gerarRelatorioTurma);
 
   carregarTurmas();
 
   // Pega a foto de usuário logado
- // Função para obter token do cookie
- function getTokenFromCookie() {
-     const cookies = document.cookie.split("; ");
-     for (const cookie of cookies) {
-     const [key, value] = cookie.split("=");
-     if (key === "token") {
-         return value;
-     }
-     }
-     return null;
- }
+  // Função para obter token do cookie
+  function getTokenFromCookie() {
+    const cookies = document.cookie.split("; ");
+    for (const cookie of cookies) {
+      const [key, value] = cookie.split("=");
+      if (key === "token") {
+        return value;
+      }
+    }
+    return null;
+  }
 
- const token = getTokenFromCookie();
- if (!token) {
-     alert("Você precisa estar logado para acessar esta página.");
-     window.location.href = "/Login/login.html";
-     return;
- }
- 
- // Função para carregar perfil do usuário logado
- async function carregarPerfil() {
-     try {
-     //🚭Como era na Vercel
-    const response = await fetch("https://hub-orcin.vercel.app/perfil",
-     //🚭Como é localmente
-    //const response = await fetch("http://localhost:3000/perfil", 
-    {
-         headers: { Authorization: token },
-     });
+  const token = localStorage.getItem('token');
+  //const token = getTokenFromCookie();
 
-     if (!response.ok) {
-         throw new Error("Erro ao carregar os dados do perfil");
-     }
+  if (!token) {
+    alert("Você precisa estar logado para acessar esta página.");
+    window.location.href = "/Login/login.html";
+    return;
+  }
 
-     const data = await response.json();
+  // Função para carregar perfil do usuário logado
+  async function carregarPerfil() {
+    try {
+      //🚭Como era na Vercel
+      const response = await fetch("https://hub-orcin.vercel.app/perfil",
+      //🚭Como é localmente
+      //const response = await fetch("http://localhost:3000/perfil",
+        {
+          headers: { Authorization: token },
+        });
 
-     // Atualiza os elementos do HTML com os dados do usuário
-     document.getElementById("profile-photo").src =
-         data.photo || "/projeto/Imagens/perfil.png";
-     } catch (error) {
-     console.error("Erro ao carregar perfil:", error);
+      if (!response.ok) {
+        throw new Error("Erro ao carregar os dados do perfil");
+      }
 
-     }
- }
- carregarPerfil();
+      const data = await response.json();
 
- function getUserType() {
-   return localStorage.getItem("tipoUsuario");
+      // Atualiza os elementos do HTML com os dados do usuário
+      document.getElementById("profile-photo").src =
+        data.photo || "/projeto/Imagens/perfil.png";
+    } catch (error) {
+      console.error("Erro ao carregar perfil:", error);
+
+    }
+  }
+  carregarPerfil();
+
+  function getUserType() {
+    return localStorage.getItem("tipoUsuario");
   }
 
   async function verificarAcessoRestrito() {
     try {
-    const tipoUsuario = getUserType();
+      const tipoUsuario = getUserType();
 
-    if (!tipoUsuario) {
-  
-    }
+      if (!tipoUsuario) {
 
-    // Verifica se é um Coordenador e bloqueia o acesso
-    //if (tipoUsuario === 'Coordenador') {
+      }
+
+      // Verifica se é um Coordenador e bloqueia o acesso
+      //if (tipoUsuario === 'Coordenador') {
       //  window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
-    //}
+      //}
     } catch (error) {
 
     }
@@ -244,177 +338,110 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function obterNomeUsuario() {
-try {
-   const email = localStorage.getItem("email"); // Obtém o email armazenado
-   if (!email) {
-       throw new Error("Nenhum email encontrado no localStorage");
-   }
-   //🚭Como era na Vercel
-   const response = await fetch("https://hub-orcin.vercel.app/usuarios"); 
-   //🚭Como é localmente
-   //const response = await fetch("http://localhost:3000/usuarios");
-   if (!response.ok) {
-       throw new Error("Erro ao buscar usuários");
-   }
+  try {
+    const email = localStorage.getItem("email"); // Obtém o email armazenado
+    if (!email) {
+      throw new Error("Nenhum email encontrado no localStorage");
+    }
+    //🚭Como era na Vercel
+    const response = await fetch("https://hub-orcin.vercel.app/usuarios"); 
+    //🚭Como é localmente
+    //const response = await fetch("http://localhost:3000/usuarios");
+    if (!response.ok) {
+      throw new Error("Erro ao buscar usuários");
+    }
 
-   const usuarios = await response.json(); // Converte a resposta em JSON
-   
-   // Filtra o usuário correspondente ao email armazenado
-   const usuarioEncontrado = usuarios.find(usuario => usuario.email === email);
-   
-   if (usuarioEncontrado) {
-       localStorage.setItem("nomeUsuario", usuarioEncontrado.name); // Salva o nome no localStorage
-       console.log("Nome do usuário salvo no localStorage:", usuarioEncontrado.name);
-   } else {
-       console.warn("Usuário não encontrado");
-   }
-} catch (error) {
-   console.error("Erro ao obter nome do usuário:", error);
-}
+    const usuarios = await response.json(); // Converte a resposta em JSON
+
+    // Filtra o usuário correspondente ao email armazenado
+    const usuarioEncontrado = usuarios.find(usuario => usuario.email === email);
+
+    if (usuarioEncontrado) {
+      localStorage.setItem("nomeUsuario", usuarioEncontrado.name); // Salva o nome no localStorage
+      console.log("Nome do usuário salvo no localStorage:", usuarioEncontrado.name);
+    } else {
+      console.warn("Usuário não encontrado");
+    }
+  } catch (error) {
+    console.error("Erro ao obter nome do usuário:", error);
+  }
 }
 
 function obterListaDeAlunos(turmaSelecionada) {
-const turma = window.turmas[turmaSelecionada]; // Acesse diretamente a turma pela chave "nome"
-if (turma && turma.alunos) {
-   return turma.alunos;
-} else {
-   return [];
-}
+  const turma = window.turmas[turmaSelecionada]; // Acesse diretamente a turma pela chave "nome"
+  if (turma && turma.alunos) {
+    return turma.alunos;
+  } else {
+    return [];
+  }
 }
 
 // Evento ao selecionar uma turma
 document
-.getElementById("turma-select")
-.addEventListener("change", async function () {
- const turmaSelecionada = this.value;
- const alunoSelect = document.getElementById("aluno-select");
- alunoSelect.innerHTML =
-   '<option value="" disabled selected>Escolha um aluno</option>';
+  .getElementById("turma-select")
+  .addEventListener("change", async function () {
+    const turmaSelecionada = this.value;
+    const alunoSelect = document.getElementById("aluno-select");
+    alunoSelect.innerHTML =
+      '<option value="" disabled selected>Escolha um aluno</option>';
 
- try {
-   const response = await fetch("/dados");
-   if (!response.ok) throw new Error("Erro ao buscar os alunos.");
-   const turmas = await response.json();
-   const alunos =
-     turmas[turmaSelecionada] && turmas[turmaSelecionada].alunos
-       ? turmas[turmaSelecionada].alunos
-       : [];
+    try {
+      const response = await fetch("/dados");
+      if (!response.ok) throw new Error("Erro ao buscar os alunos.");
+      const turmas = await response.json();
+      const alunos =
+        turmas[turmaSelecionada] && turmas[turmaSelecionada].alunos
+          ? turmas[turmaSelecionada].alunos
+          : [];
 
-   if (alunos.length === 0) {
-     alunoSelect.innerHTML =
-       "<option disabled>Nenhum aluno encontrado</option>";
-     alunoSelect.disabled = true;
-     return;
-   }
+      if (alunos.length === 0) {
+        alunoSelect.innerHTML =
+          "<option disabled>Nenhum aluno encontrado</option>";
+        alunoSelect.disabled = true;
+        return;
+      }
 
-   alunos.sort((a, b) => a.localeCompare(b))
+      alunos.sort((a, b) => a.localeCompare(b))
 
-   alunos.forEach((aluno) => {
-     const option = document.createElement("option");
-     option.value = aluno;
-     option.textContent = aluno;
-     alunoSelect.appendChild(option);
-   });
+      alunos.forEach((aluno) => {
+        const option = document.createElement("option");
+        option.value = aluno;
+        option.textContent = aluno;
+        alunoSelect.appendChild(option);
+      });
 
-   alunoSelect.disabled = false;
- } catch (error) {
-   console.error("Erro ao carregar os alunos:", error);
- }
-});
-
-
-// Evento ao selecionar um aluno
-document
-.getElementById("aluno-select")
-.addEventListener("change", async function () {
- const turmaSelecionada = document.getElementById("turma-select").value;
- const alunoSelecionado = this.value;
-
- let mensagemAviso = document.getElementById("msg-erro");
- const graficosContainer = document.getElementById("graficos-aluno-container");
- const botaoRelatorio = document.getElementById("exportar-relatorio");
-
- try {
-   const notasResponse = await fetch("/notasavaliacoes");
-   const presencaResponse = await fetch("/dados-presenca");
-
-   if (!notasResponse.ok || !presencaResponse.ok)
-     throw new Error("Erro ao buscar dados de notas ou presença.");
-
-   const notasData = await notasResponse.json();
-   const presencaData = await presencaResponse.json();
-
-   const notasAluno = notasData[turmaSelecionada]
-     ? notasData[turmaSelecionada].filter(
-         (avaliacao) => avaliacao.aluno === alunoSelecionado
-       ).map((avaliacao) => parseFloat(avaliacao.nota) || 0)
-     : [];
-
-   const presencasTurma = presencaData[turmaSelecionada] || [];
-   const presencasAluno = presencasTurma.filter(
-     (p) => p.aluno === alunoSelecionado
-   );
-
-   if (notasAluno.length === 0 && presencasAluno.length === 0) {
-     mensagemAviso.textContent = "Nenhuma nota ou presença registrada para o aluno selecionado.";
-     mensagemAviso.style.display = "block";
-
-     graficosContainer?.classList.add("hidden");
-     botaoRelatorio?.classList.add("hidden");
-     return;
-   } else {
-     mensagemAviso.style.display = "none";
-     botaoRelatorio?.classList.remove("hidden");
-   }
-
-  const datasAulas = presencasAluno.map((p) => {
-    const data = new Date(p.data);
-    data.setDate(data.getDate() + 1); // Ajuste para corrigir a exibição errada
-    return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
+      alunoSelect.disabled = false;
+    } catch (error) {
+      console.error("Erro ao carregar os alunos:", error);
+    }
   });
 
-   const statusPresencas = presencasAluno.map((p) =>
-     p.presenca === "Presente" ? 1 : 0
-   );
 
-   criarGraficoNotasAluno(notasAluno);
-   criarGraficoPresencaData(datasAulas, statusPresencas);
-   criarGraficoNotasTodasAulas(presencasAluno, alunoSelecionado);
-
-   graficosContainer?.classList.remove("hidden");
- } catch (error) {
-   console.error("Erro ao carregar os gráficos do aluno:", error);
-   mensagemAviso.textContent = "Erro ao carregar os dados do aluno.";
-   mensagemAviso.style.display = "block";
-   graficosContainer?.classList.add("hidden");
-   botaoRelatorio?.classList.add("hidden");
- }
-});
 
 // Função para ocultar e zerar gráficos ao modificar qualquer campo de entrada
 document.querySelectorAll("input, select").forEach((element) => {
-element.addEventListener("input", () => {
- const graficosContainer = document.getElementById("graficos-aluno-container");
- const botaoRelatorio = document.getElementById("exportar-relatorio");
- if (graficosContainer && !graficosContainer.classList.contains("hidden")) {
-   graficosContainer.classList.add("hidden");
-   botaoRelatorio?.classList.add("hidden");
-   
-   // Zerar gráficos
-   if (window.graficoNotasAluno) {
-     window.graficoNotasAluno.destroy();
-     window.graficoNotasAluno = null;
-   }
-   if (window.graficoPresencaAula) {
-     window.graficoPresencaAula.destroy();
-     window.graficoPresencaAula = null;
-   }
-   if (window.graficoDesempenhoAula) {
-     window.graficoDesempenhoAula.destroy();
-     window.graficoDesempenhoAula = null;
-   }
- }
-});
+  element.addEventListener("input", () => {
+    const graficosContainer = document.getElementById("graficos-aluno-container");
+    const botaoRelatorio = document.getElementById("exportar-relatorio");
+    if (graficosContainer && !graficosContainer.classList.contains("hidden")) {
+      graficosContainer.classList.add("hidden");
+      botaoRelatorio?.classList.add("hidden");
+
+      // Zerar gráficos
+      if (window.graficoNotasAluno) {
+        window.graficoNotasAluno.destroy();
+        window.graficoNotasAluno = null;
+      }
+      if (window.graficoPresencaAula) {
+        window.graficoPresencaAula.destroy();
+        window.graficoPresencaAula = null;
+      }
+      if (window.graficoDesempenhoAula) {
+        window.graficoDesempenhoAula.destroy();
+        window.graficoDesempenhoAula = null;
+      }
+    }
+  });
 });
 
 
@@ -425,316 +452,334 @@ element.addEventListener("input", () => {
 // Função para criar gráfico com todas as notas do aluno (incluindo somaNotasPresenca)
 function criarGraficoNotasTodasAulas(presencasAluno, alunoSelecionado) {
   const ctxDesempenhoAula = document
-  .getElementById("grafico-desempenho-aula")
-  .getContext("2d");
+    .getElementById("grafico-desempenho-aula")
+    .getContext("2d");
 
   const labels = presencasAluno.map((aula) => {
     if (!aula.data) return "Data Inválida"; // Caso a data esteja vazia
-  
-    const data = new Date(aula.data);
-    
+
+    const data = criarDataLocal(aula.data);
+
     if (isNaN(data.getTime())) {
       console.error("Erro ao processar data:", aula.data);
       return "Data Inválida";
     }
-  
-    data.setDate(data.getDate() + 1); // Ajuste para corrigir o problema de deslocamento
-  
+
+
     return `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
-  });  
+  });
 
   const notas = presencasAluno.map((aula) => parseFloat(aula.nota) || 0);
   const presencas = presencasAluno.map((aula) =>
-  aula.presenca === "Presente" ? 1 : 0
+    aula.presenca === "Presente" ? 1 : 0
   );
   const cores = presencas.map((p) =>
-  p === 1 ? "rgb(0, 123, 255)" : "rgb(255, 0, 55)"
+    p === 1 ? "rgb(0, 123, 255)" : "rgb(255, 0, 55)"
   );
 
   if (window.graficoDesempenhoAula) window.graficoDesempenhoAula.destroy();
 
   window.graficoDesempenhoAula = new Chart(ctxDesempenhoAula, {
-  type: "bar",
-  data: {
-    labels: labels,
-    datasets: [
-      {
-        label: `Notas de ${alunoSelecionado} nas Aulas`,
-        data: notas,
-        backgroundColor: "rgba(0, 142, 237, 0.7)",
-        borderColor: "#36a2eb",
-        borderWidth: 2,
-      },
-    ],
-  },
-  options: {
-    responsive: true,
-    scales: {
-      y: { beginAtZero: true, max: 5 },
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: `Notas de ${alunoSelecionado} nas Aulas`,
+          data: notas,
+          backgroundColor: "rgba(0, 142, 237, 0.7)",
+          borderColor: "#36a2eb",
+          borderWidth: 2,
+        },
+      ],
     },
-  },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true, max: 5 },
+      },
+    },
   });
 }
 
 // Função para criar gráfico de presença por data
 function criarGraficoPresencaData(labels, presencas) {
-const ctxPresencaAula = document
- .getElementById("grafico-presenca-aula")
- .getContext("2d");
+  const ctxPresencaAula = document
+    .getElementById("grafico-presenca-aula")
+    .getContext("2d");
 
-// Configura as cores com base no status de presença
-const cores = presencas.map((p) =>
- p === 1 ? "rgb(0, 123, 255)" : "rgb(255, 0, 55)"
-);
+  // Configura as cores com base no status de presença
+  const cores = presencas.map((p) =>
+    p === 1 ? "rgb(0, 123, 255)" : "rgb(255, 0, 55)"
+  );
 
-if (window.graficoPresencaAula) window.graficoPresencaAula.destroy();
+  if (window.graficoPresencaAula) window.graficoPresencaAula.destroy();
 
-window.graficoPresencaAula = new Chart(ctxPresencaAula, {
- type: "bar",
- data: {
-   labels: labels,
-   datasets: [
-     {
-       label: "Presença e Ausência",
-       data: presencas.map(() => 1), // Todas as barras terão o mesmo valor (1)
-       backgroundColor: cores, // Define as cores para cada barra
-       borderColor: cores,
-       borderWidth: 1,
-     },
-   ],
- },
- options: {
-   responsive: true,
-   scales: {
-     x: {
-       title: {
-         display: true,
-         text: "Datas das Aulas",
-       },
-       ticks: {
-         maxRotation: 45,
-         minRotation: 0,
-       },
-     },
-     y: {
-       min: 0,
-       max: 1, // Mantém o eixo Y de 0 a 1
-       ticks: {
-         display: false, // Remove os números do eixo Y, já que todas as barras têm o mesmo tamanho
-       },
-     },
-   },
-   plugins: {
-     legend: {
-       display: true, // Mostra o rótulo da legenda
-     },
-     tooltip: {
-       callbacks: {
-         label: (context) =>
-           context.raw === 1
-             ? context.dataset.backgroundColor[context.dataIndex] ===
-               "rgb(0, 123, 255)"
-               ? "Presente"
-               : "Ausente"
-             : "",
-       },
-     },
-   },
- },
-});
+  window.graficoPresencaAula = new Chart(ctxPresencaAula, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Presença e Ausência",
+          data: presencas.map(() => 1), // Todas as barras terão o mesmo valor (1)
+          backgroundColor: cores, // Define as cores para cada barra
+          borderColor: cores,
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "Datas das Aulas",
+          },
+          ticks: {
+            maxRotation: 45,
+            minRotation: 0,
+          },
+        },
+        y: {
+          min: 0,
+          max: 1, // Mantém o eixo Y de 0 a 1
+          ticks: {
+            display: false, // Remove os números do eixo Y, já que todas as barras têm o mesmo tamanho
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          display: true, // Mostra o rótulo da legenda
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) =>
+              context.raw === 1
+                ? context.dataset.backgroundColor[context.dataIndex] ===
+                  "rgb(0, 123, 255)"
+                  ? "Presente"
+                  : "Ausente"
+                : "",
+          },
+        },
+      },
+    },
+  });
 }
 
 // Função para criar gráfico de notas do aluno
 function criarGraficoNotasAluno(notas) {
-if (window.graficoNotasAluno) window.graficoNotasAluno.destroy();
-const ctxNotasAluno = document
- .getElementById("grafico-notas-aluno")
- .getContext("2d");
+  if (window.graficoNotasAluno) window.graficoNotasAluno.destroy();
+  const ctxNotasAluno = document
+    .getElementById("grafico-notas-aluno")
+    .getContext("2d");
 
-window.graficoNotasAluno = new Chart(ctxNotasAluno, {
- type: "bar",
- data: {
-   labels: notas.map((_, index) => `Prova ${index + 1}`),
-   datasets: [
-     {
-       label: "Notas das Avaliações",
-       data: notas,
-       backgroundColor: "rgb(0, 142, 237)",
-       borderColor: "#36a2eb",
-       borderWidth: 2,
-     },
-   ],
- },
- options: {
-   responsive: true,
-   scales: {
-     y: { beginAtZero: true, max: 5 },
-   },
- },
-});
+  window.graficoNotasAluno = new Chart(ctxNotasAluno, {
+    type: "bar",
+    data: {
+      labels: notas.map((_, index) => `Prova ${index + 1}`),
+      datasets: [
+        {
+          label: "Notas das Avaliações",
+          data: notas,
+          backgroundColor: "rgb(0, 142, 237)",
+          borderColor: "#36a2eb",
+          borderWidth: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true, max: 5 },
+      },
+    },
+  });
 }
 
 // Função para exportar relatório em PDF
 // Função para exportar relatório em PDF do aluno
 async function exportarRelatorioPDF() {
+  function formatarDataBrasileira(dataStr) {
+    if (!dataStr || dataStr === "-") return "-";
+    const data = typeof dataStr === "string" ? new Date(dataStr + 'T12:00:00') : dataStr;
+    if (isNaN(data)) return "-";
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  }
+
+
+  const dataInicioRaw = document.getElementById("data-inicio-aluno").value || "-";
+  const dataFimRaw = document.getElementById("data-fim-aluno").value || "-";
+
+  const dataInicioBR = formatarDataBrasileira(dataInicioRaw);
+  const dataFimBR = formatarDataBrasileira(dataFimRaw);
+
+  const doc = new jspdf.jsPDF("p", "mm", "a4");
+  let yOffset = 10;
+
+  doc.setFontSize(12);
+  doc.text(`Período: ${dataInicioBR} até ${dataFimBR}`, 10, yOffset);
+  yOffset += 10;
+
   const turmaNome = document.getElementById("turma-select").value.trim();
   const alunoSelecionado = document.getElementById("aluno-select").value.trim();
 
   if (!turmaNome || !alunoSelecionado) {
-      alert("Selecione uma turma e um aluno para exportar o relatório.");
-      return;
+    alert("Selecione uma turma e um aluno para exportar o relatório.");
+    return;
   }
 
   try {
-      // Buscar os dados necessários
-      const [turmasResponse, presencaResponse, notasResponse, unidadesResponse] = await Promise.all([
-          fetch("/dados"),  // Agora retorna unidade_id corretamente
-          fetch(`/dados-presenca?turma=${encodeURIComponent(turmaNome)}&aluno=${encodeURIComponent(alunoSelecionado)}`),
-          fetch(`/notasavaliacoes?turma=${encodeURIComponent(turmaNome)}&aluno=${encodeURIComponent(alunoSelecionado)}`),
-          fetch("/unidades")  // Nova requisição para buscar os nomes das unidades
+    const [turmasResponse, presencaResponse, notasResponse, unidadesResponse] = await Promise.all([
+      fetch("/dados"),
+      fetch(`/dados-presenca?turma=${encodeURIComponent(turmaNome)}&aluno=${encodeURIComponent(alunoSelecionado)}`),
+      fetch(`/notasavaliacoes?turma=${encodeURIComponent(turmaNome)}&aluno=${encodeURIComponent(alunoSelecionado)}`),
+      fetch("/unidades")
+    ]);
+
+    if (!turmasResponse.ok || !presencaResponse.ok || !notasResponse.ok || !unidadesResponse.ok) {
+      throw new Error("Erro ao buscar os dados do backend.");
+    }
+
+    const turmasData = await turmasResponse.json();
+    const presencaData = await presencaResponse.json();
+    const notasData = await notasResponse.json();
+    const unidadesData = await unidadesResponse.json();
+
+    const unidadeId = turmasData[turmaNome]?.unidade_id || "Não disponível";
+    const nomeUnidade = unidadesData[unidadeId] || "Unidade não encontrada";
+
+    const inicio = dataInicioRaw ? new Date(dataInicioRaw) : null;
+    const fim = dataFimRaw ? new Date(dataFimRaw) : null;
+
+    console.log("presencaData:", presencaData);
+    console.log("notasData:", notasData);
+
+    const registrosFiltradosPresenca = (
+      Array.isArray(presencaData)
+        ? presencaData
+        : presencaData[turmaNome] || []
+    ).filter(registro => registro.aluno === alunoSelecionado)
+      .filter(registro => {
+        const data = new Date(registro.data);
+        return (!inicio || data >= inicio) && (!fim || data <= fim);
+      });
+
+    const registrosFiltradosNotas = (
+      Array.isArray(notasData)
+        ? notasData
+        : notasData[turmaNome] || []
+    ).filter(registro => registro.aluno === alunoSelecionado);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(`Unidade: ${nomeUnidade}`, 10, yOffset);
+    yOffset += 10;
+
+    doc.setFontSize(14);
+    doc.text(`Relatório de Desempenho - Turma: ${turmaNome}`, 10, yOffset);
+    yOffset += 10;
+
+    doc.text(`Aluno: ${alunoSelecionado}`, 10, yOffset);
+    yOffset += 10;
+
+    // Notas das Avaliações
+    if (registrosFiltradosNotas.length > 0) {
+      doc.setFontSize(12);
+      doc.text("Notas das Avaliações:", 10, yOffset);
+      yOffset += 10;
+
+      const tabelaNotasAvaliacao = registrosFiltradosNotas.map((nota) => [
+        nota.nomeAvaliacao,
+        nota.nota,
       ]);
 
-      if (!turmasResponse.ok || !presencaResponse.ok || !notasResponse.ok || !unidadesResponse.ok) {
-          throw new Error("Erro ao buscar os dados do backend.");
-      }
+      doc.autoTable({
+        startY: yOffset,
+        head: [["Avaliação", "Nota"]],
+        body: tabelaNotasAvaliacao,
+        theme: "grid",
+      });
 
-      const turmasData = await turmasResponse.json();
-      const presencaData = await presencaResponse.json();
-      const notasData = await notasResponse.json();
-      const unidadesData = await unidadesResponse.json(); // Agora temos um mapeamento id -> unidade
+      yOffset = doc.lastAutoTable.finalY + 10;
+    }
 
-      // Obter `unidade_id` da turma
-      const unidadeId = turmasData[turmaNome]?.unidade_id || "Não disponível";
+    // Resumo do Desempenho
+    if (registrosFiltradosPresenca.length > 0) {
+      let totalPresencas = 0;
+      let totalFaltas = 0;
+      let somaNotasAulasPresentes = 0;
 
-      // Obter o nome da unidade correspondente ao `unidade_id`
-      const nomeUnidade = unidadesData[unidadeId] || "Unidade não encontrada";
+      registrosFiltradosPresenca.forEach((registro) => {
+        if (registro.presenca === "Presente") {
+          totalPresencas++;
+          somaNotasAulasPresentes += parseFloat(registro.nota) || 0;
+        } else {
+          totalFaltas++;
+        }
+      });
 
-      const registrosFiltradosPresenca = presencaData[turmaNome]?.filter(
-          (registro) => registro.aluno === alunoSelecionado
-      ) || [];
+      const mediaNotasAulasPresentes = somaNotasAulasPresentes / (totalPresencas || 1);
 
-      const registrosFiltradosNotas = notasData[turmaNome]?.filter(
-          (registro) => registro.aluno === alunoSelecionado
-      ) || [];
+      doc.setFontSize(12);
+      doc.text("Resumo do Desempenho:", 10, yOffset);
+      yOffset += 10;
 
-      if (registrosFiltradosPresenca.length === 0) {
-          alert("Nenhum registro de presença encontrado para esse aluno.");
-      }
+      doc.autoTable({
+        startY: yOffset,
+        head: [["Indicador", "Valor"]],
+        body: [
+          ["Total de Presenças", totalPresencas],
+          ["Total de Faltas", totalFaltas],
+          ["Média das Notas nas Aulas Presentes", mediaNotasAulasPresentes.toFixed(2)],
+        ],
+        theme: "grid",
+      });
 
-      /* Condição para ausência de notas para o Aluno
-      if (registrosFiltradosNotas.length === 0) {
-          alert("Nenhum registro de notas encontrado para esse aluno.");
-      }*/
+      yOffset = doc.lastAutoTable.finalY + 10;
+    }
 
-      const doc = new jspdf.jsPDF("p", "mm", "a4");
-      doc.setFont("helvetica", "bold");
+    // Detalhamento por Aula
+    if (registrosFiltradosPresenca.length > 0) {
+      const tabelaPresencaDesempenho = registrosFiltradosPresenca.map((registro) => {
+        if (!registro.data) return ["Data Inválida", registro.presenca, registro.nota, registro.conteudoAula || "-"];
+        const partes = registro.data?.split("-"); // ['2024', '05', '12']
+        if (!partes || partes.length < 3) {
+          return ["Data Inválida", registro.presenca, registro.nota, registro.conteudoAula || "-"];
+        }
+        const data = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
 
-      // Adicionando o nome da unidade no topo do relatório
-      doc.setFontSize(16);
-      doc.text(`Unidade: ${nomeUnidade}`, 10, 10);
 
-      doc.setFontSize(14);
-      doc.text(`Relatório de Desempenho - Turma: ${turmaNome}`, 10, 20);
-      doc.setFontSize(14);
-      doc.text(`Aluno: ${alunoSelecionado}`, 10, 30);
+        const dataFormatada = formatarDataBrasileira(data);
+        return [dataFormatada, registro.presenca, registro.nota, registro.conteudoAula || "-"];
+      });
 
-      let yOffset = 40;
+      doc.setFontSize(12);
+      doc.text("Presenças e Desempenho por Aula:", 10, yOffset);
+      yOffset += 10;
 
-      // **Tabela de Notas das Avaliações**
-      if (registrosFiltradosNotas.length > 0) {
-          doc.setFontSize(12);
-          doc.text("Notas das Avaliações:", 10, yOffset);
-          yOffset += 10;
+      doc.autoTable({
+        startY: yOffset,
+        head: [["Data", "Presença", "Nota", "Conteúdo da Aula"]],
+        body: tabelaPresencaDesempenho,
+        theme: "grid",
+      });
 
-          const tabelaNotasAvaliacao = registrosFiltradosNotas.map((nota) => [
-              nota.nomeAvaliacao,
-              nota.nota,
-          ]);
+      yOffset = doc.lastAutoTable.finalY + 10;
+    }
 
-          doc.autoTable({
-              startY: yOffset,
-              head: [["Avaliação", "Nota"]],
-              body: tabelaNotasAvaliacao,
-              theme: "grid",
-          });
-
-          yOffset = doc.previousAutoTable.finalY + 10;
-      }
-
-      // **Tabela de Resumo de Presenças**
-      if (registrosFiltradosPresenca.length > 0) {
-          let totalPresencas = 0;
-          let totalFaltas = 0;
-          let somaNotasAulasPresentes = 0;
-
-          registrosFiltradosPresenca.forEach((registro) => {
-              if (registro.presenca === "Presente") {
-                  totalPresencas++;
-                  somaNotasAulasPresentes += parseFloat(registro.nota) || 0;
-              } else {
-                  totalFaltas++;
-              }
-          });
-
-          const mediaNotasAulasPresentes = somaNotasAulasPresentes / (totalPresencas || 1);
-
-          doc.setFontSize(12);
-          doc.text("Resumo do Desempenho:", 10, yOffset);
-          yOffset += 10;
-
-          doc.autoTable({
-              startY: yOffset,
-              head: [["Indicador", "Valor"]],
-              body: [
-                  ["Total de Presenças", totalPresencas],
-                  ["Total de Faltas", totalFaltas],
-                  ["Média das Notas nas Aulas Presentes", mediaNotasAulasPresentes.toFixed(2)],
-              ],
-              theme: "grid",
-          });
-
-          yOffset = doc.previousAutoTable.finalY + 10;
-      }
-
-      // **Tabela de Presenças e Notas por Aula**
-      if (registrosFiltradosPresenca.length > 0) {
-          const tabelaPresencaDesempenho = registrosFiltradosPresenca.map((registro) => {
-              if (!registro.data) return ["Data Inválida", registro.presenca, registro.nota, registro.conteudoAula || "-"];
-
-              const data = new Date(registro.data);
-
-              if (isNaN(data.getTime())) {
-                  console.error("Erro ao processar data para PDF:", registro.data);
-                  return ["Data Inválida", registro.presenca, registro.nota,registro.conteudoAula || "-"];
-              }
-
-              data.setDate(data.getDate() + 1);
-
-              const dataFormatada = `${data.getDate().toString().padStart(2, "0")}/${(data.getMonth() + 1).toString().padStart(2, "0")}/${data.getFullYear()}`;
-
-              return [dataFormatada, registro.presenca, registro.nota, registro.conteudoAula || "-"];
-          });
-
-          doc.setFontSize(12);
-          doc.text("Presenças e Desempenho por Aula:", 10, yOffset);
-          yOffset += 10;
-
-          doc.autoTable({
-              startY: yOffset,
-              head: [["Data", "Presença", "Nota", "Conteúdo da Aula"]],
-              body: tabelaPresencaDesempenho,
-              theme: "grid",
-          });
-
-          yOffset = doc.previousAutoTable.finalY + 10;
-      }
-
-      // **Salvar PDF**
-      doc.save(`Relatorio_Turma_${turmaNome}_${alunoSelecionado}.pdf`);
+    doc.save(`Relatorio_Turma_${turmaNome}_${alunoSelecionado}.pdf`);
   } catch (error) {
-      console.error("Erro ao gerar o relatório:", error);
+    console.error("Erro ao gerar o relatório:", error);
   }
 }
+
 
 // Atualizar o evento do botão para incluir essa versão corrigida
 document.getElementById("exportar-relatorio").addEventListener("click", exportarRelatorioPDF);
@@ -742,106 +787,150 @@ document.getElementById("exportar-relatorio").addEventListener("click", exportar
 
 // Função para exportar relatório em PDF
 async function exportarRelatorioTurmaPDF() {
+  function formatarDataBrasileira(dataStr) {
+    if (!dataStr || dataStr === "-") return "-";
+    const data = typeof dataStr === "string" ? new Date(dataStr + 'T12:00:00') : dataStr;
+    if (isNaN(data)) return "-";
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  }
+
+
+
+  const dataInicioRaw = document.getElementById("data-inicio-turma").value || "-";
+  const dataFimRaw = document.getElementById("data-fim-turma").value || "-";
+  const dataInicioBR = formatarDataBrasileira(dataInicioRaw);
+  const dataFimBR = formatarDataBrasileira(dataFimRaw);
+
   const turmaNome = document.getElementById("turma-turma-select").value.trim();
 
   if (!turmaNome) {
-      alert("Selecione uma turma para exportar o relatório.");
-      return;
+    alert("Selecione uma turma para exportar o relatório.");
+    return;
   }
 
   try {
-      const [turmasResponse, presencaResponse, notasResponse, unidadesResponse] = await Promise.all([
-          fetch("/dados"),
-          fetch(`/dados-presenca?turma=${encodeURIComponent(turmaNome)}`),
-          fetch(`/notasavaliacoes?turma=${encodeURIComponent(turmaNome)}`),
-          fetch("/unidades")
-      ]);
+    const [turmasResponse, presencaResponse, notasResponse, unidadesResponse] = await Promise.all([
+      fetch("/dados"),
+      fetch(`/dados-presenca?turma=${encodeURIComponent(turmaNome)}`),
+      fetch(`/notasavaliacoes?turma=${encodeURIComponent(turmaNome)}`),
+      fetch("/unidades")
+    ]);
 
-      if (!turmasResponse.ok || !presencaResponse.ok || !notasResponse.ok || !unidadesResponse.ok) {
-          throw new Error("Erro ao buscar os dados do backend.");
+    if (!turmasResponse.ok || !presencaResponse.ok || !notasResponse.ok || !unidadesResponse.ok) {
+      throw new Error("Erro ao buscar os dados do backend.");
+    }
+
+    const turmasData = await turmasResponse.json();
+    const presencaData = await presencaResponse.json();
+    const notasData = await notasResponse.json();
+    const unidadesData = await unidadesResponse.json();
+
+    const unidadeId = turmasData[turmaNome]?.unidade_id || "Não disponível";
+    const nomeUnidade = unidadesData[unidadeId] || "Unidade não encontrada";
+
+    const inicio = dataInicioRaw ? new Date(dataInicioRaw) : null;
+    const fim = dataFimRaw ? new Date(dataFimRaw) : null;
+
+    const alunosPresenca = (presencaData[turmaNome] || []).filter(registro => {
+      const data = criarDataLocal(registro.data);
+      return (!inicio || data >= inicio) && (!fim || data <= fim);
+    });
+
+    const alunosNotas = notasData[turmaNome] || [];
+
+    const doc = new jspdf.jsPDF("p", "mm", "a4");
+    let yOffset = 10;
+
+    // Cabeçalho
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(`Unidade: ${nomeUnidade}`, 10, yOffset);
+    yOffset += 10;
+
+    doc.setFontSize(14);
+    doc.text(`Relatório de Desempenho da Turma: ${turmaNome}`, 10, yOffset);
+    yOffset += 10;
+
+    doc.setFontSize(12);
+    doc.text(`Período: ${dataInicioBR} até ${dataFimBR}`, 10, yOffset);
+    yOffset += 10;
+
+    // Processa dados dos alunos
+    const dadosAlunos = {};
+
+    alunosPresenca.forEach(aluno => {
+      if (!dadosAlunos[aluno.aluno]) {
+        dadosAlunos[aluno.aluno] = {
+          totalPresencas: 0,
+          totalAulas: 0,
+          somaNotasAulas: 0,
+          totalNotasAulas: 0,
+          somaNotasAvaliacoes: 0,
+          totalNotasAvaliacoes: 0
+        };
       }
 
-      const turmasData = await turmasResponse.json();
-      const presencaData = await presencaResponse.json();
-      const notasData = await notasResponse.json();
-      const unidadesData = await unidadesResponse.json();
+      if (aluno.presenca === "Presente") {
+        dadosAlunos[aluno.aluno].totalPresencas++;
+        if (aluno.nota) {
+          dadosAlunos[aluno.aluno].somaNotasAulas += parseFloat(aluno.nota);
+          dadosAlunos[aluno.aluno].totalNotasAulas++;
+        }
+      }
 
-      const unidadeId = turmasData[turmaNome]?.unidade_id || "Não disponível";
-      const nomeUnidade = unidadesData[unidadeId] || "Unidade não encontrada";
+      dadosAlunos[aluno.aluno].totalAulas++;
+    });
 
-      const alunosPresenca = presencaData[turmaNome] || [];
-      const alunosNotas = notasData[turmaNome] || [];
+    alunosNotas.forEach(nota => {
+      if (dadosAlunos[nota.aluno]) {
+        dadosAlunos[nota.aluno].somaNotasAvaliacoes += parseFloat(nota.nota) || 0;
+        dadosAlunos[nota.aluno].totalNotasAvaliacoes++;
+      }
+    });
 
-      const doc = new jspdf.jsPDF("p", "mm", "a4");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.text(`Unidade: ${nomeUnidade}`, 10, 10);
-      doc.setFontSize(14);
-      doc.text(`Relatório de Desempenho da Turma: ${turmaNome}`, 10, 20);
+    // Geração da tabela
+    doc.setFontSize(12);
+    doc.text("Informações Gerais da Turma:", 10, yOffset);
+    yOffset += 5;
 
-      let yOffset = 40;
+    const tabelaDadosAlunos = Object.keys(dadosAlunos).map(nomeAluno => {
+      const alunoData = dadosAlunos[nomeAluno];
+      const mediaPresenca = alunoData.totalAulas > 0
+        ? (alunoData.totalPresencas / alunoData.totalAulas) * 100
+        : "-";
 
-      const dadosAlunos = {};
+      const mediaNotasAulas = alunoData.totalNotasAulas > 0
+        ? (alunoData.somaNotasAulas / alunoData.totalNotasAulas)
+        : "-";
 
-      alunosPresenca.forEach(aluno => {
-          if (!dadosAlunos[aluno.aluno]) {
-              dadosAlunos[aluno.aluno] = {
-                  totalPresencas: 0,
-                  totalAulas: 0,
-                  somaNotasAulas: 0,
-                  totalNotasAulas: 0,
-                  somaNotasAvaliacoes: 0,
-                  totalNotasAvaliacoes: 0
-              };
-          }
+      const mediaNotasAvaliacoes = alunoData.totalNotasAvaliacoes > 0
+        ? (alunoData.somaNotasAvaliacoes / alunoData.totalNotasAvaliacoes)
+        : "-";
 
-          if (aluno.presenca === "Presente") {
-              dadosAlunos[aluno.aluno].totalPresencas++;
-              if (aluno.nota) {
-                  dadosAlunos[aluno.aluno].somaNotasAulas += parseFloat(aluno.nota);
-                  dadosAlunos[aluno.aluno].totalNotasAulas++;
-              }
-          }
-          dadosAlunos[aluno.aluno].totalAulas++;
-      });
+      return [
+        nomeAluno,
+        `${mediaPresenca === "-" ? "-" : mediaPresenca.toFixed(1)}%`,
+        mediaNotasAulas === "-" ? "-" : mediaNotasAulas.toFixed(2),
+        mediaNotasAvaliacoes === "-" ? "-" : mediaNotasAvaliacoes.toFixed(2)
+      ];
+    });
 
-      alunosNotas.forEach(nota => {
-          if (dadosAlunos[nota.aluno]) {
-              dadosAlunos[nota.aluno].somaNotasAvaliacoes += parseFloat(nota.nota) || 0;
-              dadosAlunos[nota.aluno].totalNotasAvaliacoes++;
-          }
-      });
+    doc.autoTable({
+      startY: yOffset + 5,
+      head: [["Nome do Aluno", "Porcentagem de Presença", "Média de Notas nas Aulas Presentes", "Média nas Avaliações"]],
+      body: tabelaDadosAlunos,
+      theme: "grid"
+    });
 
-      doc.setFontSize(12);
-      doc.text("Informações Gerais da Turma:", 10, yOffset);
-      yOffset += 10;
-
-      const tabelaDadosAlunos = Object.keys(dadosAlunos).map(nomeAluno => {
-          const alunoData = dadosAlunos[nomeAluno];
-          const mediaPresenca = alunoData.totalAulas > 0 ? (alunoData.totalPresencas / alunoData.totalAulas) * 100 : "-";
-          const mediaNotasAulas = alunoData.totalNotasAulas > 0 ? (alunoData.somaNotasAulas / alunoData.totalPresencas) : "-";
-          const mediaNotasAvaliacoes = alunoData.totalNotasAvaliacoes > 0 ? (alunoData.somaNotasAvaliacoes / alunoData.totalNotasAvaliacoes) : "-";
-
-          return [
-              nomeAluno,
-              `${mediaPresenca === "-" ? "-" : mediaPresenca.toFixed(1)}%`,
-              mediaNotasAulas === "-" ? "-" : mediaNotasAulas.toFixed(2),
-              mediaNotasAvaliacoes === "-" ? "-" : mediaNotasAvaliacoes.toFixed(2)
-          ];
-      });
-
-      doc.autoTable({
-          startY: yOffset,
-          head: [["Nome do Aluno", "Porcentagem de Presença", "Média de Notas nas Aulas Presentes", "Média nas Avaliações"]],
-          body: tabelaDadosAlunos,
-          theme: "grid"
-      });
-
-      doc.save(`Relatorio_Turma_${turmaNome}.pdf`);
+    doc.save(`Relatorio_Turma_${turmaNome}.pdf`);
   } catch (error) {
-      console.error("Erro ao gerar o relatório:", error);
+    console.error("Erro ao gerar o relatório:", error);
   }
 }
+
 
 
 
@@ -849,50 +938,50 @@ async function exportarRelatorioTurmaPDF() {
 document.getElementById("exportar-relatorio-turma").addEventListener("click", exportarRelatorioTurmaPDF);
 
 function toggleMudarPerfil() {
-const mudarPerfil = document.getElementById("mudarPerfil");
-// Alterna entre mostrar e esconder
-if (mudarPerfil.style.display === "none" || !mudarPerfil.style.display) {
- mudarPerfil.style.display = "block"; // Mostra a caixa
- mudarPerfil.style.display = "flex";
-} else {
- mudarPerfil.style.display = "none"; // Esconde a caixa
-}
+  const mudarPerfil = document.getElementById("mudarPerfil");
+  // Alterna entre mostrar e esconder
+  if (mudarPerfil.style.display === "none" || !mudarPerfil.style.display) {
+    mudarPerfil.style.display = "block"; // Mostra a caixa
+    mudarPerfil.style.display = "flex";
+  } else {
+    mudarPerfil.style.display = "none"; // Esconde a caixa
+  }
 }
 
 // Fecha a caixa ao clicar fora dela
 document.addEventListener("click", (event) => {
-const mudarPerfil = document.getElementById("mudarPerfil");
-const userInfo = document.getElementById("user-info");
+  const mudarPerfil = document.getElementById("mudarPerfil");
+  const userInfo = document.getElementById("user-info");
 
-// Verifica se o clique foi fora da caixa ou da imagem
-if (
- mudarPerfil.style.display === "flex" &&
- !mudarPerfil.contains(event.target) &&
- !userInfo.contains(event.target)
-) {
- mudarPerfil.style.display = "none";
-}
+  // Verifica se o clique foi fora da caixa ou da imagem
+  if (
+    mudarPerfil.style.display === "flex" &&
+    !mudarPerfil.contains(event.target) &&
+    !userInfo.contains(event.target)
+  ) {
+    mudarPerfil.style.display = "none";
+  }
 });
 
 
 // Carregar as turmas ao abrir a página
 // Chamar a função ao carregar a página
-window.onload = async function() {
-await obterNomeUsuario();
-await carregarTurmas(); // Mantendo a função original
+document.addEventListener("DOMContentLoaded", async function () {
+  await obterNomeUsuario();
+  await carregarTurmas(); // Mantendo a função original
 
-// Adiciona evento de mudança para atualizar os alunos ao selecionar a turma
-document.getElementById("turma-select").addEventListener("change", () => {
-   const turmaSelecionada = document.getElementById("turma-select").value;
-   const alunos = obterListaDeAlunos(turmaSelecionada);
-   console.log("Alunos carregados:", alunos);
+  // Adiciona evento de mudança para atualizar os alunos ao selecionar a turma
+  document.getElementById("turma-select").addEventListener("change", () => {
+    const turmaSelecionada = document.getElementById("turma-select").value;
+    const alunos = obterListaDeAlunos(turmaSelecionada);
+    console.log("Alunos carregados:", alunos);
+  });
 });
-};
 
 async function carregarInstrutoresParaCoordenador() {
   try {
     const nomeCoordenador = localStorage.getItem("nomeUsuario");
-     //🚭Como era na Vercel
+    //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/usuarios"); 
     //🚭Como é localmente
     //const response = await fetch("http://localhost:3000/usuarios");
@@ -946,14 +1035,14 @@ async function carregarInstrutoresParaCoordenadorTurma() {
     console.error("Erro ao carregar instrutores (Turma):", error);
   }
 }
-window.onload = async function () {
+document.addEventListener("DOMContentLoaded", async function () {
   await obterNomeUsuario();
-
+  await carregarTurmas();
   const tipoUsuario = localStorage.getItem("tipoUsuario");
 
   if (tipoUsuario === "Coordenador") {
-    await carregarInstrutoresParaCoordenador();         // Mostra seção por Aluno
-    await carregarInstrutoresParaCoordenadorTurma();    // Mostra seção por Turma
+    await carregarInstrutoresParaCoordenador();
+    await carregarInstrutoresParaCoordenadorTurma();
   }
 
   await carregarTurmas();
@@ -963,7 +1052,7 @@ window.onload = async function () {
     const alunos = obterListaDeAlunos(turmaSelecionada);
     console.log("Alunos carregados:", alunos);
   });
-};
+});
 
 // Relatório por aluno
 document.getElementById("instrutor-select").addEventListener("change", async function () {
@@ -976,5 +1065,6 @@ document.getElementById("instrutor-select-turma").addEventListener("change", asy
   const instrutorSelecionado = this.value;
   await carregarTurmas(instrutorSelecionado);
 });
+
 
 

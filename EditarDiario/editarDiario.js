@@ -375,8 +375,8 @@ async function salvarNotas() {
   try {
     //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/atualizar-notas",
-      //🚭Como é localmente
-      //const response = await fetch("http://localhost:3000/atualizar-notas", 
+    //🚭Como é localmente
+    //const response = await fetch("http://localhost:3000/atualizar-notas",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -446,7 +446,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return null;
   }
 
-  const token = getTokenFromCookie();
+  const token = localStorage.getItem('token');
+  //const token = getTokenFromCookie();
+
   if (!token) {
     alert("Você precisa estar logado para acessar esta página.");
     window.location.href = "/Login/login.html";
@@ -458,8 +460,8 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       //🚭Como era na Vercel
       const response = await fetch("https://hub-orcin.vercel.app/perfil",
-        //🚭Como é localmente
-        //const response = await fetch("http://localhost:3000/perfil", 
+      //🚭Como é localmente
+      //const response = await fetch("http://localhost:3000/perfil",
         {
           headers: { Authorization: token },
         });

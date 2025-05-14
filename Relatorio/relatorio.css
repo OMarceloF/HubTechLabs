@@ -25,9 +25,11 @@ html {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - 200px); 
-    padding-top: 100px;  /* Adiciona espaço para o cabeçalho */
-    flex: 1;  /* Faz o container ocupar o espaço restante */
+    min-height: calc(100vh - 200px);
+    padding-top: 100px;
+    /* Adiciona espaço para o cabeçalho */
+    flex: 1;
+    /* Faz o container ocupar o espaço restante */
 }
 
 .card {
@@ -41,31 +43,14 @@ html {
     /* Centraliza o card */
 }
 
-/* body {
-    font-family: Arial, sans-serif;
-    background-color: rgb(243, 243, 243);
-    margin: 0;
-    padding: 0;
-    min-height: 50vh;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center; 
+input[type="date"] {
+    margin: 5px 0;
+    padding: 5px;
 }
 
-.container {
-    max-width: 900px;
-    margin: 50px auto;
-    padding: 40px;
-    background-color: rgba(255, 255, 255, 0.842);
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-    margin-top: 15vh;
-    justify-content: center;
-    align-items: center; 
-} */
 
 
-h2{
+h2 {
     font-family: arial;
     text-align: center;
     margin-top: 0px;
@@ -124,8 +109,10 @@ button:hover {
 #grafico-notas-aluno,
 #grafico-presenca-aula,
 #grafico-desempenho-aula {
-    max-width: 100%; /* Ajusta o gráfico para caber no card */
-    height: auto; /* Mantém a proporção */
+    max-width: 100%;
+    /* Ajusta o gráfico para caber no card */
+    height: auto;
+    /* Mantém a proporção */
 }
 
 ul {
@@ -141,7 +128,8 @@ ul {
     background-color: #78f8e18e;
     padding: 10px 10px;
     color: white;
-    position: fixed;  /* Fixa no topo */
+    position: fixed;
+    /* Fixa no topo */
     top: 0;
     left: 0;
     z-index: 1000;
@@ -162,13 +150,16 @@ select {
 .user-photo {
     width: 60px;
     height: 60px;
-    border-radius: 50%; /* Imagem circular */
+    border-radius: 50%;
+    /* Imagem circular */
     cursor: pointer;
 }
 
 .user-photo:hover {
-    transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
-    transition: all 0.3s ease;  /* Transição suave */
+    transform: scale(1.1);
+    /* Aumenta a imagem ao passar o mouse */
+    transition: all 0.3s ease;
+    /* Transição suave */
 }
 
 
@@ -191,10 +182,12 @@ select {
     }
 
     .container {
-        width: 85%; /* Aumenta a largura do card para quase ocupar a tela */
-        padding: 10px; /* Ajusta o espaçamento interno */
-        margin: 120px auto 0;  
-        
+        width: 85%;
+        /* Aumenta a largura do card para quase ocupar a tela */
+        padding: 10px;
+        /* Ajusta o espaçamento interno */
+        margin: 120px auto 0;
+
     }
 
     .card {
@@ -206,14 +199,15 @@ select {
         width: 90%;
         margin: 10px auto;
         align-items: center;
-        
+
     }
 
 
     #grafico-notas-aluno,
     #grafico-presenca-aula,
     #grafico-desempenho-aula {
-        max-width: 100%; /* Ajusta os gráficos para responsividade */
+        max-width: 100%;
+        /* Ajusta os gráficos para responsividade */
         height: auto;
     }
 
@@ -226,7 +220,8 @@ footer {
 }
 
 #grafico-presenca-aula {
-    height: 100px; /* Define a altura fixa do gráfico */
+    height: 100px;
+    /* Define a altura fixa do gráfico */
 }
 
 .mudarPerfil {
@@ -236,23 +231,36 @@ footer {
     background-color: white;
     width: 120px;
     height: 160px;
-    display: flex; /* Configura Flexbox */
-    flex-direction: column; /* Coloca os links em coluna */
-    justify-content: center; /* Centraliza verticalmente */
-    align-items: center; /* Centraliza horizontalmente */
-    text-align: center; /* Centraliza o texto */
-    border-radius: 8px; /* Deixa os cantos arredondados */
+    display: flex;
+    /* Configura Flexbox */
+    flex-direction: column;
+    /* Coloca os links em coluna */
+    justify-content: center;
+    /* Centraliza verticalmente */
+    align-items: center;
+    /* Centraliza horizontalmente */
+    text-align: center;
+    /* Centraliza o texto */
+    border-radius: 8px;
+    /* Deixa os cantos arredondados */
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .mudarPerfil a {
-    margin: 0; /* Remove qualquer espaçamento adicional */
-    padding: 5px 0; /* Espaçamento interno, se necessário */
-    text-decoration: none; /* Remove o sublinhado dos links */
-    color: #5a5a5a; /* Define a cor do texto */
-    font-weight: bold; /* Deixa o texto em negrito */
-    width: 100%; /* Garante que o texto ocupa toda a largura */
-    text-align: center; /* Centraliza o texto dos links */
+    margin: 0;
+    /* Remove qualquer espaçamento adicional */
+    padding: 5px 0;
+    /* Espaçamento interno, se necessário */
+    text-decoration: none;
+    /* Remove o sublinhado dos links */
+    color: #5a5a5a;
+    /* Define a cor do texto */
+    font-weight: bold;
+    /* Deixa o texto em negrito */
+    width: 100%;
+    /* Garante que o texto ocupa toda a largura */
+    text-align: center;
+    /* Centraliza o texto dos links */
 }
 
 .hidden {
@@ -267,7 +275,8 @@ footer {
     text-align: center;
 }
 
-#tabela-relatorio-turma th, #tabela-relatorio-turma td {
+#tabela-relatorio-turma th,
+#tabela-relatorio-turma td {
     border: 1px solid #ddd;
     padding: 10px;
 }

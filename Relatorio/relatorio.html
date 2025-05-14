@@ -16,10 +16,12 @@
     <header class="header">
         <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
         <div class="logo-container">
-            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo"></a>
+            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa"
+                    class="logo"></a>
         </div>
         <div class="user-info" id="user-info">
-            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo" onclick="toggleMudarPerfil()">
+            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo"
+                onclick="toggleMudarPerfil()">
         </div>
 
         <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
@@ -27,12 +29,12 @@
             <!-- 🚭Como era na Vercel -->
             <a href="https://hub-orcin.vercel.app/Login/login.html">Sair</a>
             <!-- 🚭Como é localmente -->
-            <!-- <a href="http://localhost:3000/Login/login.html">Sair</a> -->
+            <!--<a href="http://localhost:3000/Login/login.html">Sair</a>-->
         </div>
     </header>
-    
-    
-    
+
+
+
     <div class="container" id="conteinerOpcao">
         <div class="card">
             <h2>Escolha o tipo de relatório:</h2>
@@ -52,7 +54,7 @@
             </div>
             <form id="form-relatorios">
                 <label for="turma-select">Selecione a Turma:</label>
-            
+
                 <select id="turma-select">
                     <option value="" disabled selected>Escolha uma turma</option>
                 </select>
@@ -61,9 +63,15 @@
                 <select id="aluno-select" disabled>
                     <option value="" disabled selected>Escolha um aluno</option>
                 </select>
+                <label for="data-inicio-aluno">Data de Início:</label>
+                <input type="date" id="data-inicio-aluno">
+
+                <label for="data-fim-aluno">Data de Fim:</label>
+                <input type="date" id="data-fim-aluno">
 
                 <button type="button" id="carregar-relatorio" class="btn-primary">Carregar Relatório</button>
             </form>
+
             <h2 id="msg-erro"></h2>
 
             <div class="hidden" id="graficos-aluno-container">
@@ -86,7 +94,7 @@
 
             </div>
         </div>
-        
+
     </div>
 
     <div class="container" id="conteinerTurma" class="hidden">
@@ -94,22 +102,28 @@
             <h2>Relatório por Turma</h2>
             <!-- Dentro do bloco Relatório por Turma -->
             <div id="coordenador-section-turma" style="display: none;">
-            <label for="instrutor-select-turma">Escolha um instrutor:</label>
-        <select id="instrutor-select-turma">
-        <option value="" disabled selected>Escolha um instrutor</option>
-         </select>
-        </div>
+                <label for="instrutor-select-turma">Escolha um instrutor:</label>
+                <select id="instrutor-select-turma">
+                    <option value="" disabled selected>Escolha um instrutor</option>
+                </select>
+            </div>
 
             <form>
                 <label for="turma-turma-select">Selecione a Turma:</label>
                 <select id="turma-turma-select">
                     <option value="" disabled selected>Escolha uma turma</option>
                 </select>
+                <label for="data-inicio-turma">Data de Início:</label>
+                <input type="date" id="data-inicio-turma">
+
+                <label for="data-fim-turma">Data de Fim:</label>
+                <input type="date" id="data-fim-turma">
+
                 <button type="button" id="gerar-relatorio-turma" class="btn-primary">Gerar Relatório</button>
             </form>
-        
+
             <div id="relatorio-turma-container" class="card hidden">
-                
+
                 <table id="tabela-relatorio-turma">
                     <thead>
                         <tr>
@@ -121,12 +135,13 @@
                     </thead>
                     <tbody></tbody>
                 </table>
-                <button type="button" id="exportar-relatorio-turma" class="btn-secondary">Exportar Relatório em PDF</button>
+                <button type="button" id="exportar-relatorio-turma" class="btn-secondary">Exportar Relatório em
+                    PDF</button>
             </div>
         </div>
-        
+
     </div>
-    
+
     <footer class="footer">
         <p>&copy; 2025 Hub Tech Labs. Todos os direitos reservados.</p>
     </footer>

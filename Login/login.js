@@ -24,7 +24,7 @@ document.getElementById("form-login").addEventListener("submit", async (event) =
         
         if (response.ok) {
             // Armazena o token no cookie por 2 horas
-            document.cookie = `token=${data.token}; path=/; max-age=7200`; 
+            localStorage.setItem('token', data.token);
             
             // Armazena o tipo de usuário no localStorage
             localStorage.setItem('tipoUsuario', data.tipo);

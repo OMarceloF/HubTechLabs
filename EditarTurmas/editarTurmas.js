@@ -4,7 +4,10 @@ async function obterNomeUsuario() {
         const email = localStorage.getItem("email");
         if (!email) throw new Error("Nenhum email encontrado");
 
+        //🚭Como era na Vercel
         const response = await fetch("https://hub-orcin.vercel.app/usuarios");
+        //🚭Como é localmente
+        //const response = await fetch("http://localhost:3000/usuarios");
         if (!response.ok) throw new Error("Erro ao buscar usuários");
 
         const usuarios = await response.json();
@@ -23,7 +26,10 @@ async function obterNomeUsuario() {
 // 🔹 Função para carregar turmas do instrutor logado
 async function carregarTurmas() {
     try {
+        //🚭Como era na Vercel
         const response = await fetch("https://hub-orcin.vercel.app/dados");
+        //🚭Como é localment
+        //const response = await fetch("http://localhost:3000/dados");
         if (!response.ok) throw new Error("Erro ao buscar turmas");
 
         const turmas = await response.json();
@@ -54,7 +60,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const tipoUsuario = localStorage.getItem("tipoUsuario");
     if (tipoUsuario === "Coordenador") window.location.href = "/Erro/erro.html";
 
-    const token = document.cookie.split("; ").find(row => row.startsWith("token="))?.split("=")[1];
+    const token = localStorage.getItem('token');
+    //const token = getTokenFromCookie();
+
+
     if (!token) {
         alert("Você precisa estar logado.");
         window.location.href = "/Login/login.html";
@@ -67,9 +76,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // 🔹 Perfil
     try {
-        const res = await fetch("https://hub-orcin.vercel.app/perfil", {
-            headers: { Authorization: token }
-        });
+        //🚭Como era na Vercel
+        const response = await fetch('https://hub-orcin.vercel.app/perfil', 
+        //🚭Como é localmente
+        //const res = await fetch("http://localhost:3000/perfil",
+            {
+                headers: { Authorization: token }
+            });
         const perfil = await res.json();
         document.getElementById("profile-photo").src = perfil.photo || "/projeto/Imagens/perfil.png";
     } catch (err) {
@@ -82,7 +95,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 🔹 Ao selecionar turma
     turmaSelect.addEventListener("change", async () => {
         const turma = turmaSelect.value;
+        //🚭Como era na Vercel
         const response = await fetch("https://hub-orcin.vercel.app/dados");
+        //🚭Como é localmente
+        //const response = await fetch("http://localhost:3000/dados");
+
+
         const dados = await response.json();
 
         if (!dados[turma]?.alunos) {
@@ -135,7 +153,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         try {
+            //🚭Como era na Vercel
             const res = await fetch("https://hub-orcin.vercel.app/editar-turma", {
+            //🚭Como é localment
+            //const res = await fetch("http://localhost:3000/editar-turma", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ turma, alunos })
@@ -168,7 +189,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("confirmar-exclusao").addEventListener("click", async () => {
         const turma = turmaSelect.value;
+        //🚭Como era na Vercel
         const res = await fetch("https://hub-orcin.vercel.app/excluir-turma", {
+        //🚭Como é localmente
+        //const res = await fetch("http://localhost:3000/excluir-turma", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ turma })
@@ -184,6 +208,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("cancelar-exclusao").addEventListener("click", () => {
         document.getElementById("confirmacao-exclusao").classList.add("hidden");
     });
+    document.getElementById("alterar-alunos").addEventListener("click", () => {
+        const turmaSelecionada = document.getElementById("turma-select").value;
+        if (!turmaSelecionada) {
+            alert("Selecione uma turma para alterar.");
+            return;
+        }
+        localStorage.setItem("turmaParaEditar", turmaSelecionada);
+        window.location.href = "/EditarTurmas/alterarAlunos.html";
+    });
+
 });
 
 // 🔹 Alterna o menu do perfil

@@ -41,7 +41,7 @@ function toggleMudarPerfil() {
     // Alterna entre mostrar e esconder
     if (mudarPerfil.style.display === "none" || !mudarPerfil.style.display) {
         mudarPerfil.style.display = "block"; // Mostra a caixa
-        mudarPerfil.style.display = "flex"; 
+        mudarPerfil.style.display = "flex";
     } else {
         mudarPerfil.style.display = "none"; // Esconde a caixa
     }
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function esconderOpcoes() {
         const tipoUsuario = getUserType();
-        
+
         if (tipoUsuario === "Coordenador") {
             // Lista de seletores que devem ser ocultados para Coordenador
             const elementosRestritos = [
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
         }
-        else if (tipoUsuario === "Instrutor"){
+        else if (tipoUsuario === "Instrutor") {
             const elementosRestritos = [
                 "/Cadastro/cadastro.html",
                 "/CadastroUnidades/cadastroUnidades.html",
@@ -106,8 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     esconderOpcoes();
-    
-   
+
+
     // Função para obter token do cookie
     function getTokenFromCookie() {
         const cookies = document.cookie.split("; ");
@@ -120,7 +120,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return null;
     }
 
-    const token = getTokenFromCookie();
+    const token = localStorage.getItem('token');
+    //const token = getTokenFromCookie();
+
     if (!token) {
         alert("Você precisa estar logado para acessar esta página.");
         window.location.href = "/Login/login.html";
@@ -133,9 +135,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const response = await fetch('https://hub-orcin.vercel.app/perfil', 
             //🚭Como é localmente
             //const response = await fetch('http://localhost:3000/perfil',
-            {
-                headers: { Authorization: token }
-            });
+                {
+                    headers: { Authorization: token }
+                });
 
             if (!response.ok) {
                 throw new Error("Erro ao carregar os dados do perfil");
