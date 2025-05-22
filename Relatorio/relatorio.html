@@ -29,7 +29,7 @@
             <!-- 🚭Como era na Vercel -->
             <a href="https://hub-orcin.vercel.app/Login/login.html">Sair</a>
             <!-- 🚭Como é localmente -->
-            <!--<a href="http://localhost:3000/Login/login.html">Sair</a>-->
+            <!-- <a href="http://localhost:3000/Login/login.html">Sair</a> -->
         </div>
     </header>
 
@@ -40,6 +40,8 @@
             <h2>Escolha o tipo de relatório:</h2>
             <button id="relatorio-aluno-btn" class="btn-primary">Relatório por Aluno</button>
             <button id="relatorio-turma-btn" class="btn-primary">Relatório por Turma</button>
+            <button id="relatorio-unidade-btn" class="btn-primary">Relatório por Unidade</button>
+
         </div>
     </div>
 
@@ -135,11 +137,58 @@
                     </thead>
                     <tbody></tbody>
                 </table>
+
+                <h4>Detalhamento de Presença por Aula</h4>
+                <table id="tabela-detalhe-turma">
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Data da Aula</th>
+                            <th>Presença</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
                 <button type="button" id="exportar-relatorio-turma" class="btn-secondary">Exportar Relatório em
                     PDF</button>
             </div>
         </div>
+    </div>
+    <div class="container hidden" id="relatorio-unidade-container">
+        <div class="card">
+            <h2>Relatório por Unidade</h2>
+            <form id="form-relatorio-unidade">
+                <label for="unidade-select">Selecione a Unidade:</label>
+                <select id="unidade-select">
+                    <option value="" disabled selected>Escolha uma unidade</option>
+                </select>
 
+                <label for="data-inicio-unidade">Data de Início:</label>
+                <input type="date" id="data-inicio-unidade">
+
+                <label for="data-fim-unidade">Data de Fim:</label>
+                <input type="date" id="data-fim-unidade">
+
+                <button type="button" id="gerar-relatorio-unidade" class="btn-primary">
+                    Gerar Relatório
+                </button>
+            </form>
+
+            <div id="resultado-unidade" class="hidden">
+                <p><strong>Matrículas totais:</strong> <span id="matriculas-unidade">–</span></p>
+                <p><strong>% Presença:</strong> <span id="percentual-presenca">–</span></p>
+                <p><strong>% Faltas:</strong> <span id="percentual-faltas">–</span></p>
+
+                <!-- Gráfico de Pizza -->
+                <div style="max-width: 400px; margin-top: 1rem;">
+                    <canvas id="grafico-unidade"></canvas>
+                </div>
+            </div>
+            <button id="exportar-relatorio-unidade" class="btn-secondary hidden">
+                Exportar Relatório em PDF
+            </button>
+
+        </div>
     </div>
 
     <footer class="footer">

@@ -47,12 +47,12 @@ const dbConfig = {
 };
 
 //🚭Como é localmente
-//const dbConfig = {
+// const dbConfig = {
 //  host: 'localhost',
-//user: 'root',
-//password: '',
-//database: 'buldjoxpabj83wr7hks0'
-//};
+// user: 'root',
+// password: '',
+// database: 'buldjoxpabj83wr7hks0'
+// };
 
 app.post('/salvar-turma', async (req, res) => {
     const { turma, instrutor, alunos, unidade_id } = req.body;
@@ -380,7 +380,7 @@ app.get('/conteudo-aula', async (req, res) => {
 // Inicializa o servidor
 app.listen(port, () => {
     console.log(`Servidor rodando em https://hub-orcin.vercel.app:${port}/Login/login.html`);
-    //console.log(`Servidor rodando em http://localhost:${port}/Login/login.html`);
+    // console.log(`Servidor rodando em http://localhost:${port}/Login/login.html`);
 });
 
 app.get('/CriarTurmas/criarTurmas.html', (req, res) => {

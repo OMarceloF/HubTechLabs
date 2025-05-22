@@ -289,3 +289,27 @@ footer {
 #tabela-relatorio-turma tr:nth-child(even) {
     background-color: #f2f2f2;
 }
+
+/* Mesma aparência da primeira tabela para o detalhamento */
+#tabela-detalhe-turma {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 16px;
+    text-align: center;
+}
+
+#tabela-detalhe-turma th,
+#tabela-detalhe-turma td {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+#tabela-detalhe-turma th {
+    background-color: #29dabb;
+    color: white;
+}
+
+#tabela-detalhe-turma tr:nth-child(even) {
+    background-color: #f2f2f2;
+}

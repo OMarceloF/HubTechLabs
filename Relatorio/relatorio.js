@@ -48,7 +48,7 @@ async function carregarTurmas(instrutorFiltrado = null) {
     //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/dados"); 
     //🚭Como é localmente
-    //const response = await fetch("http://localhost:3000/dados");
+    // const response = await fetch("http://localhost:3000/dados");
     if (!response.ok) throw new Error("Erro ao buscar as turmas");
 
     const turmas = await response.json();
@@ -101,93 +101,131 @@ function gerarRelatorioTurma() {
     return;
   }
 
-  fetch("/dados")
-    .then((res) => res.json())
-    .then((turmasData) => {
-      fetch("/dados-presenca")
-        .then((res) => res.json())
-        .then((presencaData) => {
-          fetch("/notasavaliacoes")
-            .then((res) => res.json())
-            .then((notasData) => {
-              const alunosPresenca = presencaData[turmaNome] || [];
-              const alunosNotas = notasData[turmaNome] || [];
+  // carrega dados
+  Promise.all([
+    fetch("/dados").then(r => r.json()),
+    fetch("/dados-presenca").then(r => r.json()),
+    fetch("/notasavaliacoes").then(r => r.json())
+  ])
+    .then(([turmasData, presencaData, notasData]) => {
+      const alunosPresenca = presencaData[turmaNome] || [];
+      const alunosNotas = notasData[turmaNome] || [];
 
-              const inicio = dataInicio ? new Date(dataInicio) : null;
-              const fim = dataFim ? new Date(dataFim) : null;
+      const inicio = dataInicio ? new Date(dataInicio) : null;
+      const fim = dataFim ? new Date(dataFim) : null;
 
-              const dadosAlunos = {};
+      // resumo (sua lógica permanece igual)...
+      // ------------------------
+      const dadosAlunos = {};
+      alunosPresenca.forEach(registro => {
+        const dt = criarDataLocal(registro.data);
+        if ((inicio && dt < inicio) || (fim && dt > fim)) return;
+        if (!dadosAlunos[registro.aluno]) {
+          dadosAlunos[registro.aluno] = {
+            totalPresencas: 0,
+            totalAulas: 0,
+            somaNotasAulas: 0,
+            totalNotasAulas: 0,
+            somaNotasAvaliacoes: 0,
+            totalNotasAvaliacoes: 0
+          };
+        }
+        if (registro.presenca === "Presente") {
+          dadosAlunos[registro.aluno].totalPresencas++;
+          if (registro.nota) {
+            dadosAlunos[registro.aluno].somaNotasAulas += parseFloat(registro.nota);
+            dadosAlunos[registro.aluno].totalNotasAulas++;
+          }
+        }
+        dadosAlunos[registro.aluno].totalAulas++;
+      });
+      // 2) agrega avaliações
+      alunosNotas.forEach(nota => {
+        if (!dadosAlunos[nota.aluno]) return;
+        dadosAlunos[nota.aluno].somaNotasAvaliacoes += parseFloat(nota.nota) || 0;
+        dadosAlunos[nota.aluno].totalNotasAvaliacoes++;
+      });
+      // 3) renderiza resumo
+      const tbodyResumo = document.querySelector("#tabela-relatorio-turma tbody");
+      tbodyResumo.innerHTML = "";
+      Object.entries(dadosAlunos).forEach(([nomeAluno, aluno]) => {
+        const mediaPresenca = aluno.totalAulas > 0
+          ? ((aluno.totalPresencas / aluno.totalAulas) * 100).toFixed(1) + "%"
+          : "-";
+        const mediaNotasAulas = aluno.totalNotasAulas > 0
+          ? (aluno.somaNotasAulas / aluno.totalNotasAulas).toFixed(2)
+          : "-";
+        const mediaAvals = aluno.totalNotasAvaliacoes > 0
+          ? (aluno.somaNotasAvaliacoes / aluno.totalNotasAvaliacoes).toFixed(2)
+          : "-";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+    <td>${nomeAluno}</td>
+    <td>${mediaPresenca}</td>
+    <td>${mediaNotasAulas}</td>
+    <td>${mediaAvals}</td>
+  `;
+        tbodyResumo.appendChild(tr);
+      });
 
-              alunosPresenca.forEach((registro) => {
-                const dataRegistro = new Date(registro.data);
-                if ((inicio && dataRegistro < inicio) || (fim && dataRegistro > fim)) return;
+      // exibe resumo
+      document.getElementById("relatorio-turma-container").classList.remove("hidden");
 
-                if (!dadosAlunos[registro.aluno]) {
-                  dadosAlunos[registro.aluno] = {
-                    totalPresencas: 0,
-                    totalAulas: 0,
-                    somaNotasAulas: 0,
-                    totalNotasAulas: 0,
-                    somaNotasAvaliacoes: 0,
-                    totalNotasAvaliacoes: 0,
-                  };
-                }
+      // ---- pivot detail ----
+      const detalheTable = document.getElementById("tabela-detalhe-turma");
+      const thead = detalheTable.querySelector("thead");
+      const tbody = detalheTable.querySelector("tbody");
 
-                if (registro.presenca === "Presente") {
-                  dadosAlunos[registro.aluno].totalPresencas++;
-                  if (registro.nota) {
-                    dadosAlunos[registro.aluno].somaNotasAulas += parseFloat(registro.nota);
-                    dadosAlunos[registro.aluno].totalNotasAulas++;
-                  }
-                }
+      thead.innerHTML = "";
+      tbody.innerHTML = "";
 
-                dadosAlunos[registro.aluno].totalAulas++;
-              });
+      // 1) datas únicas, já filtradas e ordenadas
+      const datasUnicas = Array.from(new Set(
+        alunosPresenca
+          .filter(r => {
+            const d = criarDataLocal(r.data);
+            return (!inicio || d >= inicio) && (!fim || d <= fim);
+          })
+          .map(r => criarDataLocal(r.data).toISOString().slice(0, 10))
+      )).sort();
 
-              alunosNotas.forEach((nota) => {
-                if (!dadosAlunos[nota.aluno]) return;
 
-                dadosAlunos[nota.aluno].somaNotasAvaliacoes += parseFloat(nota.nota) || 0;
-                dadosAlunos[nota.aluno].totalNotasAvaliacoes++;
-              });
+      // 2) cabeçalho: Aluno + cada data em DD/MM/YYYY
+      const headerRow = document.createElement("tr");
+      headerRow.innerHTML = "<th>Aluno</th>" +
+        datasUnicas.map(d => {
+          const [y, m, dia] = d.split("-");
+          return `<th>${dia}/${m}/${y}</th>`;
+        }).join("");
+      thead.appendChild(headerRow);
 
-              const tbody = document.querySelector("#tabela-relatorio-turma tbody");
-              tbody.innerHTML = "";
-
-              Object.keys(dadosAlunos).forEach((nomeAluno) => {
-                const aluno = dadosAlunos[nomeAluno];
-                const mediaPresenca =
-                  aluno.totalAulas > 0
-                    ? ((aluno.totalPresencas / aluno.totalAulas) * 100).toFixed(1) + "%"
-                    : "-";
-                const mediaNotasAulas =
-                  aluno.totalNotasAulas > 0
-                    ? (aluno.somaNotasAulas / aluno.totalNotasAulas).toFixed(2)
-                    : "-";
-                const mediaAvaliacoes =
-                  aluno.totalNotasAvaliacoes > 0
-                    ? (aluno.somaNotasAvaliacoes / aluno.totalNotasAvaliacoes).toFixed(2)
-                    : "-";
-
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                  <td>${nomeAluno}</td>
-                  <td>${mediaPresenca}</td>
-                  <td>${mediaNotasAulas}</td>
-                  <td>${mediaAvaliacoes}</td>
-                `;
-                tbody.appendChild(tr);
-              });
-
-              document.getElementById("relatorio-turma-container").classList.remove("hidden");
-            });
+      // 3) uma linha por aluno, preenchendo Presente/Ausente
+      const alunosUnicos = Array.from(new Set(
+        alunosPresenca.map(r => r.aluno)
+      )).sort();
+      alunosUnicos.forEach(aluno => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${aluno}</td>`;
+        datasUnicas.forEach(d => {
+          // encontra o registro daquela data
+          const reg = alunosPresenca.find(r =>
+            r.aluno === aluno &&
+            criarDataLocal(r.data).toISOString().slice(0, 10) === d
+          );
+          tr.innerHTML += `<td>${reg ? reg.presenca : "-"}</td>`;
         });
+        tbody.appendChild(tr);
+      });
+
+      // garante visibilidade
+      detalheTable.parentElement.classList.remove("hidden");
     })
-    .catch((error) => {
-      console.error("Erro ao gerar relatório da turma:", error);
+    .catch(err => {
+      console.error("Erro ao gerar relatório da turma:", err);
       alert("Erro ao gerar o relatório da turma.");
     });
 }
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -210,6 +248,12 @@ document.addEventListener("DOMContentLoaded", () => {
     conteinerTurma.classList.remove("hidden");
     relatorioAlunoContainer.classList.add("hidden");
     conteinerOpcao.classList.add("hidden");
+  });
+  document.getElementById("relatorio-unidade-btn").addEventListener("click", () => {
+    document.getElementById("relatorio-unidade-container").classList.remove("hidden");
+    document.getElementById("relatorio-aluno-container").classList.add("hidden");
+    document.getElementById("conteinerTurma").classList.add("hidden");
+    document.getElementById("conteinerOpcao").classList.add("hidden");
   });
 
 
@@ -292,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
       //🚭Como era na Vercel
       const response = await fetch("https://hub-orcin.vercel.app/perfil",
       //🚭Como é localmente
-      //const response = await fetch("http://localhost:3000/perfil",
+      // const response = await fetch("http://localhost:3000/perfil",
         {
           headers: { Authorization: token },
         });
@@ -346,7 +390,7 @@ async function obterNomeUsuario() {
     //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/usuarios"); 
     //🚭Como é localmente
-    //const response = await fetch("http://localhost:3000/usuarios");
+    // const response = await fetch("http://localhost:3000/usuarios");
     if (!response.ok) {
       throw new Error("Erro ao buscar usuários");
     }
@@ -417,6 +461,148 @@ document
   });
 
 
+async function carregarUnidades() {
+  try {
+    // busca simultânea de unidades e turmas
+    const [unidadesRes, turmasRes] = await Promise.all([
+      fetch("/unidades"),
+      fetch("/dados")
+    ]);
+    if (!unidadesRes.ok) throw new Error("Erro ao buscar unidades");
+    if (!turmasRes.ok) throw new Error("Erro ao buscar turmas");
+
+    const unidadesMap = await unidadesRes.json();     // { "1":"Unid A",... }
+    const turmasData = await turmasRes.json();       // { "Turma 1":{unidade_id, instrutor,...}, ... }
+
+    const select = document.getElementById("unidade-select");
+    // zera e coloca o placeholder
+    select.innerHTML = '<option value="" disabled selected>Escolha uma unidade</option>';
+
+    const tipoUsuario = localStorage.getItem("tipoUsuario");
+    const nomeUsuario = localStorage.getItem("nomeUsuario");
+
+    let unidadeIds = [];
+
+    if (tipoUsuario === "Instrutor") {
+      // só as unidades onde este instrutor dá aula
+      unidadeIds = [...new Set(
+        Object.values(turmasData)
+          .filter(t => t.instrutor === nomeUsuario)
+          .map(t => t.unidade_id)
+      )];
+    }
+    else if (tipoUsuario === "Coordenador") {
+      // pega todos os instrutores deste coordenador
+      const usuariosRes = await fetch("http://localhost:3000/usuarios");
+      if (!usuariosRes.ok) throw new Error("Erro ao buscar usuários");
+      const usuarios = await usuariosRes.json();
+      const instrutores = usuarios
+        .filter(u => u.coordenador === nomeUsuario && u.tipo === "Instrutor")
+        .map(u => u.name);
+      // só as unidades onde esses instrutores dão aula
+      unidadeIds = [...new Set(
+        Object.values(turmasData)
+          .filter(t => instrutores.includes(t.instrutor))
+          .map(t => t.unidade_id)
+      )];
+    }
+    else {
+      // caso especial (admin?), todas
+      unidadeIds = Object.keys(unidadesMap);
+    }
+
+    // popula o <select>
+    unidadeIds.forEach(id => {
+      if (unidadesMap[id]) {
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = unidadesMap[id];
+        select.appendChild(opt);
+      }
+    });
+
+  } catch (err) {
+    console.error("carregarUnidades:", err);
+  }
+}
+
+async function gerarRelatorioUnidade() {
+  const unidadeId = document.getElementById("unidade-select").value;
+  const inicioRaw = document.getElementById("data-inicio-unidade").value;
+  const fimRaw = document.getElementById("data-fim-unidade").value;
+  if (!unidadeId) { alert("Selecione uma unidade."); return; }
+
+  // Carrega todos os dados de turmas e presenças
+  const [turmasRes, presencaRes] = await Promise.all([
+    fetch("/dados"),
+    fetch("/dados-presenca")
+  ]);
+  const turmasData = await turmasRes.json();      // { turmaNome: { unidade_id, alunos: [...] }, … }
+  const presencasMap = await presencaRes.json();    // { turmaNome: [ { data, presenca, … }, … ], … }
+
+  // 1) filtra só as turmas desta unidade
+  const turmasDaUnidade = Object.entries(turmasData)
+    .filter(([, t]) => String(t.unidade_id) === unidadeId)
+    .map(([nome]) => nome);
+
+  // 2) matrículas totais: uniões de arrays de alunos
+  const setAlunos = new Set();
+  turmasDaUnidade.forEach(t =>
+    (turmasData[t].alunos || []).forEach(a => setAlunos.add(a))
+  );
+  const totalMatriculas = setAlunos.size;
+
+  // 3) agrupa todas as presenças dessa unidade, no período
+  const inicio = inicioRaw ? new Date(inicioRaw) : null;
+  const fim = fimRaw ? new Date(fimRaw) : null;
+  let registros = [];
+  turmasDaUnidade.forEach(t => {
+    (presencasMap[t] || []).forEach(r => {
+      const dt = new Date(r.data);
+      if ((!inicio || dt >= inicio) && (!fim || dt <= fim)) {
+        registros.push(r);
+      }
+    });
+  });
+
+  const totalRegistros = registros.length;
+  const presentes = registros.filter(r => r.presenca === "Presente").length;
+  const faltas = totalRegistros - presentes;
+
+  const pctPresenca = totalRegistros
+    ? ((presentes / totalRegistros) * 100).toFixed(1) + "%"
+    : "-";
+  const pctFaltas = totalRegistros
+    ? ((faltas / totalRegistros) * 100).toFixed(1) + "%"
+    : "-";
+
+  // 4) exibe no HTML
+  document.getElementById("matriculas-unidade").textContent = totalMatriculas;
+  document.getElementById("percentual-presenca").textContent = pctPresenca;
+  document.getElementById("percentual-faltas").textContent = pctFaltas;
+  document.getElementById("resultado-unidade").classList.remove("hidden");
+  // Exibe os indicadores
+  document.getElementById("matriculas-unidade").textContent = totalMatriculas;
+  document.getElementById("percentual-presenca").textContent = pctPresenca;
+  document.getElementById("percentual-faltas").textContent = pctFaltas;
+  document.getElementById("resultado-unidade").classList.remove("hidden");
+  // agora sim exibe o botão de exportar
+  document.getElementById("exportar-relatorio-unidade").classList.remove("hidden");
+
+
+  // Cria o gráfico de pizza
+  criarGraficoUnidade(presentes, faltas);
+}
+document.getElementById("gerar-relatorio-unidade")
+  .addEventListener("click", gerarRelatorioUnidade);
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  carregarTurmas();
+  carregarUnidades();   // <— novo
+  obterNomeUsuario();
+  // … restante das suas chamadas
+});
 
 // Função para ocultar e zerar gráficos ao modificar qualquer campo de entrada
 document.querySelectorAll("input, select").forEach((element) => {
@@ -599,6 +785,52 @@ function criarGraficoNotasAluno(notas) {
     },
   });
 }
+
+function criarGraficoUnidade(presentes, faltas) {
+  const ctx = document.getElementById("grafico-unidade").getContext("2d");
+
+  // Se já existir um gráfico, destroí-lo antes de recriar
+  if (window.graficoUnidade) {
+    window.graficoUnidade.destroy();
+  }
+
+  window.graficoUnidade = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: ["Presença", "Faltas"],
+      datasets: [{
+        data: [presentes, faltas],
+        backgroundColor: [
+          "rgba(0, 142, 237, 0.7)",
+          "rgba(255, 0, 55, 0.7)"
+        ],
+        borderColor: [
+          "#36a2eb",
+          "#ff0037"
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: ({ label, parsed, chart }) => {
+              const total = chart._metasets[0].total;
+              const pct = ((parsed / total) * 100).toFixed(1) + "%";
+              return `${label}: ${pct}`;
+            }
+          }
+        },
+        legend: {
+          position: "bottom"
+        }
+      }
+    }
+  });
+}
+
 
 // Função para exportar relatório em PDF
 // Função para exportar relatório em PDF do aluno
@@ -917,7 +1149,18 @@ async function exportarRelatorioTurmaPDF() {
         mediaNotasAvaliacoes === "-" ? "-" : mediaNotasAvaliacoes.toFixed(2)
       ];
     });
+    const detalheBody = (presencaData[turmaNome] || [])
+      .filter(r => {
+        const d = new Date(r.data + 'T12:00:00');
+        return (!inicio || d >= inicio) && (!fim || d <= fim);
+      })
+      .sort((a, b) => a.aluno.localeCompare(b.aluno) || new Date(a.data) - new Date(b.data))
+      .map(r => {
+        const [y, m, d] = r.data.split("T")[0].split("-");
+        return [r.aluno, `${d.padStart(2, "0")}/${m}/${y}`, r.presenca];
+      });
 
+    // 1) Tabela de Resumo
     doc.autoTable({
       startY: yOffset + 5,
       head: [["Nome do Aluno", "Porcentagem de Presença", "Média de Notas nas Aulas Presentes", "Média nas Avaliações"]],
@@ -925,7 +1168,17 @@ async function exportarRelatorioTurmaPDF() {
       theme: "grid"
     });
 
+    // 2) Puxa a segunda tabela diretamente do HTML
+    const detailStartY = doc.lastAutoTable.finalY + 10;
+    doc.autoTable({
+      html: '#tabela-detalhe-turma',
+      startY: detailStartY,
+      theme: 'grid'
+    });
+
+    // 3) Salva
     doc.save(`Relatorio_Turma_${turmaNome}.pdf`);
+
   } catch (error) {
     console.error("Erro ao gerar o relatório:", error);
   }
@@ -984,7 +1237,7 @@ async function carregarInstrutoresParaCoordenador() {
     //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/usuarios"); 
     //🚭Como é localmente
-    //const response = await fetch("http://localhost:3000/usuarios");
+    // const response = await fetch("http://localhost:3000/usuarios");
     const usuarios = await response.json();
 
     const instrutores = usuarios.filter(
@@ -1013,7 +1266,7 @@ async function carregarInstrutoresParaCoordenadorTurma() {
     //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/usuarios"); 
     //🚭Como é localmente
-    //const response = await fetch("http://localhost:3000/usuarios");
+    // const response = await fetch("http://localhost:3000/usuarios");
     const usuarios = await response.json();
 
     const instrutores = usuarios.filter(
@@ -1066,5 +1319,75 @@ document.getElementById("instrutor-select-turma").addEventListener("change", asy
   await carregarTurmas(instrutorSelecionado);
 });
 
+async function exportarRelatorioUnidadePDF() {
+  const unidadeSelect = document.getElementById("unidade-select");
+  const unidadeId = unidadeSelect.value;
+  const unidadeNome = unidadeSelect.options[unidadeSelect.selectedIndex].text;
+  const inicioRaw = document.getElementById("data-inicio-unidade").value; // "YYYY-MM-DD"
+  const fimRaw = document.getElementById("data-fim-unidade").value;    // "YYYY-MM-DD"
 
+  // formata manualmente para DD/MM/YYYY
+  const formatarBR = s => {
+    if (!s) return "-";
+    const [y, m, d] = s.split("-");
+    return `${d}/${m}/${y}`;
+  };
+  const inicioBR = formatarBR(inicioRaw);
+  const fimBR = formatarBR(fimRaw);
+
+  // lê indicadores já exibidos
+  const matriculas = document.getElementById("matriculas-unidade").textContent;
+  const presenca = document.getElementById("percentual-presenca").textContent;
+  const faltas = document.getElementById("percentual-faltas").textContent;
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p", "mm", "a4");
+  let y = 15;
+
+  doc.setFontSize(16);
+  doc.text(`Relatório por Unidade`, 105, y, { align: "center" });
+  y += 10;
+  doc.setFontSize(12);
+  doc.text(`Unidade: ${unidadeNome}`, 14, y);
+  y += 7;
+  doc.text(`Período: ${inicioBR} — ${fimBR}`, 14, y);
+  y += 10;
+
+  doc.setFont(undefined, "bold");
+  doc.text("Matrículas totais:", 14, y);
+  doc.setFont(undefined, "normal");
+  doc.text(matriculas, 60, y);
+  y += 7;
+
+  doc.setFont(undefined, "bold");
+  doc.text("% Presença:", 14, y);
+  doc.setFont(undefined, "normal");
+  doc.text(presenca, 60, y);
+  y += 7;
+
+  doc.setFont(undefined, "bold");
+  doc.text("% Faltas:", 14, y);
+  doc.setFont(undefined, "normal");
+  doc.text(faltas, 60, y);
+  y += 12;
+
+  // captura o gráfico como imagem
+  const canvas = document.getElementById("grafico-unidade");
+  await html2canvas(canvas, { scale: 2 }).then(c => {
+    const imgData = c.toDataURL("image/png");
+    const pdfW = 180;
+    const props = doc.getImageProperties(imgData);
+    const pdfH = (props.height * pdfW) / props.width;
+    doc.addImage(imgData, "PNG", 14, y, pdfW, pdfH);
+  });
+
+  doc.save(
+    `Relatorio_Unidade_${unidadeNome}_${inicioBR.replace(/\//g, "")}-${fimBR.replace(/\//g, "")}.pdf`
+  );
+}
+
+// amarre o botão
+document
+  .getElementById("exportar-relatorio-unidade")
+  .addEventListener("click", exportarRelatorioUnidadePDF);
 
