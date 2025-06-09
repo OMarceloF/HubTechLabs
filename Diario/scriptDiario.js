@@ -6,94 +6,110 @@ function ajustarDataParaLocal(dateString) {
 
 async function obterNomeUsuario() {
   try {
-      const email = localStorage.getItem("email"); // Obtém o email armazenado
-      if (!email) {
-          throw new Error("Nenhum email encontrado no localStorage");
-      }
-      //🚭Como era na Vercel
-      const response = await fetch("https://hub-orcin.vercel.app/usuarios");
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token não encontrado");
+    //🚭Como era na Vercel
+    const res = await fetch("https://hub-orcin.vercel.app/usuario-logado", {
       //🚭Como é localmente
-      //const response = await fetch("http://localhost:3000/usuarios");
-      if (!response.ok) {
-          throw new Error("Erro ao buscar usuários");
-      }
-
-      const usuarios = await response.json(); // Converte a resposta em JSON
-      
-      // Filtra o usuário correspondente ao email armazenado
-      const usuarioEncontrado = usuarios.find(usuario => usuario.email === email);
-      
-      if (usuarioEncontrado) {
-          localStorage.setItem("nomeUsuario", usuarioEncontrado.name); // Salva o nome no localStorage
-      } else {
-      }
-  } catch (error) {
+      // const res = await fetch("http://localhost:3000/usuario-logado", {
+      headers: { Authorization: token }
+    });
+    if (!res.ok) throw new Error("Não foi possível obter usuário");
+    const { name } = await res.json();
+    localStorage.setItem("nomeUsuario", name);
+  } catch (e) {
+    console.error("obterNomeUsuario():", e);
   }
 }
+
 
 
 async function carregarTurmas() {
   try {
-      //🚭Como era na Vercel
-      const response = await fetch("https://hub-orcin.vercel.app/dados"); 
-      //🚭Como é localmente
-      //const response = await fetch("http://localhost:3000/dados"); 
-      if (!response.ok) {
-          throw new Error("Erro ao buscar as turmas");
-      }
-      const turmas = await response.json(); // Dados das turmas
+    // 1) Pega turmas + instrutor + unidade_id + alunos
 
-      const nomeUsuario = localStorage.getItem("nomeUsuario"); // Obtém o nome do instrutor
-      if (!nomeUsuario) {
-          throw new Error("Nome do usuário não encontrado no localStorage");
-      }
+    // 🚭Como era na Vercel
+    const resDados = await fetch("https://hub-orcin.vercel.app/dados");
+    // 🚭Como é localmente
+    // const resDados = await fetch("http://localhost:3000/dados");
 
-      // Filtra turmas onde o instrutor seja o usuário logado
-      const turmasFiltradas = Object.fromEntries(
-          Object.entries(turmas).filter(([_, turma]) => turma.instrutor === nomeUsuario)
-      );
+    if (!resDados.ok) throw new Error("Erro ao buscar turmas");
+    const turmasObj = await resDados.json();
+    // turmasObj: { "Turma A": { instrutor, unidade_id, alunos: [...] }, ... }
 
-      const selectElement = document.getElementById("turma-select");
-      selectElement.innerHTML = ""; // Limpa opções anteriores
+    // 2) Pega unidades para ler o flag `competencias`
 
-      // Adiciona a opção inicial
-      const defaultOption = document.createElement("option");
-      defaultOption.value = "";
-      defaultOption.textContent = "Escolha sua turma";
-      defaultOption.disabled = true;
-      defaultOption.selected = true;
-      selectElement.appendChild(defaultOption);
+    // 🚭Como era na Vercel
+    const resUnidades = await fetch("https://hub-orcin.vercel.app/listar-unidades");
+    // 🚭Como é localmente
+    // const resUnidades = await fetch("http://localhost:3000/listar-unidades");
 
-      // Preenche o dropdown com as turmas filtradas
-      for (const nomeTurma in turmasFiltradas) {
-          const option = document.createElement("option");
-          option.value = nomeTurma;
-          option.textContent = nomeTurma;
-          selectElement.appendChild(option);
-      }
+    if (!resUnidades.ok) throw new Error("Erro ao buscar unidades");
+    const unidadesArr = await resUnidades.json();
+    // unidadesArr: [ { id, unidade, escola, cidade, coordenador, competencias }, … ]
 
-      // Armazena os dados das turmas globalmente
-      window.turmas = turmasFiltradas;
-      window.presencaDados = [];
-  } catch (error) {
+    // 3) Mapeia unidade_id → competencias
+    const competenciasMap = new Map(
+      unidadesArr.map(u => [u.id.toString(), u.competencias])
+    );
+
+    // 4) Filtra e monta o dropdown
+    const nomeUsuario = localStorage.getItem("nomeUsuario");
+    if (!nomeUsuario) throw new Error("Nome do usuário não encontrado");
+
+    const select = document.getElementById("turma-select");
+    select.innerHTML = "";
+
+    // opção padrão
+    const defOpt = document.createElement("option");
+    defOpt.value = "";
+    defOpt.textContent = "Escolha sua turma";
+    defOpt.disabled = true;
+    defOpt.selected = true;
+    select.appendChild(defOpt);
+
+    // Cria o Map global de turmas
+    window.turmasMap = new Map();
+
+    Object.entries(turmasObj)
+      .filter(([nome, t]) => t.instrutor === nomeUsuario)
+      .forEach(([nome, t]) => {
+        const compFlag = competenciasMap.get(String(t.unidade_id)) || 0;
+        // adiciona option com data-mode
+        const opt = document.createElement("option");
+        opt.value = nome;
+        opt.textContent = nome;
+        opt.dataset.mode = compFlag;  // "0" ou "1"
+        select.appendChild(opt);
+        // guarda no map
+        window.turmasMap.set(nome, {
+          instrutor: t.instrutor,
+          unidade_id: t.unidade_id,
+          alunos: t.alunos,
+          competencias: compFlag
+        });
+      });
+  } catch (err) {
+    console.error("carregarTurmas():", err);
   }
 }
 
 function obterListaDeAlunos(turmaSelecionada) {
-  const turma = window.turmas[turmaSelecionada]; // Acesse diretamente a turma pela chave "nome"
-  if (turma && turma.alunos) {
-      return turma.alunos;
-  } else {
-      return [];
-  }
+  const t = window.turmasMap.get(turmaSelecionada);
+  return t?.alunos || [];
 }
+
 
 // Função para salvar os dados de presença e notas com data
 async function salvarDados() {
   const turmaSelecionada = document.getElementById("turma-select").value;
   const dataChamada = document.getElementById("data-chamada").value;
   const conteudoAula = document.getElementById("conteudo-aula").value.trim();
-  const alunos = document.querySelectorAll("#alunos-list tr");
+  if (!conteudoAula) {
+    alert("O campo 'Conteúdo da Aula' está vazio. Por favor, preencha antes de salvar.");
+    return;
+  }
+  const linhas = document.querySelectorAll("#alunos-list tr");
 
   if (!dataChamada) {
     exibirMensagem("Por favor, selecione a data da chamada.", true);
@@ -105,8 +121,8 @@ async function salvarDados() {
     //🚭Como era na Vercel
     const responseVerificacao = await fetch("https://hub-orcin.vercel.app/dados-presenca");
     //🚭Como é localmente
-    //const responseVerificacao = await fetch("http://localhost:3000/dados-presenca");
-    
+    // const responseVerificacao = await fetch("http://localhost:3000/dados-presenca");
+
     if (!responseVerificacao.ok) {
       throw new Error("Erro ao verificar dados de presença existentes");
     }
@@ -114,9 +130,8 @@ async function salvarDados() {
     const diariosSalvos = await responseVerificacao.json();
 
     // ✅ Verifica se a turma selecionada está presente no objeto retornado
-    if (!(turmaSelecionada in diariosSalvos)) {
-    } else {
-      const registrosDaTurma = diariosSalvos[turmaSelecionada]; // Pega os registros da turma
+    if (turmaSelecionada in diariosSalvos) {
+      const registrosDaTurma = diariosSalvos[turmaSelecionada];
 
       if (!Array.isArray(registrosDaTurma)) {
         throw new Error("Os dados da turma não estão no formato esperado!");
@@ -127,7 +142,7 @@ async function salvarDados() {
 
       // Verifica se já existe um registro com a mesma data
       const diarioExistente = registrosDaTurma.some(
-        (registro) => registro.data.split("T")[0] === dataChamadaFormatada
+        registro => registro.data.split("T")[0] === dataChamadaFormatada
       );
 
       if (diarioExistente) {
@@ -136,53 +151,93 @@ async function salvarDados() {
       }
     }
 
+    // **Aqui detectamos o modo (notas x competências)**
+    const select = document.getElementById("turma-select");
+    const mode = select.selectedOptions[0].dataset.mode; // "0" = notas, "1" = competências
+
+    // Prepara o array de 'alunos' conforme o modo
+    const CAMPOS = [
+      "concentracao", "comprometimento", "proatividade", "criatividade",
+      "trabalho_em_equipe", "inteligencia_emocional",
+      "capacidade_avaliacao_decisao", "flexibilidade_cognitiva",
+      "raciocinio_logico", "objetividade", "conclusao_atividades",
+      "organizacao", "planejamento", "solucao_atividade", "motivacao"
+    ];
+
+    const payloadAlunos = Array.from(linhas).map(tr => {
+      const nome = tr.cells[0].textContent;
+      if (mode === "0") {
+        const presenca = tr.querySelector(".presenca-check").checked
+          ? "Presente"
+          : "Ausente";
+
+        // capturamos o valor em string
+        const rawNota = tr.querySelector(".nota-select").value;
+        // convertemos em número; se for string vazia, guardamos null
+        const notaNumerica = rawNota !== "" ? Number(rawNota) : null;
+
+        return {
+          nome,
+          presenca,
+          nota: notaNumerica,       // <-- agora é Number ou null
+          observacao: tr.querySelector(".observacao-input").value || ""
+        };
+      } else {
+        // **novo**: lê presença e zera se ausente
+        const presenca = tr.querySelector(".presenca-check").checked
+          ? "Presente"
+          : "Ausente";
+
+        const obj = { nome, presenca };
+        CAMPOS.forEach(c => {
+          let val = Number(tr.querySelector(`input[name="${c}"]`).value) || 0;
+          obj[c] = presenca === "Presente" ? val : 0;
+        });
+
+        obj.media = (
+          CAMPOS.reduce((sum, c) => sum + obj[c], 0)
+          / CAMPOS.length
+        ).toFixed(2);
+        return obj;
+      }
+    });
+
+
     // Se não houver um diário salvo para essa data, continua com o processo
     const dados = {
       turma: turmaSelecionada,
       data: dataChamada,
       conteudoAula: conteudoAula,
-      alunos: Array.from(alunos).map((aluno) => ({
-        nome: aluno.querySelector("td:first-child").textContent,
-        presenca: aluno.querySelector(".presenca-check").checked
-          ? "Presente"
-          : "Ausente",
-        nota: aluno.querySelector(".nota-select").value,
-        observacao: aluno.querySelector(".observacao-input").value || "", // Captura a observação
-      })),
+      alunos: payloadAlunos
     };
-
+    console.log("🧐 Dados que vão pro servidor:", JSON.stringify(dados, null, 2));
     //🚭Como era na Vercel
-    const response = await fetch("https://hub-orcin.vercel.app/salvar-presenca", 
+    const response = await fetch("https://hub-orcin.vercel.app/salvar-presenca", {
     //🚭Como é localmente
-    //const response = await fetch("http://localhost:3000/salvar-presenca", 
-    {
+    // const response = await fetch("http://localhost:3000/salvar-presenca", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dados),
     });
 
     if (response.ok) {
-      exibirMensagem("Chamada salva com sucesso!", false, () => resetarCampos());
+      // informa o usuário e dá reload
+      alert("Chamada realizada e salva!");
+      window.location.reload();
     } else {
-      exibirMensagem("Erro ao salvar os dados!", true);
+      alert("Erro ao salvar os dados. Tente novamente.");
     }
+
   } catch (error) {
     exibirMensagem("Erro ao enviar os dados!", true);
   }
 }
 
-
-
-
-
 function obterListaDeAlunos(turmaSelecionada) {
-  const turma = window.turmas[turmaSelecionada]; // Acesse diretamente a turma pela chave "nome"
-  if (turma && turma.alunos) {
-    return turma.alunos;
-  } else {
-    return [];
-  }
+  const t = window.turmasMap.get(turmaSelecionada);
+  return t?.alunos || [];
 }
+
 
 function resetarCampos() {
   document.getElementById("turma-select").value = "";
@@ -210,124 +265,257 @@ function exibirMensagem(mensagem, isError, callback) {
 }
 
 function mostrarAlunosSelecionados() {
-  const turmaSelecionada = document.getElementById("turma-select").value;
-  const alunosList = document.getElementById("alunos-list");
-  alunosList.innerHTML = ""; // Limpa a lista de alunos
-
-  document.getElementById(
-    "turma-selecionada"
-  ).innerText = `Turma: ${turmaSelecionada}`;
+  const select = document.getElementById("turma-select");
+  const turmaSelecionada = select.value;
+  const mode = select.selectedOptions[0].dataset.mode; // "0" = notas, "1" = competências
+  console.log("modo da turma", turmaSelecionada, "=", mode);
+  // Atualiza cabeçalho e mostra container
+  document.getElementById("turma-selecionada").innerText = `Turma: ${turmaSelecionada}`;
   document.getElementById("turma-selecionada").classList.remove("hidden");
   document.getElementById("alunos-container").classList.remove("hidden");
   document.getElementById("salvar-btn").classList.remove("hidden");
 
+  // Obtém lista de nomes
   const alunos = obterListaDeAlunos(turmaSelecionada);
-
   if (alunos.length === 0) {
     alert("Nenhum aluno encontrado para esta turma.");
     return;
   }
-
   alunos.sort();
 
-  alunos.forEach((aluno) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-            <td>${aluno}</td>
-            <td>
-                <label>
-                    <input type="checkbox" class="presenca-check"> Presente
-                </label>
-            </td>
-            <td>
-                <select class="nota-select">
-                    <option value="0">Nota</option>
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
-            </td>
-                        <td>
-                <input type="text" class="observacao-input" placeholder="Digite uma observação">
-            </td>
-        `;
-    alunosList.appendChild(row);
+  // Monta o formulário correto
+  if (mode === "0") {
+    montarFormPresenca(alunos);
+  } else {
+    montarFormCompetencias(alunos);
+  }
+}
+
+// Gera o formulário de Presença + Nota + Observação
+function montarFormPresenca(alunos) {
+  const thead = document.querySelector("#alunos-table thead tr");
+  thead.innerHTML = `<th>Nome</th>
+    <th>Presença</th>
+    <th>Nota</th>
+    <th>Observação</th>`;
+  const tbody = document.getElementById("alunos-list");
+  tbody.innerHTML = "";
+  alunos.forEach(nome => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${nome}</td>
+      <td><label><input type="checkbox" class="presenca-check" checked> Presente
+</label></td>
+      <td>
+        <select class="nota-select">
+          <option value="">Nota</option>
+          ${[0, 1, 2, 3, 4, 5].map(n => `<option value="${n}">${n}</option>`).join("")}
+        </select>
+      </td>
+      <td><input type="text" class="observacao-input" placeholder="Observação"></td>
+    `;
+    tbody.appendChild(tr);
   });
 }
 
+// Campos de competências
+const CAMPOS = [
+  "concentracao", "comprometimento", "proatividade", "criatividade",
+  "trabalho_em_equipe", "inteligencia_emocional",
+  "capacidade_avaliacao_decisao", "flexibilidade_cognitiva",
+  "raciocinio_logico", "objetividade", "conclusao_atividades",
+  "organizacao", "planejamento", "solucao_atividade", "motivacao"
+];
+const CAMPOS_LABELS = {
+  concentracao: "Concentração",
+  comprometimento: "Comprometimento",
+  proatividade: "Proatividade",
+  criatividade: "Criatividade",
+  trabalho_em_equipe: "Trabalho em Equipe",
+  inteligencia_emocional: "Inteligência Emocional",
+  capacidade_avaliacao_decisao: "Capacidade de Avaliação e Decisão",
+  flexibilidade_cognitiva: "Flexibilidade Cognitiva",
+  raciocinio_logico: "Raciocínio Lógico",
+  objetividade: "Objetividade",
+  conclusao_atividades: "Conclusão de Atividades",
+  organizacao: "Organização",
+  planejamento: "Planejamento",
+  solucao_atividade: "Solução de Atividade",
+  motivacao: "Motivação"
+};
+
+// Gera o formulário de competências com sugestão automática
+function montarFormCompetencias(alunos) {
+  const thead = document.querySelector("#alunos-table thead tr");
+  thead.innerHTML =
+    `<th>Nome</th>
+     <th>Presença</th>
+     ${CAMPOS.map(c => `<th>${c.replace(/_/g, " ")}</th>`).join("")}`;
+
+  const tbody = document.getElementById("alunos-list");
+  tbody.innerHTML = "";
+
+  alunos.forEach(nome => {
+    const tr = document.createElement("tr");
+    let cols = `
+      <td>${nome}</td>
+      <td>
+        <label>
+          <input type="checkbox" class="presenca-check" checked>
+          Presente
+        </label>
+      </td>`;
+
+    CAMPOS.forEach(c => {
+      cols += `<td>
+        <input type="number"
+               name="${c}"
+               min="0" max="10"
+               data-aluno="${nome}"
+               data-campo="${c}">
+      </td>`;
+    });
+
+    tr.innerHTML = cols;
+    tbody.appendChild(tr);
+  });
+
+  ativarSugestoes();
+}
+
+
+// Liga os listeners que fazem as sugestões
+// Liga os listeners que fazem as sugestões e já faz clamp 0–10
+function ativarSugestoes() {
+  const map = {
+    concentracao: [
+      "inteligencia_emocional",
+      "capacidade_avaliacao_decisao",
+      "flexibilidade_cognitiva",
+      "raciocinio_logico",
+      "objetividade"
+    ],
+    comprometimento: [
+      "conclusao_atividades",
+      "organizacao",
+      "planejamento",
+      "solucao_atividade"
+    ],
+    proatividade: ["motivacao"]
+  };
+
+  Object.entries(map).forEach(([origem, alvos]) => {
+    document.querySelectorAll(`input[name="${origem}"]`).forEach(input => {
+      input.addEventListener("input", e => {
+        // 1) pega e clampa o valor
+        let v = Number(e.target.value);
+        if (isNaN(v)) return;       // se não for número, sai
+        v = Math.max(0, Math.min(10, v)); // força entre 0 e 10
+        e.target.value = v;         // atualiza o campo de origem
+
+        // 2) joga para os campos-alvo
+        const aluno = e.target.dataset.aluno;
+        alvos.forEach(c => {
+          const tgt = document.querySelector(
+            `input[name="${c}"][data-aluno="${aluno}"]`
+          );
+          if (tgt) tgt.value = v;   // **sempre** sobrescreve
+        });
+      });
+    });
+  });
+}
+
+document.getElementById("turma-select").addEventListener("change", async () => {
+  const turma = document.getElementById("turma-select").value;
+  const data = document.getElementById("data-chamada").value;
+  const competenciasFlag = window.turmasMap.get(turma)?.competencias || 0;
+
+  // if (turma && data) {
+  //   await carregarConteudoAula(turma, data, competenciasFlag);
+  // }
+});
+
+document.getElementById("data-chamada").addEventListener("change", async () => {
+  const turma = document.getElementById("turma-select").value;
+  const data = document.getElementById("data-chamada").value;
+  const competenciasFlag = window.turmasMap.get(turma)?.competencias || 0;
+
+  // if (turma && data) {
+  //   await carregarConteudoAula(turma, data, competenciasFlag);
+  // }
+});
+
 document.addEventListener("DOMContentLoaded", () => {
-    // Pega a foto de usuário logado
-    // Função para obter token do cookie
-    function getTokenFromCookie() {
-        const cookies = document.cookie.split("; ");
-        for (const cookie of cookies) {
-        const [key, value] = cookie.split("=");
-        if (key === "token") {
-            return value;
-        }
-        }
-        return null;
+  // Pega a foto de usuário logado
+  // Função para obter token do cookie
+  function getTokenFromCookie() {
+    const cookies = document.cookie.split("; ");
+    for (const cookie of cookies) {
+      const [key, value] = cookie.split("=");
+      if (key === "token") {
+        return value;
+      }
     }
+    return null;
+  }
 
-    const token = localStorage.getItem('token');
-    //const token = getTokenFromCookie();
+  const token = localStorage.getItem('token');
+  //const token = getTokenFromCookie();
 
-    if (!token) {
-        alert("Você precisa estar logado para acessar esta página.");
-        window.location.href = "/Login/login.html";
-        return;
-    }
+  if (!token) {
+    alert("Você precisa estar logado para acessar esta página.");
+    window.location.href = "/login.html";
+    return;
+  }
 
-    // Função para carregar perfil do usuário logado
-    async function carregarPerfil() {
-        try {
-        //🚭Como era na Vercel
-        const response = await fetch("https://hub-orcin.vercel.app/perfil", 
-        //🚭Como é localmente
-        //const response = await fetch("http://localhost:3000/perfil",  
+  // Função para carregar perfil do usuário logado
+  async function carregarPerfil() {
+    try {
+      //🚭Como era na Vercel
+      const response = await fetch("https://hub-orcin.vercel.app/perfil", 
+      //🚭Como é localmente
+      // const response = await fetch("http://localhost:3000/perfil",
         {
-            headers: { Authorization: token },
+          headers: { Authorization: token },
         });
 
-        if (!response.ok) {
-            throw new Error("Erro ao carregar os dados do perfil");
-        }
+      if (!response.ok) {
+        throw new Error("Erro ao carregar os dados do perfil");
+      }
 
-        const data = await response.json();
+      const data = await response.json();
 
-        // Atualiza os elementos do HTML com os dados do usuário
-        document.getElementById("profile-photo").src =
-            data.photo || "/projeto/Imagens/perfil.png";
-        } catch (error) {
-        }
+      // Atualiza os elementos do HTML com os dados do usuário
+      document.getElementById("profile-photo").src =
+        data.photo || "/Imagens/perfil.png";
+    } catch (error) {
     }
+  }
 
-    carregarPerfil();
+  carregarPerfil();
 
-    function getUserType() {
-        return localStorage.getItem("tipoUsuario");
+  function getUserType() {
+    return localStorage.getItem("tipoUsuario");
+  }
+
+  async function verificarAcessoRestrito() {
+    try {
+      const tipoUsuario = getUserType();
+
+      if (!tipoUsuario) {
+
+      }
+
+      // Verifica se é um Coordenador e bloqueia o acesso
+      if (tipoUsuario === 'Coordenador') {
+        window.location.href = "/Err o/erro.html"; // Redireciona para a página de erro
+      }
+    } catch (error) {
+
     }
-
-    async function verificarAcessoRestrito() {
-        try {
-        const tipoUsuario = getUserType();
-
-        if (!tipoUsuario) {
-      
-        }
-
-        // Verifica se é um Coordenador e bloqueia o acesso
-        if (tipoUsuario === 'Coordenador') {
-            window.location.href = "/Err o/erro.html"; // Redireciona para a página de erro
-        }
-        } catch (error) {
-  
-        }
-    }
-    verificarAcessoRestrito();
+  }
+  verificarAcessoRestrito();
 });
 
 function toggleMudarPerfil() {
@@ -357,13 +545,13 @@ document.addEventListener("click", (event) => {
 });
 
 // Chamar a função ao carregar a página
-window.onload = async function() {
+window.onload = async function () {
   await obterNomeUsuario();
-  await carregarTurmas(); // Mantendo a função original
+  await carregarTurmas();
 
-  // Adiciona evento de mudança para atualizar os alunos ao selecionar a turma
-  document.getElementById("turma-select").addEventListener("change", () => {
-      const turmaSelecionada = document.getElementById("turma-select").value;
-      const alunos = obterListaDeAlunos(turmaSelecionada);
-  });
+  // Ao mudar a turma, mostra o formulário correto (notas ou competências)
+  document
+    .getElementById("turma-select")
+    .addEventListener("change", mostrarAlunosSelecionados);
 };
+

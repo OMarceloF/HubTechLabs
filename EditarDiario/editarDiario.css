@@ -1,354 +1,420 @@
-body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
+/* -------------------------------------------------
+   Reset Básico
+-------------------------------------------------- */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    /* background-image: url(/Imagens/fundoEditarDiario.png); 
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: top; */
-    background-color: rgb(243, 243, 243);
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* Garante que a página ocupe a altura total da tela */
-    margin: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f3f3f3;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
+/* -------------------------------------------------
+   Container Principal (ocupando toda a largura disponível)
+-------------------------------------------------- */
 .container {
-    /* margin: 100px auto;  */
-    min-height: calc(100vh - 200px);  /* Altura mínima da tela menos a altura do cabeçalho */
-    text-align: center;
-    background-color: rgba(255, 255, 255, 0.76);
-    border-radius: 15px;
-    /* padding: 30px 15px 30px;   */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 60%;
-    max-width: 800px;  /* Evita que a largura seja muito grande */
-    margin-bottom: 0px;
-
-    flex: 1;
-    padding: 20px;
-    margin: 100px auto 0;  /* Remove o espaçamento inferior */
-    overflow-y: auto;
-
+  flex: 1;
+  padding: 20px;
+  margin: 100px auto 20px;
+  width: 100%;
+  /* Removido max-width para ocupar toda a área disponível */
+  min-height: calc(100vh - 200px);
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-sizing: border-box;
 }
 
-h2 {
-    margin-top: 0px;
-    margin-bottom: 20px;
-    color: #000000;
-}
-
-#conteudo-aula-exibido {
-    font-family: Arial;
-    width: 50%;
-    margin: 20px auto;
-}
-
-#conteudo-aula-exibido label {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-#campo-conteudo-aula {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    background-color: #f0f8ff;
-    resize: none; /* opcional: impede redimensionamento */
-}
-.texto-conteudo-limpo {
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    color: #000;
-    background: none;     /* remove fundo */
-    border: none;         /* remove qualquer borda herdada */
-    padding: 0;
-    margin: 0;
-    white-space: pre-wrap; /* mantém quebras de linha */
-  } 
-  
-.form-group {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-#turma-select,
-#data-chamada {
-    padding: 10px;
-    font-size: 16px;
-    border: 2px solid #005b9f;
-    border-radius: 10px;
-    background-color: #f0f8ff;
-}
-
-#carregar-btn, #salvar-btn {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #78f8e1;
-    color: rgb(0, 0, 0);
-    font-weight: bold;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-#carregar-btn {
-    margin-top: 0px;
-}
-
-#carregar-btn:hover, #salvar-btn:hover {
-    background-color: #003f6d;
-}
-
-#alunos-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-#alunos-table th,
-#alunos-table td {
-    border: 1px solid #b3d9ff;
-    padding: 15px;
-    text-align: center;
-}
-
-#alunos-table th {
-    background-color: #b3d9ff;
-    color: #003366;
-}
-
-#alunos-table tr:nth-child(even) {
-    background-color: #f0f8ff;
-}
-
-#alunos-table th:nth-child(2), #alunos-table td:nth-child(2) {
-    text-align: center;
-    width: 100px;
-}
-
-#alunos-table th:nth-child(4),
-#alunos-table td:nth-child(4) {
-    width: 300px;
-    text-align: center;
-}
-
-.observacao-input {
-    width: 95%;
-    padding: 5px;
-    border: 1px solid #b3d9ff;
-    border-radius: 5px;
-    font-size: 14px;
-}
-
-#alunos-container {
-    margin-top: 20px;
-    max-height: 300px;  /* Define a altura máxima do container */
-    overflow-y: auto;  /* Adiciona a barra de rolagem vertical */
-    text-align: center;
-}
-
-
-/* Estilo do Cabeçalho */
+/* -------------------------------------------------
+   Cabeçalho Fixo
+-------------------------------------------------- */
 .header {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #78f8e18e;
-    padding: 10px 10px;
-    color: white;
-    position: fixed;  /* Fixa no topo */
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    box-sizing: border-box;
-    height: 80px;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 80px;
+  background: rgba(120,248,225,0.56);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  z-index: 1000;
 }
 
-select {
-    width: 100%;
-}
-
-/* Logo e Foto do Usuário */
 .logo {
-    width: 120px;
-    height: auto;
+  width: 120px;
+  height: auto;
+  cursor: pointer;
 }
 
 .user-photo {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%; /* Imagem circular */
-    cursor: pointer;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform .3s ease;
 }
 
 .user-photo:hover {
-    transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
-    transition: all 0.3s ease;  /* Transição suave */
+  transform: scale(1.1);
 }
 
+/* -------------------------------------------------
+   Menu “Editar Perfil”
+-------------------------------------------------- */
 .mudarPerfil {
-    position: absolute;
-    right: 30px;
-    top: 90px;
-    background-color: white;
-    width: 120px;
-    height: 160px;
-    display: flex; /* Configura Flexbox */
-    flex-direction: column; /* Coloca os links em coluna */
-    justify-content: center; /* Centraliza verticalmente */
-    align-items: center; /* Centraliza horizontalmente */
-    text-align: center; /* Centraliza o texto */
-    border-radius: 8px; /* Deixa os cantos arredondados */
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  right: 25px;
+  top: 90px;
+  background-color: #fff;
+  width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  text-align: center;
+  font-weight: bold;
 }
 
 .mudarPerfil a {
-    margin: 0; /* Remove qualquer espaçamento adicional */
-    padding: 5px 0; /* Espaçamento interno, se necessário */
-    text-decoration: none; /* Remove o sublinhado dos links */
-    color: #5a5a5a; /* Define a cor do texto */
-    font-weight: bold; /* Deixa o texto em negrito */
-    width: 100%; /* Garante que o texto ocupa toda a largura */
-    text-align: center; /* Centraliza o texto dos links */
+  width: 100%;
+  padding: 8px 0;
+  text-decoration: none;
+  color: #5a5a5a;
 }
 
-/* Ajusta a largura dos elementos de forma responsiva */
-@media (max-width: 1024px) {
-    .header {
-        flex-wrap: wrap;
-        padding: 15px;
-        height: auto;
-    }
-
-    .logo {
-        width: 100px;
-    }
-
-    .user-photo {
-        width: 60px;
-        height: 60px;
-    }
-
-    #carregar-btn:hover, #salvar-btn:hover {
-        background-color: #78f8e1;
-    }
-
-    #carregar-btn{
-        background-color: #78f8e1;
-        margin-top: 10px; /* Ajusta o botão para não ficar colado nos campos */
-    }
-    .container {
-        width: 90%;
-        padding: 15px;
-        margin: 120px auto 0;  
-    }
-    
-
-    .form-group {
-        flex-direction: column; /* Alinha os elementos em coluna */
-        align-items: flex-start; /* Alinha os itens à esquerda */
-        gap: 15px; /* Reduz o espaçamento entre os elementos */
-    }
-    
-    .form-group label {
-        margin-bottom: 0px; /* Espaço menor abaixo do texto do label */
-        font-weight: bold; /* Torna o texto mais destacado, se necessário */
-        
-    }    
-
-    #turma-select{
-        width: 100%; /* Garante que os campos ocupem toda a largura */
-        text-align: left;
-        margin: 0px;
-    }
-    #data-chamada {
-        width: 100%; /* Garante que os campos ocupem toda a largura */
-        text-align: left; /* Alinha o texto à esquerda */
-        margin: 0px;
-
-    }
-
+.mudarPerfil a:hover {
+  background-color: #f0f8ff;
 }
 
+/* -------------------------------------------------
+   Títulos e Feedback
+-------------------------------------------------- */
+h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #000;
+  font-size: 24px;
+}
+
+#conteudo-aula-exibido {
+  width: 100%;
+  margin: 20px auto;
+}
+
+#conteudo-aula-exibido label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+  text-align: left;
+}
+
+#campo-conteudo-aula {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  background-color: #f0f8ff;
+  border: 2px solid #005b9f;
+  border-radius: 8px;
+  resize: none;
+  min-height: 80px;
+  box-sizing: border-box;
+}
+
+.texto-conteudo-limpo {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  color: #000;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* -------------------------------------------------
+   Grupos de Formulário (Turma + Data)
+-------------------------------------------------- */
+.form-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  flex: 1 1 100%;
+}
+
+/* Selects e Inputs */
+select,
+input[type="text"],
+textarea {
+  font-family: Arial, sans-serif;
+  padding: 10px;
+  font-size: 16px;
+  border: 2px solid #005b9f;
+  border-radius: 10px;
+  background: #f0f8ff;
+  flex: 1 1 45%;
+  min-width: 200px;
+  box-sizing: border-box;
+}
+
+/* Botões de Ação */
+#carregar-btn,
+#salvarAlterações,
+.botao-padrao {
+  margin-top: 10px;
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #78f8e1;
+  color: #000;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+#carregar-btn:hover,
+#salvarAlterações:hover,
+.botao-padrao:hover {
+  background: #003f6d;
+  color: #fff;
+}
+
+/* -------------------------------------------------
+   Container da Tabela de Alunos
+-------------------------------------------------- */
+#alunos-container {
+  margin-top: 20px;
+  overflow-x: auto; /* Permite scroll horizontal */
+  overflow-y: auto;
+  max-height: 60vh; /* Ajuste conforme necessidade */
+}
+
+/* -------------------------------------------------
+   Estilo da Tabela de Alunos
+   Remove largura fixa mínima para ajustar em telas menores
+-------------------------------------------------- */
+#alunos-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto; /* Ajusta colunas ao conteúdo */
+}
+
+/* -------------------------------------------------
+   Cabeçalhos (th) – não quebrar palavras, apenas entre espaços
+-------------------------------------------------- */
+#alunos-table th {
+  border: 1px solid #b3d9ff;
+  background: #b3d9ff;
+  color: #000;
+  font-weight: bold;
+  padding: 10px;
+  text-align: center;
+  white-space: nowrap;        /* não quebra dentro de palavras */
+  overflow: visible;
+}
+
+/* -------------------------------------------------
+   Células de Dados (td)
+-------------------------------------------------- */
+#alunos-table td {
+  border: 1px solid #b3d9ff;
+  padding: 10px;
+  text-align: center;
+  white-space: nowrap;        /* não quebra dentro de palavras */
+  font-size: 14px;
+}
+
+/* Faixa de cor em linhas pares para legibilidade */
+#alunos-table tr:nth-child(even) {
+  background: #f0f8ff;
+}
+
+/* -------------------------------------------------
+   Definição de largura relativa para colunas
+   - 1ª coluna: Nome (15%)
+   - 2ª coluna: Presença (10%)
+   - Restantes (competências): dividem igualmente o restante
+-------------------------------------------------- */
+#alunos-table th:nth-child(1),
+#alunos-table td:nth-child(1) {
+  width: 15%;
+}
+
+#alunos-table th:nth-child(2),
+#alunos-table td:nth-child(2) {
+  width: 10%;
+}
+
+/* 15 competências restantes: 85% dividido igualmente */
+#alunos-table th:nth-child(n+3),
+#alunos-table td:nth-child(n+3) {
+  width: calc(85% / 15);
+}
+
+/* -------------------------------------------------
+   Inputs Dentro da Tabela
+-------------------------------------------------- */
+.observacao-input {
+  width: 95%;
+  padding: 5px;
+  border: 1px solid #b3d9ff;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+input[type="number"] {
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+  border: 1px solid #b3d9ff;
+  border-radius: 5px;
+}
+
+/* -------------------------------------------------
+   Mensagem de Feedback (Sucesso / Erro)
+-------------------------------------------------- */
 .mensagem-feedback {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #d4edda;  /* Verde para sucesso */
-    color: #155724;
-    border-radius: 5px;
-    font-size: 16px;
-    text-align: center;
-    transition: opacity 0.3s ease-in-out;
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 5px;
+  font-size: 16px;
+  text-align: center;
+  transition: opacity 0.3s ease-in-out;
 }
 
 .mensagem-feedback.erro {
-    background-color: #f8d7da;  /* Vermelho claro para erro */
-    color: #721c24;
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
-.hidden {
-    display: none;
+.mensagem-feedback:not(.erro) {
+  background-color: #d4edda;
+  color: #155724;
 }
 
-.footer {
-    text-align: left;
-    padding: 0px 0;
-    color: #000000;
-    font-size: 14px;
-    width: 100%;
-    margin-top: 0;  /* Remove espaçamento adicional */
-    margin-bottom: 0px;
-}
+/* -------------------------------------------------
+   Div do Coordenador
+-------------------------------------------------- */
 #div-coordenador {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px auto;
-
-    border-radius: 12px;
-    padding: 20px;
-    width: 60%;
-    max-width: 600px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 20px auto 30px;
+  width: 100%;
+  /* Removido max-width para expandir conforme container */
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-sizing: border-box;
 }
-.hidden {
-    display: none !important;
-  }
-  
+
 #div-coordenador h3 {
-    margin-top: 0;
-    color: #000000;
-}
-#instrutores {
-    padding: 10px;
-    font-size: 16px;
-    border: 2px solid #005b9f;
-    border-radius: 10px;
-    background-color: #f0f8ff;
-    width: 100%;
-    max-width: 400px;
-    margin-top: 5px;
-}
-.botao-padrao {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #78f8e1;
-    color: rgb(0, 0, 0);
-    font-weight: bold;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
+  margin: 0 0 10px 0;
+  color: #000;
+  font-size: 20px;
 }
 
-.botao-padrao:hover {
-    background-color: #003f6d;
+#instrutores {
+  width: 100%;
+  max-width: none; /* Permite esticar completamente */
+  background: #f0f8ff;
+  border: 2px solid #005b9f;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 16px;
+  margin-top: 5px;
+  box-sizing: border-box;
+}
+
+/* -------------------------------------------------
+   Rodapé
+-------------------------------------------------- */
+.footer {
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #000;
+  text-align: left;
+  background: transparent;
+  width: 100%;
+}
+
+/* -------------------------------------------------
+   Classe “.hidden” para Ocultar Elementos
+-------------------------------------------------- */
+.hidden {
+  display: none !important;
+}
+
+/* -------------------------------------------------
+   Media Queries para Responsividade
+-------------------------------------------------- */
+@media (max-width: 1200px) {
+  #alunos-table th,
+  #alunos-table td {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .container {
+    width: 100%;
+    margin-top: 120px;
+  }
+
+  .form-group {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  select,
+  input[type="text"],
+  textarea {
+    width: 100%;
+  }
+
+  #alunos-table th,
+  #alunos-table td {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  #instrutores {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  #alunos-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  #alunos-table th,
+  #alunos-table td {
+    font-size: 12px;
+    padding: 4px;
+  }
 }

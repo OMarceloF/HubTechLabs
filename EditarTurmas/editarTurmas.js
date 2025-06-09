@@ -7,7 +7,7 @@ async function obterNomeUsuario() {
         //🚭Como era na Vercel
         const response = await fetch("https://hub-orcin.vercel.app/usuarios");
         //🚭Como é localmente
-        //const response = await fetch("http://localhost:3000/usuarios");
+        // const response = await fetch("http://localhost:3000/usuarios");
         if (!response.ok) throw new Error("Erro ao buscar usuários");
 
         const usuarios = await response.json();
@@ -29,7 +29,7 @@ async function carregarTurmas() {
         //🚭Como era na Vercel
         const response = await fetch("https://hub-orcin.vercel.app/dados");
         //🚭Como é localment
-        //const response = await fetch("http://localhost:3000/dados");
+        // const response = await fetch("http://localhost:3000/dados");
         if (!response.ok) throw new Error("Erro ao buscar turmas");
 
         const turmas = await response.json();
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         //🚭Como era na Vercel
         const response = await fetch('https://hub-orcin.vercel.app/perfil', 
         //🚭Como é localmente
-        //const res = await fetch("http://localhost:3000/perfil",
+        // const res = await fetch("http://localhost:3000/perfil",
             {
                 headers: { Authorization: token }
             });
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         //🚭Como era na Vercel
         const response = await fetch("https://hub-orcin.vercel.app/dados");
         //🚭Como é localmente
-        //const response = await fetch("http://localhost:3000/dados");
+        // const response = await fetch("http://localhost:3000/dados");
 
 
         const dados = await response.json();
@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             //🚭Como era na Vercel
             const res = await fetch("https://hub-orcin.vercel.app/editar-turma", {
             //🚭Como é localment
-            //const res = await fetch("http://localhost:3000/editar-turma", {
+            // const res = await fetch("http://localhost:3000/editar-turma", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ turma, alunos })
@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         //🚭Como era na Vercel
         const res = await fetch("https://hub-orcin.vercel.app/excluir-turma", {
         //🚭Como é localmente
-        //const res = await fetch("http://localhost:3000/excluir-turma", {
+        // const res = await fetch("http://localhost:3000/excluir-turma", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ turma })

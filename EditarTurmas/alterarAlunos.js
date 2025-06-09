@@ -6,7 +6,7 @@ async function carregarTurmasInstrutor() {
         //🚭Como era na Vercel
         const response = await fetch("https://hub-orcin.vercel.app/dados");
         //🚭Como é localmente
-        //const response = await fetch("http://localhost:3000/dados");
+        // const response = await fetch("http://localhost:3000/dados");
 
         const dados = await response.json();
         const nomeInstrutor = localStorage.getItem("nomeUsuario");
@@ -60,7 +60,7 @@ document.getElementById("mover-aluno").addEventListener("click", async () => {
         //🚭Como era na Vercel
         const res = await fetch("https://hub-orcin.vercel.app/dados");
         //🚭Como é localmente
-        //const res = await fetch("http://localhost:3000/dados");
+        // const res = await fetch("http://localhost:3000/dados");
         const dados = await res.json();
 
         const alunosOrigem = dados[origem]?.alunos || [];
@@ -76,7 +76,7 @@ document.getElementById("mover-aluno").addEventListener("click", async () => {
         //Como era na Vercel
         await fetch("https://hub-orcin.vercel.app/editar-turma", {
         //Como é localmente
-        //await fetch("http://localhost:3000/editar-turma", {
+        // await fetch("http://localhost:3000/editar-turma", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ turma: origem, alunos: novaOrigem })
@@ -85,7 +85,7 @@ document.getElementById("mover-aluno").addEventListener("click", async () => {
         //Como era na Vercel
         await fetch("https://hub-orcin.vercel.app/editar-turma", {
         //Como é localmente
-        //await fetch("http://localhost:3000/editar-turma", {
+        // await fetch("http://localhost:3000/editar-turma", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ turma: destino, alunos: novaDestino })
@@ -95,7 +95,7 @@ document.getElementById("mover-aluno").addEventListener("click", async () => {
         //Como era na Vercel
         await fetch("https://hub-orcin.vercel.app/atualizar-presencas-aluno", {
         //Como é localmente
-        //await fetch("http://localhost:3000/atualizar-presencas-aluno", {
+        // await fetch("http://localhost:3000/atualizar-presencas-aluno", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

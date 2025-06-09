@@ -12,9 +12,10 @@
 
     <!-- Cabeçalho -->
     <header class="header">
-        <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
+        <a href="/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
         <div class="logo-container">
-            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo"></a>
+            <a href="/index.html"><img src="/Imagens/logo.png" alt="Logo da Empresa"
+                    class="logo"></a>
         </div>
 
         <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
@@ -22,21 +23,18 @@
             <!-- 🚭Como era na Vercel -->
             <a href="https://hub-orcin.vercel.app/Login/login.html">Sair</a>
             <!-- 🚭Como é localmente -->
-            <!--<a href="http://localhost:3000/Login/login.html">Sair</a>-->
+            <!-- <a href="http://localhost:3000/Login/login.html">Sair</a> -->
         </div>
 
         <div class="user-info" id="user-info">
-            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo" onclick="toggleMudarPerfil()">
+            <img id="profile-photo" src="/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo"
+                onclick="toggleMudarPerfil()">
         </div>
     </header>
 
     <!-- Conteúdo Principal -->
     <div class="container">
         <h2>Chamada da Turma</h2>
-        <div class="form-group">
-            <label for="conteudo-aula">Conteúdo da Aula:</label>
-            <textarea id="conteudo-aula" rows="4" cols="50" placeholder="Descreva o conteúdo abordado..."></textarea>
-        </div>
         <div class="form-group">
             <label for="turma-select">Turma:</label>
             <select id="turma-select" onchange="mostrarAlunosSelecionados()">
@@ -46,25 +44,31 @@
             <label for="data-chamada">Data:</label>
             <input type="date" id="data-chamada" required>
         </div>
+        <div class="form-group">
+            <label for="conteudo-aula">Conteúdo da Aula:</label>
+            <textarea id="conteudo-aula" rows="4" cols="50" placeholder="Descreva o conteúdo abordado..."></textarea>
+        </div>
+        
 
         <h2 id="turma-selecionada" class="hidden">Selecione uma turma</h2>
-        <div id="alunos-container" class="hidden">
-            <table id="alunos-table">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Presença</th>
-                        <th>Nota</th>
-                        <th>Observações</th>
-                    </tr>
-                </thead>
-                <tbody id="alunos-list"></tbody>
-            </table>
-            <div id="mensagem-feedback" class="mensagem-feedback hidden"></div>
-            <h5>OBS: A NOTA É UMA MÉDIA DAS HABILIDADES E COMPETÊNCIAS MARCADAS NO PLANO DE AULA</h5>
-            <button id="salvar-btn" class="hidden" onclick="salvarDados()">Salvar</button>
-            
+        <div class="table-responsive">
+            <div id="alunos-container" class="hidden">
+                <table id="alunos-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Presença</th>
+                            <th>Nota</th>
+                            <th>Observações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alunos-list"></tbody>
+                </table>
+                <div id="mensagem-feedback" class="mensagem-feedback hidden"></div>
+                <h5>OBS: A NOTA É UMA MÉDIA DAS HABILIDADES E COMPETÊNCIAS MARCADAS NO PLANO DE AULA</h5>
+                <button id="salvar-btn" class="hidden" onclick="salvarDados()">Salvar</button>
 
+            </div>
         </div>
     </div>
 

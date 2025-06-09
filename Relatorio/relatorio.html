@@ -2,202 +2,445 @@
 <html lang="pt-BR">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatórios</title>
-    <link rel="stylesheet" href="/Relatorio/relatorio.css">
-    <link rel="icon" href="logo.png" type="image/png">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatórios</title>
+  <link rel="stylesheet" href="/Relatorio/relatorio.css" />
+  <link rel="icon" href="/Imagens/logo.png" type="image/png" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- jsPDF + AutoTable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <!-- JSZip e FileSaver.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <!-- html2canvas (para capturar o <canvas> como imagem) – uma única importação -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 
 <body>
-    <header class="header">
-        <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
-        <div class="logo-container">
-            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa"
-                    class="logo"></a>
-        </div>
-        <div class="user-info" id="user-info">
-            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo"
-                onclick="toggleMudarPerfil()">
-        </div>
-
-        <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
-            <a href="/Perfil/perfil.html">Editar Perfil</a><br>
-            <!-- 🚭Como era na Vercel -->
-            <a href="https://hub-orcin.vercel.app/Login/login.html">Sair</a>
-            <!-- 🚭Como é localmente -->
-            <!-- <a href="http://localhost:3000/Login/login.html">Sair</a> -->
-        </div>
-    </header>
-
-
-
-    <div class="container" id="conteinerOpcao">
-        <div class="card">
-            <h2>Escolha o tipo de relatório:</h2>
-            <button id="relatorio-aluno-btn" class="btn-primary">Relatório por Aluno</button>
-            <button id="relatorio-turma-btn" class="btn-primary">Relatório por Turma</button>
-            <button id="relatorio-unidade-btn" class="btn-primary">Relatório por Unidade</button>
-
-        </div>
+  <header class="header">
+    <a href="/index.html"><img src="/Imagens/simboloSeta.png" width="75px" alt="Voltar" /></a>
+    <div class="logo-container">
+      <a href="/index.html"><img src="/Imagens/logo.png" alt="Logo da Empresa" class="logo" /></a>
     </div>
+    <div class="user-info" id="user-info">
+      <img id="profile-photo" src="/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo"
+        onclick="toggleMudarPerfil()" />
+    </div>
+    <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
+      <a href="/Perfil/perfil.html">Editar Perfil</a><br />
+      Como era na Vercel
+      <a href="https://hub-orcin.vercel.app/Login/login.html">Sair</a>
+      <!-- Como é localmente
+      <a href="http://localhost:3000/Login/login.html">Sair</a> -->
+    </div>
+  </header>
 
-    <div class="container" class="hidden" id="relatorio-aluno-container">
-        <div class="card">
-            <h2>Relatórios de Notas e Presença</h2>
-            <div id="coordenador-section" style="display: none;">
-                <label for="instrutor-select">Escolha um instrutor:</label>
-                <select id="instrutor-select">
-                    <option value="" disabled selected>Escolha um instrutor</option>
-                </select>
-            </div>
-            <form id="form-relatorios">
-                <label for="turma-select">Selecione a Turma:</label>
+  <main>
+    <!-- Botões de seleção de tipo de relatório -->
+    <section class="container" id="conteinerOpcao">
+      <div class="card">
+        <h2>Escolha o tipo de relatório:</h2>
+        <button id="relatorio-aluno-btn" class="btn-primary">Relatório por Aluno</button>
+        <button id="relatorio-turma-btn" class="btn-primary">Relatório por Turma</button>
+        <button id="relatorio-unidade-btn" class="btn-primary">Relatório por Unidade</button>
+      </div>
+    </section>
 
-                <select id="turma-select">
-                    <option value="" disabled selected>Escolha uma turma</option>
-                </select>
+    <!-- =========================
+         RELATÓRIO POR ALUNO
+         ========================= -->
+    <section class="container hidden" id="relatorio-aluno-container">
+      <div class="card">
+        <h2>Relatórios de Notas e Competências por Aluno</h2>
 
-                <label for="aluno-select">Selecione o Aluno:</label>
-                <select id="aluno-select" disabled>
-                    <option value="" disabled selected>Escolha um aluno</option>
-                </select>
-                <label for="data-inicio-aluno">Data de Início:</label>
-                <input type="date" id="data-inicio-aluno">
-
-                <label for="data-fim-aluno">Data de Fim:</label>
-                <input type="date" id="data-fim-aluno">
-
-                <button type="button" id="carregar-relatorio" class="btn-primary">Carregar Relatório</button>
-            </form>
-
-            <h2 id="msg-erro"></h2>
-
-            <div class="hidden" id="graficos-aluno-container">
-                <div>
-                    <h4>Gráfico de Notas do Aluno</h4>
-                    <canvas id="grafico-notas-aluno"></canvas>
-
-                    <h4>Gráfico de Presença</h4>
-                    <canvas id="grafico-presenca-aula"></canvas>
-
-                    <h4>Gráfico de Notas por Aula</h4>
-                    <canvas id="grafico-desempenho-aula"></canvas>
-
-                    <!-- <h4>Gráfico de Presenças e Ausências</h4>
-                    <canvas id="grafico-presenca-aluno"></canvas> -->
-
-                </div>
-
-                <button type="button" id="exportar-relatorio" class="btn-secondary">Exportar Relatório em PDF</button>
-
-            </div>
+        <!-- Caso o usuário seja Coordenador, mostra dropdown de instrutores -->
+        <div id="coordenador-section-aluno" style="display: none;">
+          <label for="instrutor-select-aluno">Escolha um instrutor:</label>
+          <select id="instrutor-select-aluno">
+            <option value="" disabled selected>Escolha um instrutor</option>
+          </select>
         </div>
 
-    </div>
+        <form id="form-relatorios-aluno">
+          <label for="turma-select-aluno">Selecione a Turma:</label>
+          <select id="turma-select-aluno">
+            <option value="" disabled selected>Escolha uma turma</option>
+          </select>
 
-    <div class="container" id="conteinerTurma" class="hidden">
-        <div class="card">
-            <h2>Relatório por Turma</h2>
-            <!-- Dentro do bloco Relatório por Turma -->
-            <div id="coordenador-section-turma" style="display: none;">
-                <label for="instrutor-select-turma">Escolha um instrutor:</label>
-                <select id="instrutor-select-turma">
-                    <option value="" disabled selected>Escolha um instrutor</option>
-                </select>
+          <label for="aluno-select-aluno">Selecione o Aluno:</label>
+          <select id="aluno-select-aluno" disabled>
+            <option value="" disabled selected>Escolha um aluno</option>
+          </select>
+
+          <label for="data-inicio-aluno">Data de Início:</label>
+          <input type="date" id="data-inicio-aluno" />
+
+          <label for="data-fim-aluno">Data de Fim:</label>
+          <input type="date" id="data-fim-aluno" />
+
+          <button type="button" id="carregar-relatorio-aluno" class="btn-primary">
+            Carregar Relatório
+          </button>
+        </form>
+
+        <h2 id="msg-erro-aluno" class="error-message"></h2>
+
+        <!-- CONTEÚDO DO RELATÓRIO: NOTAS -->
+        <div class="hidden" id="notas-aluno-container">
+          <h3>Gráficos de Notas e Presença</h3>
+          <div class="chart-group">
+            <div>
+              <h4>Gráfico de Notas em Avaliações</h4>
+              <canvas id="grafico-notas-aluno"></canvas>
             </div>
-
-            <form>
-                <label for="turma-turma-select">Selecione a Turma:</label>
-                <select id="turma-turma-select">
-                    <option value="" disabled selected>Escolha uma turma</option>
-                </select>
-                <label for="data-inicio-turma">Data de Início:</label>
-                <input type="date" id="data-inicio-turma">
-
-                <label for="data-fim-turma">Data de Fim:</label>
-                <input type="date" id="data-fim-turma">
-
-                <button type="button" id="gerar-relatorio-turma" class="btn-primary">Gerar Relatório</button>
-            </form>
-
-            <div id="relatorio-turma-container" class="card hidden">
-
-                <table id="tabela-relatorio-turma">
-                    <thead>
-                        <tr>
-                            <th>Nome do Aluno</th>
-                            <th>Média de Presença</th>
-                            <th>Média de Notas</th>
-                            <th>Média nas Avaliações</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-
-                <h4>Detalhamento de Presença por Aula</h4>
-                <table id="tabela-detalhe-turma">
-                    <thead>
-                        <tr>
-                            <th>Aluno</th>
-                            <th>Data da Aula</th>
-                            <th>Presença</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-                <button type="button" id="exportar-relatorio-turma" class="btn-secondary">Exportar Relatório em
-                    PDF</button>
+            <div>
+              <h4>Gráfico de Presença por Aula</h4>
+              <canvas id="grafico-presenca-aluno"></canvas>
             </div>
+            <div>
+              <h4>Gráfico de Desempenho por Aula</h4>
+              <canvas id="grafico-desempenho-aula-aluno"></canvas>
+            </div>
+          </div>
+          <button type="button" id="exportar-relatorio-notas-aluno" class="btn-secondary">
+            Exportar Relatório em PDF
+          </button>
         </div>
-    </div>
-    <div class="container hidden" id="relatorio-unidade-container">
-        <div class="card">
-            <h2>Relatório por Unidade</h2>
-            <form id="form-relatorio-unidade">
-                <label for="unidade-select">Selecione a Unidade:</label>
-                <select id="unidade-select">
-                    <option value="" disabled selected>Escolha uma unidade</option>
-                </select>
 
-                <label for="data-inicio-unidade">Data de Início:</label>
-                <input type="date" id="data-inicio-unidade">
+        <!-- CONTEÚDO DO RELATÓRIO: COMPETÊNCIAS -->
+        <div class="hidden" id="competencias-aluno-container">
+          <h3>Tabela de Competências</h3>
+          <table id="tabela-competencias-aluno" class="report-table">
+            <thead>
+              <tr>
+                <th>Competência</th>
+                <th>Média no Período</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Concentração</td>
+                <td id="competencia-concentracao">–</td>
+              </tr>
+              <tr>
+                <td>Comprometimento</td>
+                <td id="competencia-comprometimento">–</td>
+              </tr>
+              <tr>
+                <td>Proatividade</td>
+                <td id="competencia-proatividade">–</td>
+              </tr>
+              <tr>
+                <td>Criatividade</td>
+                <td id="competencia-criatividade">–</td>
+              </tr>
+              <tr>
+                <td>Trabalho em Equipe</td>
+                <td id="competencia-trabalho_em_equipe">–</td>
+              </tr>
+              <tr>
+                <td>Inteligência Emocional</td>
+                <td id="competencia-inteligencia_emocional">–</td>
+              </tr>
+              <tr>
+                <td>Capacidade de Avaliação e Decisão</td>
+                <td id="competencia-capacidade_avaliacao_decisao">–</td>
+              </tr>
+              <tr>
+                <td>Flexibilidade Cognitiva</td>
+                <td id="competencia-flexibilidade_cognitiva">–</td>
+              </tr>
+              <tr>
+                <td>Raciocínio Lógico</td>
+                <td id="competencia-raciocinio_logico">–</td>
+              </tr>
+              <tr>
+                <td>Objetividade</td>
+                <td id="competencia-objetividade">–</td>
+              </tr>
+              <tr>
+                <td>Conclusão de Atividades</td>
+                <td id="competencia-conclusao_atividades">–</td>
+              </tr>
+              <tr>
+                <td>Organização</td>
+                <td id="competencia-organizacao">–</td>
+              </tr>
+              <tr>
+                <td>Planejamento</td>
+                <td id="competencia-planejamento">–</td>
+              </tr>
+              <tr>
+                <td>Solução de Atividade</td>
+                <td id="competencia-solucao_atividade">–</td>
+              </tr>
+              <tr>
+                <td>Motivação</td>
+                <td id="competencia-motivacao">–</td>
+              </tr>
+            </tbody>
+          </table>
 
-                <label for="data-fim-unidade">Data de Fim:</label>
-                <input type="date" id="data-fim-unidade">
+          <p><strong>Média Geral:</strong> <span id="media-competencias-aluno">–</span></p>
 
-                <button type="button" id="gerar-relatorio-unidade" class="btn-primary">
-                    Gerar Relatório
-                </button>
-            </form>
-
-            <div id="resultado-unidade" class="hidden">
-                <p><strong>Matrículas totais:</strong> <span id="matriculas-unidade">–</span></p>
-                <p><strong>% Presença:</strong> <span id="percentual-presenca">–</span></p>
-                <p><strong>% Faltas:</strong> <span id="percentual-faltas">–</span></p>
-
-                <!-- Gráfico de Pizza -->
-                <div style="max-width: 400px; margin-top: 1rem;">
-                    <canvas id="grafico-unidade"></canvas>
-                </div>
+          <h3>Gráficos de Evolução por Competência</h3>
+          <div class="competencias-charts">
+            <div class="chart-block">
+              <h4>Concentração</h4>
+              <canvas id="chart-concentracao"></canvas>
             </div>
-            <button id="exportar-relatorio-unidade" class="btn-secondary hidden">
-                Exportar Relatório em PDF
-            </button>
+            <div class="chart-block">
+              <h4>Comprometimento</h4>
+              <canvas id="chart-comprometimento"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Proatividade</h4>
+              <canvas id="chart-proatividade"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Criatividade</h4>
+              <canvas id="chart-criatividade"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Trabalho em Equipe</h4>
+              <canvas id="chart-trabalho_em_equipe"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Inteligência Emocional</h4>
+              <canvas id="chart-inteligencia_emocional"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Capacidade de Avaliação e Decisão</h4>
+              <canvas id="chart-capacidade_avaliacao_decisao"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Flexibilidade Cognitiva</h4>
+              <canvas id="chart-flexibilidade_cognitiva"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Raciocínio Lógico</h4>
+              <canvas id="chart-raciocinio_logico"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Objetividade</h4>
+              <canvas id="chart-objetividade"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Conclusão de Atividades</h4>
+              <canvas id="chart-conclusao_atividades"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Organização</h4>
+              <canvas id="chart-organizacao"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Planejamento</h4>
+              <canvas id="chart-planejamento"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Solução de Atividade</h4>
+              <canvas id="chart-solucao_atividade"></canvas>
+            </div>
+            <div class="chart-block">
+              <h4>Motivação</h4>
+              <canvas id="chart-motivacao"></canvas>
+            </div>
+          </div>
 
+          <button type="button" id="exportar-relatorio-competencias-aluno" class="btn-secondary">
+            Exportar Competências em PDF
+          </button>
         </div>
-    </div>
+      </div>
+    </section>
 
-    <footer class="footer">
-        <p>&copy; 2025 Hub Tech Labs. Todos os direitos reservados.</p>
-    </footer>
+    <!-- =========================
+         RELATÓRIO POR TURMA
+         ========================= -->
+    <section class="container hidden" id="relatorio-turma-container">
+      <div class="card">
+        <h2>Relatório por Turma</h2>
 
-    <script src="relatorio.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+        <!-- Para Coordenador: selecionar instrutor -->
+        <div id="coordenador-section-turma" style="display: none;">
+          <label for="instrutor-select-turma">Escolha um instrutor:</label>
+          <select id="instrutor-select-turma">
+            <option value="" disabled selected>Escolha um instrutor</option>
+          </select>
+        </div>
 
+        <form id="form-relatorios-turma">
+          <label for="turma-select-turma">Selecione a Turma:</label>
+          <select id="turma-select-turma">
+            <option value="" disabled selected>Escolha uma turma</option>
+          </select>
+
+          <label for="data-inicio-turma">Data de Início:</label>
+          <input type="date" id="data-inicio-turma">
+
+          <label for="data-fim-turma">Data de Fim:</label>
+          <input type="date" id="data-fim-turma">
+
+          <button type="button" id="gerar-relatorio-turma" class="btn-primary">
+            Gerar Relatório
+          </button>
+        </form>
+
+        <h2 id="msg-erro-turma" class="error-message"></h2>
+
+        <!-- CONTEÚDO DO RELATÓRIO: NOTAS (turma) -->
+        <div class="hidden" id="notas-turma-container">
+          <h3>Tabela de Notas e Presença por Aluno</h3>
+          <table id="tabela-relatorio-turma" class="report-table">
+            <thead>
+              <tr>
+                <th>Nome do Aluno</th>
+                <th>Média de Presença</th>
+                <th>Média de Notas</th>
+                <th>Média nas Avaliações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JS preencherá dinamicamente -->
+            </tbody>
+          </table>
+
+          <h4>Detalhamento de Presença por Aula</h4>
+          <table id="tabela-detalhe-presenca-turma" class="report-table">
+            <thead>
+              <tr id="headers-presenca-turma">
+                <th>Aluno</th>
+                <!-- Datas de cada aula serão adicionadas dinamicamente -->
+              </tr>
+            </thead>
+            <tbody id="body-presenca-turma">
+              <!-- JS preencherá linhas com "Presente"/"Ausente" -->
+            </tbody>
+          </table>
+
+          <button type="button" id="exportar-relatorio-notas-turma" class="btn-secondary">
+            Exportar Relatório em PDF
+          </button>
+
+          <!-- NOVO: botão para gerar ZIP de relatórios individuais -->
+          <button type="button" id="exportar-relatorios-individuais-turma-notas" class="btn-secondary hidden">
+            Exportar Relatórios Individuais (ZIP)
+          </button>
+        </div>
+
+        <!-- CONTEÚDO DO RELATÓRIO: COMPETÊNCIAS (turma) -->
+        <div class="hidden" id="competencias-turma-container">
+          <h3>Médias de Competências por Aluno</h3>
+          <table id="tabela-competencias-turma" class="report-table">
+            <thead>
+              <tr>
+                <th>Aluno</th>
+                <th>Concentração</th>
+                <th>Comprometimento</th>
+                <th>Proatividade</th>
+                <th>Criatividade</th>
+                <th>Trabalho em Equipe</th>
+                <th>Inteligência Emocional</th>
+                <th>Capacidade de Avaliação e Decisão</th>
+                <th>Flexibilidade Cognitiva</th>
+                <th>Raciocínio Lógico</th>
+                <th>Objetividade</th>
+                <th>Conclusão de Atividades</th>
+                <th>Organização</th>
+                <th>Planejamento</th>
+                <th>Solução de Atividade</th>
+                <th>Motivação</th>
+                <th>Média Geral</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JS preencherá dinamicamente -->
+            </tbody>
+          </table>
+
+          <button type="button" id="exportar-relatorio-competencias-turma" class="btn-secondary">
+            Exportar Competências da Turma em PDF
+          </button>
+
+          <!-- NOVO: botão para gerar ZIP de relatórios individuais -->
+          <button type="button" id="exportar-relatorios-individuais-turma-competencias" class="btn-secondary hidden">
+            Exportar Relatórios Individuais (ZIP)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================
+         RELATÓRIO POR UNIDADE
+         ========================= -->
+    <section class="container hidden" id="relatorio-unidade-container">
+      <div class="card">
+        <h2>Relatório por Unidade</h2>
+
+        <form id="form-relatorios-unidade">
+          <label for="unidade-select">Selecione a Unidade:</label>
+          <select id="unidade-select">
+            <option value="" disabled selected>Escolha uma unidade</option>
+          </select>
+
+          <label for="data-inicio-unidade">Data de Início:</label>
+          <input type="date" id="data-inicio-unidade" />
+
+          <label for="data-fim-unidade">Data de Fim:</label>
+          <input type="date" id="data-fim-unidade" />
+
+          <button type="button" id="gerar-relatorio-unidade" class="btn-primary">
+            Gerar Relatório
+          </button>
+        </form>
+
+        <h2 id="msg-erro-unidade" class="error-message"></h2>
+
+        <!-- ======= MODO NOTAS (Unidade) ======= -->
+        <div class="hidden" id="notas-unidade-container">
+          <p><strong>Total de Matrículas:</strong> <span id="matriculas-unidade">–</span></p>
+          <p><strong>% Presença:</strong> <span id="percentual-presenca-unidade">–</span></p>
+          <p><strong>% Faltas:</strong> <span id="percentual-faltas-unidade">–</span></p>
+          <div style="max-width: 400px; margin-top: 1rem;">
+            <canvas id="grafico-unidade-notas"></canvas>
+          </div>
+          <button type="button" id="exportar-relatorio-notas-unidade" class="btn-secondary hidden">
+            Exportar Relatório de Notas da Unidade
+          </button>
+        </div>
+
+        <!-- ======= MODO COMPETÊNCIAS (Unidade) ======= -->
+        <div class="hidden" id="competencias-unidade-container">
+          <p><strong>Total de Aulas (datas únicas):</strong> <span id="total-aulas-unidade-comp">–</span></p>
+          <p><strong>Total de Presenças:</strong> <span id="total-presencas-unidade-comp">–</span></p>
+          <p><strong>Total de Faltas:</strong> <span id="total-faltas-unidade-comp">–</span></p>
+          <div style="max-width: 400px; margin-top: 1rem;">
+            <canvas id="grafico-unidade-competencias-presenca"></canvas>
+          </div>
+
+          <button type="button" id="exportar-relatorio-competencias-unidade" class="btn-secondary hidden">
+            Exportar Competências da Unidade em PDF
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- NOVO: Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="loader"></div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2025 Hub Tech Labs. Todos os direitos reservados.</p>
+  </footer>
+
+  <!-- Script principal de relatórios -->
+  <script src="relatorio.js"></script>
 </body>
 
 </html>

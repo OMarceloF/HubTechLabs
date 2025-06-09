@@ -13,7 +13,7 @@ document.getElementById("form-login").addEventListener("submit", async (event) =
             //🚭Como era na Vercel
             const response = await fetch("https://hub-orcin.vercel.app/login",
             //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/login",
+            // const response = await fetch("http://localhost:3000/login",
             {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

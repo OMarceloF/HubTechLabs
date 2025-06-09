@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         //🚭Como era na Vercel
         const response = await fetch('https://hub-orcin.vercel.app/listar-unidades'); 
         //🚭Como é localmente
-        //const response = await fetch('http://localhost:3000/listar-unidades');
+        // const response = await fetch('http://localhost:3000/listar-unidades');
         if (!response.ok) throw new Error('Erro ao buscar unidades');
         
         const unidades = await response.json();
@@ -179,7 +179,7 @@ const nomeTurma = `${nomeBaseTurma} - ${unidadeNome}`;
         //🚭Como era na Vercel
         const response = await fetch('https://hub-orcin.vercel.app/salvar-turma',
         //🚭Como é localmente
-        //const response = await fetch('http://localhost:3000/salvar-turma', 
+        // const response = await fetch('http://localhost:3000/salvar-turma', 
             {
             method: 'POST',
             headers: {
@@ -348,7 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
         //🚭Como era na Vercel
         const response = await fetch('https://hub-orcin.vercel.app/perfil',
         //🚭Como é localmente
-        //const response = await fetch('http://localhost:3000/perfil',
+        // const response = await fetch('http://localhost:3000/perfil',
             {
                 headers: { Authorization: token }
             });
@@ -372,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
         //🚭Como era na Vercel
         const response = await fetch('https://hub-orcin.vercel.app/listar-instrutores');
         //🚭Como é localmente
-        //const response = await fetch('http://localhost:3000/listar-instrutores');
+        // const response = await fetch('http://localhost:3000/listar-instrutores');
         if (!response.ok) throw new Error("Erro ao carregar os instrutores.");
 
         const instrutores = await response.json();
@@ -429,7 +429,7 @@ async function carregarUnidades() {
         //🚭Como era na Vercel
         const response = await fetch('https://hub-orcin.vercel.app/listar-unidades');
         //🚭Como é localmente
-        //const response = await fetch('http://localhost:3000/listar-unidades');
+        // const response = await fetch('http://localhost:3000/listar-unidades');
         if (!response.ok) throw new Error('Erro ao buscar unidades');
         const unidades = await response.json();
 
@@ -471,7 +471,7 @@ const nomeTurma = `${nomeBaseTurma} - ${unidadeNome}`;
             //🚭Como era na Vercel
             const response = await fetch('https://hub-orcin.vercel.app/salvar-turma',
             //🚭Como é localmente
-            //const response = await fetch('http://localhost:3000/salvar-turma', 
+            // const response = await fetch('http://localhost:3000/salvar-turma', 
                 {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

@@ -1,89 +1,88 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Notas</title>
-    <link rel="stylesheet" href="editarDiario.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Editar Diário</title>
+  <link rel="stylesheet" href="editarDiario.css" />
 </head>
-
 <body>
-    <!-- Cabeçalho -->
-    <header class="header">
-        <a href="/projeto/public/index.html"><img src="/Imagens/simboloSeta.png" width="75px"></a>
-        <div class="logo-container">
-            <a href="/projeto/public/index.html"><img src="/projeto/Imagens/logo.png" alt="Logo da Empresa" class="logo"></a>
-        </div>
-
-        <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
-            <a href="/Perfil/perfil.html">Editar Perfil</a><br>
-            <a href="https://hub-orcin.vercel.app/Login/login.html">Sair</a>
-        </div>
-
-        <div class="user-info" id="user-info">
-            <img id="profile-photo" src="/projeto/Imagens/perfil.png" alt="Foto do Perfil" class="user-photo" onclick="toggleMudarPerfil()">
-        </div>
-    </header>
-
-    <!-- Conteúdo Principal -->
-   
-    
-    <div class="container">
-        <h2>Editar Diário</h2>
-
-         <!-- Div que será visível apenas para coordenadores -->
-<div id="div-coordenador" class="hidden">
-    <h3>Selecionar Instrutores</h3>
-    <label for="instrutores">Escolha o instrutor:</label>
-    <select id="instrutores" required>
-      </select>
-   </div>
-
-   
-        <div class="form-group">
-            <label for="turma-select">Turma:</label>
-            <select id="turma-select" onchange="carregarDatas()">
-                <option value="" disabled selected>Escolha uma turma</option>
-            </select>
-            <label for="data-chamada">Data:</label>
-            <select id="data-chamada">
-                <option value="" disabled selected>Escolha a data</option>
-            </select>
-        </div>
-        
-        <button id="carregar-btn" onclick="carregarNotas()">Carregar Notas</button>
-
-<div id="conteudo-aula-exibido" class="form-group hidden">
-    <label>Conteúdo da Aula:</label>
-    <p id="campo-conteudo-aula" class="texto-conteudo-limpo"></p>
-  </div>
-  
-        <h2 id="turma-selecionada" class="hidden">Selecione uma turma e data</h2>
-        <div id="alunos-container" class="hidden">
-            <table id="alunos-table">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Presença</th>
-                        <th>Nota</th>
-                        <th>Observações</th>
-                    </tr>
-                </thead>                
-                <tbody id="alunos-list"></tbody>
-            </table>
-            
-            <div id="mensagem-feedback" class="mensagem-feedback hidden"></div>
-            <button id="salvarAlteracoes" class="botao-padrao">Salvar Alterações</button>
-
-        </div>
+  <!-- Cabeçalho -->
+  <header class="header">
+    <a href="/index.html">
+      <img src="/Imagens/simboloSeta.png" width="75px" />
+    </a>
+    <div class="logo-container">
+      <a href="/index.html">
+        <img src="/Imagens/logo.png" alt="Logo da Empresa" class="logo" />
+      </a>
     </div>
 
-    <script src="editarDiario.js"></script>
+    <div class="mudarPerfil" id="mudarPerfil" style="display: none;">
+      <a href="/Perfil/perfil.html">Editar Perfil</a><br />
+      <a href="/Login/login.html">Sair</a>
+    </div>
 
-</body>
-<footer class="footer">
+    <div class="user-info" id="user-info">
+      <img
+        id="profile-photo"
+        src="/Imagens/perfil.png"
+        alt="Foto do Perfil"
+        class="user-photo"
+        onclick="toggleMudarPerfil()"
+      />
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <div class="container">
+    <h2>Editar Diário</h2>
+
+    <!-- Para Coordenadores: selecionar instrutor primeiro -->
+    <div id="div-coordenador" class="hidden">
+      <h3>Selecionar Instrutor</h3>
+      <label for="instrutores">Instrutor:</label>
+      <select id="instrutores" disabled>
+        <option value="" disabled selected>Carregando instrutores...</option>
+      </select>
+    </div>
+
+    <!-- Seleção de turma + data -->
+    <div class="form-group">
+      <label for="turma-select">Turma:</label>
+      <select id="turma-select" disabled>
+        <option value="" disabled selected>Escolha uma turma</option>
+      </select>
+
+      <label for="data-chamada">Data:</label>
+      <select id="data-chamada" disabled>
+        <option value="" disabled selected>Escolha a data</option>
+      </select>
+    </div>
+
+    <button id="carregar-btn" disabled>Carregar Notas</button>
+
+    <div id="conteudo-aula-exibido" class="form-group hidden">
+      <label>Conteúdo da Aula:</label>
+      <p id="campo-conteudo-aula" class="texto-conteudo-limpo"></p>
+    </div>
+
+    <h2 id="turma-selecionada" class="hidden">Turma: </h2>
+
+    <div id="alunos-container" class="hidden">
+      <table id="alunos-table">
+        <thead id="alunos-thead"><!-- Cabeçalho via JS --></thead>
+        <tbody id="alunos-list"><!-- Linhas via JS --></tbody>
+      </table>
+      <div id="mensagem-feedback" class="mensagem-feedback hidden"></div>
+      <button id="salvarAlteracoes" class="botao-padrao hidden">Salvar Alterações</button>
+    </div>
+  </div>
+
+  <footer class="footer">
     <p>&copy; 2025 Hub Tech Labs. Todos os direitos reservados.</p>
-</footer>
+  </footer>
 
+  <script src="editarDiario.js"></script>
+</body>
 </html>

@@ -1,300 +1,170 @@
+/* Reset */
 html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;  /* Garante altura total */
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
+/* Corpo */
 body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    /* background-image: url(/Imagens/fundoDiario.png); 
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: top; */
-    background-color: rgb(243, 243, 243);
-    
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f3f3f3;
 }
 
+/* Container principal */
 .container {
-    flex: 1;
-    padding: 20px;
-    margin: 100px auto 0;  /* Remove o espaçamento inferior */
-    width: 60%;
-    max-width: 800px;
-    min-height: calc(100vh - 200px);  /* Altura mínima sem espaços extras */
-    overflow-y: auto;
-    background-color: rgba(255, 255, 255, 0.76);
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  padding: 20px;
+  margin: 100px auto 0;
+  width: 90%;
+  min-height: calc(100vh - 200px);
+  overflow-y: auto;
+  background: rgba(255,255,255,0.76);
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.mudarPerfil {
-    position: absolute;
-    right: 30px;
-    top: 90px;
-    background-color: white;
-    width: 120px;
-    height: 160px;
-    display: flex; /* Configura Flexbox */
-    flex-direction: column; /* Coloca os links em coluna */
-    justify-content: center; /* Centraliza verticalmente */
-    align-items: center; /* Centraliza horizontalmente */
-    text-align: center; /* Centraliza o texto */
-    border-radius: 8px; /* Deixa os cantos arredondados */
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+/* Cabeçalho fixo */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 80px;
+  background: rgba(120,248,225,0.56);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  z-index: 1000;
+}
+.logo {
+  width: 120px;
+  cursor: pointer;
+}
+.user-photo {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform .3s;
+}
+.user-photo:hover {
+  transform: scale(1.1);
 }
 
-.mudarPerfil a {
-    margin: 0; /* Remove qualquer espaçamento adicional */
-    padding: 5px 0; /* Espaçamento interno, se necessário */
-    text-decoration: none; /* Remove o sublinhado dos links */
-    color: #5a5a5a; /* Define a cor do texto */
-    font-weight: bold; /* Deixa o texto em negrito */
-    width: 100%; /* Garante que o texto ocupa toda a largura */
-    text-align: center; /* Centraliza o texto dos links */
+/* Formulários */
+.form-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+input, select, textarea {
+  font-family: Arial, sans-serif;
+  padding: 10px;
+  font-size: 16px;
+  border: 2px solid #005b9f;
+  border-radius: 10px;
+  background: #f0f8ff;
+  width: calc(50% - 10px);
+}
+#data-chamada {
+  width: auto;
 }
 
-h2 {
-    text-align: center;  /* Centraliza o texto */
-    width: 100%;  /* Garante que ocupe toda a largura */
-    font-style: normal;
-    font-weight:bolder;
+/* Tabela responsiva */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
-
-#turma-select,
-#conteudo-aula {
-    font-family: Arial;
-    width: 50%;
-    padding: 10px;
-    font-size: 16px;
-    border: 2px solid #005b9f;
-    border-radius: 10px;
-    background-color: #f0f8ff;
-}
-
-#alunos-container {
-    margin-top: 20px;
-    text-align: center;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    
-}
-
 #alunos-table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
 }
-
 #alunos-table th,
 #alunos-table td {
-    border: 1px solid #b3d9ff;
-    padding: 15px;
-    text-align: center;
+  border: 1px solid #b3d9ff;
+  padding: 8px;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
-
 #alunos-table th {
-    background-color: #b3d9ff;
-    color: #000000;
+  background: #b3d9ff;
+  color: #000;
+  font-weight: bold;
 }
-
 #alunos-table tr:nth-child(even) {
-    background-color: #f0f8ff;
+  background: #f0f8ff;
 }
 
-#alunos-table th:nth-child(4),
-#alunos-table td:nth-child(4) {
-    width: 200px;
-    text-align: center;
-}
-
+/* Observações */
 .observacao-input {
-    width: 95%;
-    padding: 5px;
-    border: 1px solid #b3d9ff;
-    border-radius: 5px;
-    font-size: 14px;
+  width: 95%;
+  padding: 5px;
+  border: 1px solid #b3d9ff;
+  border-radius: 5px;
+  font-size: 14px;
 }
 
-#salvar-btn {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #78f8e1;
-    color: rgb(0, 0, 0);
-    border: none;
-    font-weight: bold;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-#salvar-btn:hover {
-    background-color: #003f6d;
-}
-
-.hidden {
-    display: none;
-}
-
+/* Botões */
+#salvar-btn,
 #exportar-btn {
-    margin-top: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #005b9f;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
-
+#salvar-btn {
+  background: #78f8e1;
+  font-weight: bold;
+  color: #000;
+}
+#salvar-btn:hover {
+  background: #003f6d;
+  color: #fff;
+}
+#exportar-btn {
+  background: #005b9f;
+  color: #fff;
+}
 #exportar-btn:hover {
-    background-color: #003f6d;
+  background: #003f6d;
 }
 
-.form-group {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-#turma-select,
-#data-chamada,
-#conteudo-aula {
-    padding: 10px;
-    font-size: 16px;
-    border: 2px solid #005b9f;
-    border-radius: 10px;
-    background-color: #f0f8ff;
-}
-
-/* Estilo do Cabeçalho */
-.header {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #78f8e18e;
-    padding: 10px 10px;
-    color: white;
-    position: fixed;  /* Fixa no topo */
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    box-sizing: border-box;
-    height: 80px;
-}
-
-select {
-    width: 100%;
-}
-
-/* Logo e Foto do Usuário */
-.logo {
-    width: 120px;
-    height: auto;
-    cursor: pointer;
-}
-
-.user-photo {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%; /* Imagem circular */
-    cursor: pointer;
-}
-
-.user-photo:hover {
-    transform: scale(1.1);  /* Aumenta a imagem ao passar o mouse */
-    transition: all 0.3s ease;  /* Transição suave */
-}
-
-
+/* Rodapé */
 .footer {
-    text-align: left;
-    padding: 0px 0;
-    color: #000000;
-    font-size: 14px;
-    width: 100%;
-    margin-top: 0;  /* Remove espaçamento adicional */
+  padding: 10px;
+  font-size: 14px;
+  color: #000;
+  text-align: left;
 }
 
-
-.mensagem-sucesso {
-    position: relative;
-    z-index: 10;
-    margin-top: 10px;
-    background-color: #d4edda;
-    color: #155724;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 16px;
-    text-align: center;
-    transition: opacity 0.2s ease-in-out;
-}
-
-.mensagem-feedback {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #d4edda;  /* Verde para sucesso */
-    color: #155724;
-    border-radius: 5px;
-    font-size: 16px;
-    text-align: center;
-    transition: opacity 0.3s ease-in-out;
-}
-
-.mensagem-feedback.erro {
-    background-color: #f8d7da;  /* Vermelho claro para erro */
-    color: #721c24;
-}
-
-@keyframes fade-out {
-    0% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-    }
-}
-
-/* Ajusta a largura dos elementos de forma responsiva */
+/* Responsividade */
 @media (max-width: 1024px) {
-    .header {
-        flex-wrap: wrap;
-        padding: 15px;
-        height: auto;
-    }
-
-    .container {
-        width: 90%;
-        padding: 15px;
-        margin: 120px auto 0;  
-    }
-
-    .logo {
-        width: 100px;
-    }
-
-    .user-photo {
-        width: 60px;
-        height: 60px;
-    }
-
-    .form-group {
-        flex-direction: column; /* Alinha os elementos em uma coluna */
-        gap: 15px; /* Espaçamento entre os elementos */
-        align-items: stretch; /* Faz os elementos ocuparem toda a largura */
-    }
-
-    #turma-select{
-        width: 100%; /* Garante que os campos ocupem toda a largura */
-    }
-
-    #data-chamada {
-        width: 93%; /* Garante que os campos ocupem toda a largura */
-    }
+  .container {
+    width: 90%;
+    margin-top: 120px;
+  }
+  input, select, textarea {
+    width: 100%;
+  }
+  .form-group {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+@media (max-width: 768px) {
+  #alunos-table th,
+  #alunos-table td {
+    font-size: 14px;
+    padding: 6px;
+  }
 }

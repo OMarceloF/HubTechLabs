@@ -36,7 +36,7 @@ tipoSelect.addEventListener("change", async () => {
             //🚭Como era na Vercel
             const response = await fetch("https://hub-orcin.vercel.app/usuarios");
             //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/usuarios");
+            // const response = await fetch("http://localhost:3000/usuarios");
             const usuarios = await response.json();
 
             const coordenadores = usuarios.filter(user => user.tipo === "Coordenador");
@@ -104,7 +104,7 @@ tipoSelect.addEventListener("change", async () => {
             //🚭Como era na Vercel
             const response = await fetch('https://hub-orcin.vercel.app/cadastro', 
             //🚭Como é localmente
-            //const response = await fetch('http://localhost:3000/cadastro',  
+            // const response = await fetch('http://localhost:3000/cadastro',  
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -161,7 +161,7 @@ tipoSelect.addEventListener("change", async () => {
             //🚭Como era na Vercel
             const response = await fetch('https://hub-orcin.vercel.app/perfil', 
             //🚭Como é localmente
-            //const response = await fetch('http://localhost:3000/perfil',  
+            // const response = await fetch('http://localhost:3000/perfil',  
             {
                 headers: { Authorization: token }
             });

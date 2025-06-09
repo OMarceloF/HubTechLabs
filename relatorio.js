@@ -38,9 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
   async function carregarPerfil() {
     try {
       //🚭Como era na Vercel
-      const response = await fetch("https://hub-orcin.vercel.app/perfil",
+      // const response = await fetch("https://hub-orcin.vercel.app/perfil",
       //🚭Como é localmente
-      //const response = await fetch("http://localhost:3000/perfil",
+      const response = await fetch("http://localhost:3000/perfil",
         {
           headers: { Authorization: token },
         });
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Atualiza os elementos do HTML com os dados do usuário
       document.getElementById("profile-photo").src =
-        data.photo || "/projeto/Imagens/perfil.png";
+        data.photo || "/Imagens/perfil.png";
     } catch (error) {
       console.error("Erro ao carregar perfil:", error);
 
@@ -93,9 +93,9 @@ async function obterNomeUsuario() {
     }
 
     //🚭Como era na Vercel
-    const response = await fetch("https://hub-orcin.vercel.app/usuarios");
+    // const response = await fetch("https://hub-orcin.vercel.app/usuarios");
     //🚭Como é localmente
-    //const response = await fetch("http://localhost:3000/usuarios");// Chama a API
+    const response = await fetch("http://localhost:3000/usuarios");// Chama a API
     if (!response.ok) {
       throw new Error("Erro ao buscar usuários");
     }
@@ -119,9 +119,9 @@ async function obterNomeUsuario() {
 async function carregarTurmas() {
   try {
     //🚭Como era na Vercel
-    const response = await fetch("https://hub-orcin.vercel.app/dados");
+    // const response = await fetch("https://hub-orcin.vercel.app/dados");
     //🚭Como é localmente
-    //const response = await fetch("http://localhost:3000/dados");// Requisição ao backend
+    const response = await fetch("http://localhost:3000/dados");// Requisição ao backend
     if (!response.ok) {
       throw new Error("Erro ao buscar as turmas");
     }

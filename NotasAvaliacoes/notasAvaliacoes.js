@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
             //🚭Como era na Vercel
             const response = await fetch("https://hub-orcin.vercel.app/perfil",
             //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/perfil",
+            // const response = await fetch("http://localhost:3000/perfil",
                 {
             headers: { Authorization: token },
         });
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
             //🚭Como era na Vercel
             const response = await fetch("https://hub-orcin.vercel.app/usuarios",)
             //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/usuarios",)// Chama a API
+            // const response = await fetch("http://localhost:3000/usuarios",)// Chama a API
             if (!response.ok) {
                 throw new Error("Erro ao buscar usuários");
             }
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
             //🚭Como era na Vercel
             const response = await fetch("https://hub-orcin.vercel.app/dados");
             //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/dados");// Requisição ao backend
+            // const response = await fetch("http://localhost:3000/dados");// Requisição ao backend
             if (!response.ok) {
                 throw new Error("Erro ao buscar as turmas");
             }
@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
              //🚭Como era na Vercel
             const response = await fetch("https://hub-orcin.vercel.app/avaliacoes");
             //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/avaliacoes");// Ajuste para a rota que retorna as avaliações
+            // const response = await fetch("http://localhost:3000/avaliacoes");// Ajuste para a rota que retorna as avaliações
             const avaliacoes = await response.json();
 
             // Filtra as avaliações pela turma selecionada
@@ -209,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
             //🚭Como era na Vercel
             const response = await fetch("https://hub-orcin.vercel.app/dados");
             //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/dados");// Ajuste a rota para obter as turmas
+            // const response = await fetch("http://localhost:3000/dados");// Ajuste a rota para obter as turmas
             const dados = await response.json();
             const turmaData = dados[turma]; // Obtém os dados da turma
 
@@ -292,7 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
             //🚭Como era na Vercel
             const response = await fetch("https://hub-orcin.vercel.app/salvar-notas-avaliacoes",
             //🚭Como é localmente
-            //const response = await fetch("http://localhost:3000/salvar-notas-avaliacoes",
+            // const response = await fetch("http://localhost:3000/salvar-notas-avaliacoes",
                 {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

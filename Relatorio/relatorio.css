@@ -1,9 +1,9 @@
+/* ---------------------------------------------
+   Estilos Globais (mantidos do seu original)
+   --------------------------------------------- */
+
 body {
     font-family: Arial, sans-serif;
-    /* background-image: url(/Imagens/fundoEditarTurma.jpg);
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center; */
     background-color: rgb(243, 243, 243);
     margin: 0;
     padding: 0;
@@ -20,6 +20,8 @@ html {
     flex-direction: column;
 }
 
+/* Container genérico para centralizar conteúdo,
+   mas vamos sobrescrever para relatórios específicos */
 .container {
     display: flex;
     flex-direction: column;
@@ -27,9 +29,7 @@ html {
     justify-content: center;
     min-height: calc(100vh - 200px);
     padding-top: 100px;
-    /* Adiciona espaço para o cabeçalho */
     flex: 1;
-    /* Faz o container ocupar o espaço restante */
 }
 
 .card {
@@ -40,7 +40,6 @@ html {
     max-width: 800px;
     width: 80%;
     margin: 20px auto;
-    /* Centraliza o card */
 }
 
 input[type="date"] {
@@ -48,12 +47,10 @@ input[type="date"] {
     padding: 5px;
 }
 
-
-
 h2 {
-    font-family: arial;
+    font-family: Arial, sans-serif;
     text-align: center;
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 form {
@@ -96,40 +93,33 @@ button:hover {
     margin-top: 20px;
 }
 
-
 .card {
-    /* border: 2px solid #29dabb; */
     padding: 20px;
     background-color: #ffffff;
     border-radius: 12px;
 }
 
-
-
 #grafico-notas-aluno,
 #grafico-presenca-aula,
 #grafico-desempenho-aula {
     max-width: 100%;
-    /* Ajusta o gráfico para caber no card */
     height: auto;
-    /* Mantém a proporção */
 }
 
 ul {
     padding-left: 20px;
 }
 
-/* Estilo do Cabeçalho */
+/* Estilo do Cabeçalho fixo no topo */
 .header {
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     background-color: #78f8e18e;
-    padding: 10px 10px;
+    padding: 10px;
     color: white;
     position: fixed;
-    /* Fixa no topo */
     top: 0;
     left: 0;
     z-index: 1000;
@@ -141,7 +131,6 @@ select {
     width: 100%;
 }
 
-/* Logo e Foto do Usuário */
 .logo {
     width: 120px;
     height: auto;
@@ -151,20 +140,15 @@ select {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    /* Imagem circular */
     cursor: pointer;
 }
 
 .user-photo:hover {
     transform: scale(1.1);
-    /* Aumenta a imagem ao passar o mouse */
     transition: all 0.3s ease;
-    /* Transição suave */
 }
 
-
-
-/* Ajusta a largura dos elementos de forma responsiva */
+/* Responsividade para telas menores */
 @media (max-width: 1024px) {
     .header {
         flex-wrap: wrap;
@@ -183,11 +167,8 @@ select {
 
     .container {
         width: 85%;
-        /* Aumenta a largura do card para quase ocupar a tela */
         padding: 10px;
-        /* Ajusta o espaçamento interno */
         margin: 120px auto 0;
-
     }
 
     .card {
@@ -199,20 +180,14 @@ select {
         width: 90%;
         margin: 10px auto;
         align-items: center;
-
     }
-
 
     #grafico-notas-aluno,
     #grafico-presenca-aula,
     #grafico-desempenho-aula {
         max-width: 100%;
-        /* Ajusta os gráficos para responsividade */
         height: auto;
     }
-
-
-
 }
 
 footer {
@@ -221,9 +196,9 @@ footer {
 
 #grafico-presenca-aula {
     height: 100px;
-    /* Define a altura fixa do gráfico */
 }
 
+/* Menu “mudarPerfil” */
 .mudarPerfil {
     position: absolute;
     right: 30px;
@@ -232,39 +207,26 @@ footer {
     width: 120px;
     height: 160px;
     display: flex;
-    /* Configura Flexbox */
     flex-direction: column;
-    /* Coloca os links em coluna */
     justify-content: center;
-    /* Centraliza verticalmente */
     align-items: center;
-    /* Centraliza horizontalmente */
     text-align: center;
-    /* Centraliza o texto */
     border-radius: 8px;
-    /* Deixa os cantos arredondados */
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .mudarPerfil a {
     margin: 0;
-    /* Remove qualquer espaçamento adicional */
     padding: 5px 0;
-    /* Espaçamento interno, se necessário */
     text-decoration: none;
-    /* Remove o sublinhado dos links */
     color: #5a5a5a;
-    /* Define a cor do texto */
     font-weight: bold;
-    /* Deixa o texto em negrito */
     width: 100%;
-    /* Garante que o texto ocupa toda a largura */
     text-align: center;
-    /* Centraliza o texto dos links */
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 #tabela-relatorio-turma {
@@ -290,7 +252,6 @@ footer {
     background-color: #f2f2f2;
 }
 
-/* Mesma aparência da primeira tabela para o detalhamento */
 #tabela-detalhe-turma {
     width: 100%;
     border-collapse: collapse;
@@ -313,3 +274,510 @@ footer {
 #tabela-detalhe-turma tr:nth-child(even) {
     background-color: #f2f2f2;
 }
+
+.competencias-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+}
+
+.competencias-table th,
+.competencias-table td {
+    border: 1px solid #ccc;
+    text-align: center;
+    padding: 4px 6px;
+    font-size: 0.9rem;
+}
+
+.competencias-table th {
+    background-color: #b0d77c;
+    color: #000;
+}
+
+/* ---------------------------------------------
+   Regras de Relatório por Aluno  
+   --------------------------------------------- */
+
+/* 1) O container inteiro do relatório ocupa toda a viewport */
+#relatorio-aluno-container {
+    position: fixed;
+    /* fixa na tela */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    /* 100% da largura */
+    height: 100vh;
+    /* 100% da altura */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #f3f3f3;
+    /* fundo neutro */
+    overflow: hidden;
+    /* nada escapa */
+    z-index: 50;
+    /* acima dos demais */
+    display: flex;
+    /* centra o card */
+    justify-content: center;
+    align-items: center;
+}
+
+/* 2) Disposição do próprio “card” dentro do relatório */
+#relatorio-aluno-container .card {
+    width: 95vw;
+    /* ocupa 95% da largura */
+    max-width: none;
+    /* sem limite fixo */
+    height: 95vh;
+    /* ocupa 95% da altura */
+    max-height: none;
+    margin: 0;
+    margin-top: 85px;
+    /* desce abaixo da navbar de 80px */
+    padding: 24px 32px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    /* rolagem interna vertical */
+    overflow-x: hidden;
+}
+
+/* 3) Ajuste do título dentro do card, com borda inferior */
+#relatorio-aluno-container .card h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    text-align: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* 4) Header acima, caso precise */
+.header {
+    z-index: 60;
+    /* fica acima do relatório */
+}
+
+/* 5) Grid geral para os gráficos de “Notas” */
+#relatorio-aluno-container .chart-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 16px;
+}
+
+/* Cada bloco de gráfico fica destacado e centralizado */
+#relatorio-aluno-container .chart-group>div {
+    background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#relatorio-aluno-container .chart-group h4 {
+    margin: 0 0 12px 0;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+/* Força o canvas a ocupar 100% da largura e ser maior */
+#relatorio-aluno-container .chart-group canvas {
+    width: 100% !important;
+    height: 220px !important;
+}
+
+/* Responsividade: adapta para 2 ou 1 coluna em telas menores */
+@media (max-width: 900px) {
+    #relatorio-aluno-container .chart-group {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    #relatorio-aluno-container .chart-group {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 6) Grid para todos os gráficos de competências */
+#relatorio-aluno-container .competencias-charts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+}
+
+/* Cada competência em seu “chart-block” */
+#relatorio-aluno-container .competencias-charts .chart-block {
+    background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#relatorio-aluno-container .competencias-charts .chart-block h4 {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+    text-align: center;
+}
+
+/* Cada canvas de competência ocupa 100% da largura do bloco e altura fixa */
+#relatorio-aluno-container .competencias-charts canvas {
+    width: 100% !important;
+    height: 180px !important;
+}
+
+/* Responsividade para gráficos de competências */
+@media (max-width: 900px) {
+    #relatorio-aluno-container .competencias-charts {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    #relatorio-aluno-container .competencias-charts {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 7) Mensagem de erro destacada */
+#relatorio-aluno-container .error-message {
+    color: #c0392b;
+    font-size: 1rem;
+    text-align: center;
+    margin-top: 12px;
+}
+
+/* ---------------------------------------------
+   Regras de Relatório por Turma  
+   --------------------------------------------- */
+
+/* 1) O container inteiro do relatório por turma ocupa toda a viewport */
+#relatorio-turma-container {
+    position: fixed;
+    /* fixa na tela */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    /* 100% da largura */
+    height: 100vh;
+    /* 100% da altura */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #f3f3f3;
+    /* fundo neutro */
+    overflow: hidden;
+    /* nada escapa */
+    z-index: 50;
+    /* acima dos demais */
+    display: flex;
+    /* para centralizar o card */
+    justify-content: center;
+    align-items: center;
+}
+
+/* 2) Disposição do próprio “card” dentro do relatório por turma */
+#relatorio-turma-container .card {
+    width: 95vw;
+    /* ocupa 95% da largura */
+    max-width: none;
+    /* sem limite fixo */
+    height: 95vh;
+    /* ocupa 95% da altura */
+    max-height: none;
+    margin: 0;
+    margin-top: 85px;
+    /* desce abaixo da navbar de 80px */
+    padding: 24px 32px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    /* rolagem interna vertical */
+    overflow-x: auto;
+    /* rolagem horizontal para tabelas largas */
+}
+
+/* 3) Ajuste do título dentro do card (turma), com borda inferior */
+#relatorio-turma-container .card h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    text-align: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* 4) Tabelas dentro do relatório por turma */
+#relatorio-turma-container .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 16px;
+    text-align: center;
+}
+
+#relatorio-turma-container .report-table th,
+#relatorio-turma-container .report-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    font-size: 0.9rem;
+}
+
+#relatorio-turma-container .report-table th {
+    background-color: #29dabb;
+    color: white;
+}
+
+#relatorio-turma-container .report-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Caso queira detalhar presença em tabela separada */
+#relatorio-turma-container #tabela-detalhe-presenca-turma {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 16px;
+    text-align: center;
+}
+
+#relatorio-turma-container #tabela-detalhe-presenca-turma th,
+#relatorio-turma-container #tabela-detalhe-presenca-turma td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    font-size: 0.9rem;
+}
+
+#relatorio-turma-container #tabela-detalhe-presenca-turma th {
+    background-color: #29dabb;
+    color: white;
+}
+
+#relatorio-turma-container #tabela-detalhe-presenca-turma tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* 5) Botão de exportar fica no final, com margem extra */
+#relatorio-turma-container .btn-secondary {
+    margin-top: 24px;
+}
+
+/* 6) Mensagem de erro (turma) */
+#relatorio-turma-container .error-message {
+    color: #c0392b;
+    font-size: 1rem;
+    text-align: center;
+    margin-top: 12px;
+}
+
+/* 7) Caso queira exibir o header acima do relatório de turma */
+.header {
+    z-index: 60;
+    /* fica acima do relatório */
+}
+
+/* ============================================
+   FIM das Regras de Relatório  
+   ============================================ */
+
+/* ==========================================
+   Regras para Relatório por Unidade (CSS)
+   ========================================== */
+
+/* 1) O container inteiro do relatório por Unidade ocupa toda a viewport */
+#relatorio-unidade-container {
+    position: fixed;
+    /* fixa na tela */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    /* 100% da largura */
+    height: 100vh;
+    /* 100% da altura */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #f3f3f3;
+    /* fundo neutro (igual aos outros relatórios) */
+    overflow: hidden;
+    /* nada escapa para fora */
+    z-index: 50;
+    /* fica acima dos demais elementos */
+    display: flex;
+    /* para centralizar o .card internamente */
+    justify-content: center;
+    /* centraliza horizontalmente */
+    align-items: center;
+    /* centraliza verticalmente */
+}
+
+/* 2) O “card” interno ao #relatorio-unidade-container */
+#relatorio-unidade-container .card {
+    width: 95vw;
+    /* ocupa 95% da largura da viewport */
+    max-width: none;
+    /* sem limite fixo */
+    height: 95vh;
+    /* ocupa 95% da altura da viewport */
+    max-height: none;
+    margin: 0;
+    margin-top: 85px;
+    /* desce 85px para não sobrescrever a navbar de 80px */
+    padding: 24px 32px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    overflow-y: auto;
+    /* rolagem interna vertical, para tabelas ou gráficos longos */
+    overflow-x: auto;
+    /* **alterado**: permite rolagem horizontal dentro do card */
+}
+
+/* 3) Ajuste do título (h2) dentro do card de Unidade */
+#relatorio-unidade-container .card h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    text-align: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* 4) Bloco de “Modo Notas (Unidade)” já existente (apenas garantido que fique dentro do .card) */
+#relatorio-unidade-container #notas-unidade-container {
+    /* nada extra a fazer aqui, pois a posição em si está definida pelo .card acima */
+}
+
+/* 5) Bloco de “Modo Competências (Unidade)”: deve preencher toda a largura interna do .card */
+#relatorio-unidade-container #competencias-unidade-container {
+    /* Forçar para que todo o conteúdo ocupe 100% da largura disponível no card */
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 1rem;
+    /* Caso seja necessário rolar verticalmente esse conteúdo, ele já ficará dentro do overflow-y:auto do .card pai */
+}
+
+/* 6) Ajuste das seções internas do “Modo Competências” */
+#relatorio-unidade-container #competencias-unidade-container p {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+#relatorio-unidade-container #competencias-unidade-container h3 {
+    margin-top: 2rem;
+    font-size: 1.2rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+}
+
+/* 7) Tabela de Competências (Unidade):
+      - transformada em bloco para permitir rolagem horizontal
+      - mantida em uma única linha (white-space: nowrap) para que não quebre colunas
+*/
+#relatorio-unidade-container #tabela-competencias-unidade {
+    display: block;
+    /* transforma em bloco rolável */
+    overflow-x: auto;
+    /* rolagem horizontal para não cortar colunas */
+    width: 100%;
+    /* ocupa toda a largura interna */
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Células da tabela: retirado white-space: nowrap para que o conteúdo interno possa quebrar normalmente,
+   mas mantido word-break para não haver overflow interno */
+#relatorio-unidade-container #tabela-competencias-unidade th,
+#relatorio-unidade-container #tabela-competencias-unidade td {
+    border: 1px solid #ddd;
+    padding: 6px 8px;
+    /* padding reduzido para caber mais colunas */
+    word-break: break-word;
+    /* permite quebra de texto dentro das células se necessário */
+    white-space: normal;
+    /* libera quebra dentro do conteúdo */
+}
+
+/* Cabeçalhos (th) da tabela de competências: mantidos em uma única linha */
+#relatorio-unidade-container #tabela-competencias-unidade th {
+    background-color: #29dabb;
+    color: white;
+    font-size: 0.9rem;
+}
+
+/* Listras de fundo para linhas pares, facilitando leitura */
+#relatorio-unidade-container #tabela-competencias-unidade tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* 8) Botão de exportar PDF dentro do bloco de competências (empurrado para baixo) */
+#relatorio-unidade-container #exportar-relatorio-competencias-unidade {
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+/* -----------------------------------------------
+   Fim das Regras de Relatório por Unidade (CSS)
+   ----------------------------------------------- */
+
+
+/* -----------------------------------------------
+   NOVAS REGRAS: Loading Overlay e Spinner
+   ----------------------------------------------- */
+
+/* Overlay de carregamento que cobre toda a tela */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: none;
+    /* Inicialmente oculto */
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    /* Acima de todos os relatórios */
+}
+
+/* Estilo do spinner centralizado dentro do overlay */
+#loading-overlay .loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #29dabb;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+
+/* Animação de rotação para o spinner */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* -----------------------------------------------
+   Fim das Novas Regras de Loading Overlay
+   ----------------------------------------------- */

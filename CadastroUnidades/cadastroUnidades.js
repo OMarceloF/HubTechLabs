@@ -3,50 +3,43 @@ document.getElementById("cadastrar-btn").addEventListener("click", async () => {
     const escola = document.getElementById("escola").value.trim();
     const cidade = document.getElementById("cidade").value.trim();
     const coordenador = document.getElementById("coordenador").value.trim();
-    const mensagemSucesso = document.getElementById("mensagem-sucesso"); // 🔹 Declara corretamente a variável
+    // lê o radio
+    const sistema = document.querySelector('input[name="sistema"]:checked').value;
+    const mensagemSucesso = document.getElementById("mensagem-sucesso");
 
-    
     if (!unidade || !escola || !cidade || !coordenador) {
         alert("Preencha todos os campos corretamente!");
         return;
     }
 
-    // Criando o JSON a ser enviado para o backend
+    // armaze­na 0 ou 1
     const dados = {
-        unidade: unidade,
-        escola: escola,
-        cidade: cidade,
-        coordenador: coordenador
+        unidade,
+        escola,
+        cidade,
+        coordenador,
+        competencias: parseInt(sistema, 10)
     };
 
-    console.log("📤 Enviando dados para o backend:", dados); // 🔹 Depuração
+    console.log("📤 Enviando dados para o backend:", dados);
 
     try {
         //🚭Como era na Vercel
-        const response = await fetch('https://hub-orcin.vercel.app/cadastrar-unidade', 
+        const response = await fetch('https://hub-orcin.vercel.app/cadastrar-unidade', {
         //🚭Como é localmente
-        //const response = await fetch('http://localhost:3000/cadastrar-unidade',
-            {
+        // const response = await fetch("http://localhost:3000/cadastrar-unidade", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(dados)
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dados),
         });
 
         const result = await response.json();
-        console.log("📥 Resposta do backend:", result); // 🔹 Depuração
+        console.log("📥 Resposta do backend:", result);
 
         if (response.ok) {
             mensagemSucesso.style.display = "block";
-
-            // Limpa o formulário após o cadastro
             document.getElementById("cadastro-form").reset();
-
-            // Esconde a mensagem após 2 segundos
-            setTimeout(() => {
-                mensagemSucesso.style.display = "none";
-            }, 2000);
+            setTimeout(() => (mensagemSucesso.style.display = "none"), 2000);
         } else {
             alert(`Erro ao cadastrar: ${result.message}`);
         }
@@ -62,7 +55,7 @@ function toggleMudarPerfil() {
     // Alterna entre mostrar e esconder
     if (mudarPerfil.style.display === "none" || !mudarPerfil.style.display) {
         mudarPerfil.style.display = "block"; // Mostra a caixa
-        mudarPerfil.style.display = "flex"; 
+        mudarPerfil.style.display = "flex";
     } else {
         mudarPerfil.style.display = "none"; // Esconde a caixa
     }
@@ -93,31 +86,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     async function verificarAcessoRestrito() {
         try {
-        const tipoUsuario = getUserType();
+            const tipoUsuario = getUserType();
 
-        if (!tipoUsuario) {
-        }
+            if (!tipoUsuario) {
+            }
 
-        if (tipoUsuario === 'Coordenador') {
-            window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
-        }
-        if (tipoUsuario === 'Instrutor') {
-            window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
-        }
+            if (tipoUsuario === 'Coordenador') {
+                window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+            }
+            if (tipoUsuario === 'Instrutor') {
+                window.location.href = "/Erro/erro.html"; // Redireciona para a página de erro
+            }
         } catch (error) {
         }
     }
     verificarAcessoRestrito();
 
-     // Pega a foto de usuário logado
+    // Pega a foto de usuário logado
     // Função para obter token do cookie
     function getTokenFromCookie() {
         const cookies = document.cookie.split("; ");
         for (const cookie of cookies) {
-        const [key, value] = cookie.split("=");
-        if (key === "token") {
-            return value;
-        }
+            const [key, value] = cookie.split("=");
+            if (key === "token") {
+                return value;
+            }
         }
         return null;
     }
@@ -130,27 +123,27 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "/Login/login.html";
         return;
     }
-    
+
     // Função para carregar perfil do usuário logado
     async function carregarPerfil() {
         try {
-        //🚭Como era na Vercel
-        const response = await fetch('https://hub-orcin.vercel.app/perfil', 
-        //🚭Como é localmente
-        //const response = await fetch('http://localhost:3000/perfil',
-            {
-            headers: { Authorization: token },
-        });
+            //🚭Como era na Vercel
+            const response = await fetch('https://hub-orcin.vercel.app/perfil', 
+            //🚭Como é localmente
+            // const response = await fetch('http://localhost:3000/perfil',
+                {
+                    headers: { Authorization: token },
+                });
 
-        if (!response.ok) {
-            throw new Error("Erro ao carregar os dados do perfil");
-        }
+            if (!response.ok) {
+                throw new Error("Erro ao carregar os dados do perfil");
+            }
 
-        const data = await response.json();
+            const data = await response.json();
 
-        // Atualiza os elementos do HTML com os dados do usuário
-        document.getElementById("profile-photo").src =
-            data.photo || "/projeto/Imagens/perfil.png";
+            // Atualiza os elementos do HTML com os dados do usuário
+            document.getElementById("profile-photo").src =
+                data.photo || "/projeto/Imagens/perfil.png";
         } catch (error) {
         }
     }
@@ -159,42 +152,42 @@ document.addEventListener("DOMContentLoaded", () => {
     async function carregarCoordenadores() {
         try {
             console.log("Carregando coordenadores..."); // 🔹 Para depuração
-    
+
             //🚭Como era na Vercel
             const response = await fetch('https://hub-orcin.vercel.app/listar-coordenadores'); 
             //🚭Como é localmente
-            //const response = await fetch('http://localhost:3000/listar-coordenadores');
-    
+            // const response = await fetch('http://localhost:3000/listar-coordenadores');
+
             if (!response.ok) {
                 throw new Error("Erro ao carregar os coordenadores.");
             }
-    
+
             const coordenadores = await response.json();
             console.log("Coordenadores recebidos:", coordenadores); // 🔹 Verifica se os dados foram recebidos corretamente
-    
+
             const selectCoordenador = document.getElementById("coordenador");
-    
+
             // Limpa o select antes de adicionar os coordenadores
             selectCoordenador.innerHTML = `<option value="">Selecione um Coordenador</option>`;
-    
+
             if (!coordenadores || coordenadores.length === 0) {
                 console.warn("Nenhum coordenador encontrado.");
                 return;
             }
-    
+
             coordenadores.forEach(coordenador => {
                 const option = document.createElement("option");
                 option.value = coordenador.name; // Armazena o nome como identificador
                 option.textContent = `${coordenador.name}`;
                 selectCoordenador.appendChild(option);
             });
-    
+
             console.log("Lista de coordenadores adicionada ao select.");
-    
+
         } catch (error) {
             console.error("Erro ao carregar os coordenadores:", error);
         }
     }
-    
+
     carregarCoordenadores();
 });
