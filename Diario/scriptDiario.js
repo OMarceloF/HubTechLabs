@@ -166,6 +166,7 @@ async function salvarDados() {
 
     const payloadAlunos = Array.from(linhas).map(tr => {
       const nome = tr.cells[0].textContent;
+
       if (mode === "0") {
         const presenca = tr.querySelector(".presenca-check").checked
           ? "Presente"
@@ -173,13 +174,15 @@ async function salvarDados() {
 
         // capturamos o valor em string
         const rawNota = tr.querySelector(".nota-select").value;
-        // convertemos em número; se for string vazia, guardamos null
-        const notaNumerica = rawNota !== "" ? Number(rawNota) : null;
+        // convertemos em número; se ausente, forçamos 0; se vazio e presente, guardamos null
+        const notaNumerica = presenca === "Ausente"
+          ? 0
+          : (rawNota !== "" ? Number(rawNota) : null);
 
         return {
           nome,
           presenca,
-          nota: notaNumerica,       // <-- agora é Number ou null
+          nota: notaNumerica,
           observacao: tr.querySelector(".observacao-input").value || ""
         };
       } else {
@@ -195,13 +198,12 @@ async function salvarDados() {
         });
 
         obj.media = (
-          CAMPOS.reduce((sum, c) => sum + obj[c], 0)
-          / CAMPOS.length
+          CAMPOS.reduce((sum, c) => sum + obj[c], 0) /
+          CAMPOS.length
         ).toFixed(2);
         return obj;
       }
     });
-
 
     // Se não houver um diário salvo para essa data, continua com o processo
     const dados = {
@@ -211,6 +213,7 @@ async function salvarDados() {
       alunos: payloadAlunos
     };
     console.log("🧐 Dados que vão pro servidor:", JSON.stringify(dados, null, 2));
+
     //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/salvar-presenca", {
       //🚭Como é localmente
@@ -220,25 +223,28 @@ async function salvarDados() {
       body: JSON.stringify(dados),
     });
 
+
     if (response.ok) {
       // informa o usuário e dá reload
       alert("Chamada realizada e salva!");
       window.location.reload();
     } else {
-      // lê o JSON de erro e mostra no console/alert
-      let errText = "Erro desconhecido";
+      // lê o texto bruto da resposta e tenta extrair JSON
+      const text = await response.text();
+      let errMsg = text;
       try {
-        const errJson = await response.json();
-        errText = errJson.error || errJson.message || JSON.stringify(errJson);
+        const json = JSON.parse(text);
+        errMsg = json.error || json.message || text;
       } catch { }
-      console.error("✖ salvar-presenca falhou:", errText);
-      alert("Falha ao salvar: " + errText);
+      console.error("✖ salvar-presenca falhou:", errMsg);
+      alert("Falha ao salvar:\n" + errMsg);
     }
 
   } catch (error) {
     exibirMensagem("Erro ao enviar os dados!", true);
   }
 }
+
 
 function obterListaDeAlunos(turmaSelecionada) {
   const t = window.turmasMap.get(turmaSelecionada);
