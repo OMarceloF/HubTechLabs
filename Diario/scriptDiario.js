@@ -217,7 +217,7 @@ async function salvarDados() {
     //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/salvar-presenca", {
       //🚭Como é localmente
-      // const response = await fetch("http://localhost:3000/salvar-presenca", {
+      // const response = await fetch("http://localhost:3000/salvar-presenca", { 
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dados),
@@ -226,8 +226,7 @@ async function salvarDados() {
 
     if (response.ok) {
       // informa o usuário e dá reload
-      alert("Chamada realizada e salva!");
-      window.location.reload();
+      exibirMensagem("Chamada realizada com sucesso!", false, () => window.location.reload());
     } else {
       // lê o texto bruto da resposta e tenta extrair JSON
       const text = await response.text();
@@ -237,13 +236,14 @@ async function salvarDados() {
         errMsg = json.error || json.message || text;
       } catch { }
       console.error("✖ salvar-presenca falhou:", errMsg);
-      alert("Falha ao salvar:\n" + errMsg);
+      exibirMensagem("Falha ao salvar: " + errMsg, true);
     }
 
   } catch (error) {
     exibirMensagem("Erro ao enviar os dados!", true);
   }
 }
+
 
 
 function obterListaDeAlunos(turmaSelecionada) {
