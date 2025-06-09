@@ -213,8 +213,8 @@ async function salvarDados() {
     console.log("🧐 Dados que vão pro servidor:", JSON.stringify(dados, null, 2));
     //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/salvar-presenca", {
-    //🚭Como é localmente
-    // const response = await fetch("http://localhost:3000/salvar-presenca", {
+      //🚭Como é localmente
+      // const response = await fetch("http://localhost:3000/salvar-presenca", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dados),
@@ -225,7 +225,14 @@ async function salvarDados() {
       alert("Chamada realizada e salva!");
       window.location.reload();
     } else {
-      alert("Erro ao salvar os dados. Tente novamente.");
+      // lê o JSON de erro e mostra no console/alert
+      let errText = "Erro desconhecido";
+      try {
+        const errJson = await response.json();
+        errText = errJson.error || errJson.message || JSON.stringify(errJson);
+      } catch { }
+      console.error("✖ salvar-presenca falhou:", errText);
+      alert("Falha ao salvar: " + errText);
     }
 
   } catch (error) {
@@ -473,9 +480,9 @@ document.addEventListener("DOMContentLoaded", () => {
   async function carregarPerfil() {
     try {
       //🚭Como era na Vercel
-      const response = await fetch("https://hub-orcin.vercel.app/perfil", 
-      //🚭Como é localmente
-      // const response = await fetch("http://localhost:3000/perfil",
+      const response = await fetch("https://hub-orcin.vercel.app/perfil",
+        //🚭Como é localmente
+        // const response = await fetch("http://localhost:3000/perfil",
         {
           headers: { Authorization: token },
         });
