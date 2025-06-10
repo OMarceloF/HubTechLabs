@@ -1,61 +1,32 @@
-function ajustarDataParaLocal(dateString) {
-  const date = new Date(dateString + "T00:00:00"); // Garante meia-noite no local
-  date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // Ajusta o fuso horário
-  return date.toISOString().split("T")[0]; // Retorna no formato YYYY-MM-DD
-}
-
-async function obterNomeUsuario() {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("Token não encontrado");
-    //🚭Como era na Vercel
-    const res = await fetch("https://hub-orcin.vercel.app/usuario-logado", {
-      //🚭Como é localmente
-      // const res = await fetch("http://localhost:3000/usuario-logado", {
-      headers: { Authorization: token }
-    });
-    if (!res.ok) throw new Error("Não foi possível obter usuário");
-    const { name } = await res.json();
-    localStorage.setItem("nomeUsuario", name);
-  } catch (e) {
-    console.error("obterNomeUsuario():", e);
-  }
-}
-
-
-
 async function carregarTurmas() {
   try {
-    // 1) Pega turmas + instrutor + unidade_id + alunos
-
     // 🚭Como era na Vercel
-    const resDados = await fetch("https://hub-orcin.vercel.app/dados");
+    const turmasObj = await (await fetch("https://hub-orcin.vercel.app/dados")).json();
+    const unidadesArr = await (await fetch("https://hub-orcin.vercel.app/listar-unidades")).json();
     // 🚭Como é localmente
-    // const resDados = await fetch("http://localhost:3000/dados");
+    // const turmasObj = await (await fetch("http://localhost:3000/dados")).json();
+    // const unidadesArr = await (await fetch("http://localhost:3000/listar-unidades")).json();
 
-    if (!resDados.ok) throw new Error("Erro ao buscar turmas");
-    const turmasObj = await resDados.json();
-    // turmasObj: { "Turma A": { instrutor, unidade_id, alunos: [...] }, ... }
+    // 1) Descobre o nome da unidade que veio do perfil
+    const unidadeUsuarioName = localStorage.getItem("unit");
+    console.log("⚙️ Unidade do usuário (nome):", unidadeUsuarioName);
 
-    // 2) Pega unidades para ler o flag `competencias`
+    // 2) Acha no listar-unidades o objeto dessa unidade
+    const unidadeObj = unidadesArr.find(u => u.unidade === unidadeUsuarioName);
+    if (!unidadeObj) {
+      console.error("❌ Unidade não encontrada:", unidadeUsuarioName);
+      return;
+    }
+    const unidadeId = unidadeObj.id;
+    console.log("⚙️ ID da unidade encontrada:", unidadeId);
 
-    // 🚭Como era na Vercel
-    const resUnidades = await fetch("https://hub-orcin.vercel.app/listar-unidades");
-    // 🚭Como é localmente
-    // const resUnidades = await fetch("http://localhost:3000/listar-unidades");
+    // 3) Mapeia competências
+    const competenciasMap = new Map(unidadesArr.map(u => [u.id.toString(), u.competencias]));
 
-    if (!resUnidades.ok) throw new Error("Erro ao buscar unidades");
-    const unidadesArr = await resUnidades.json();
-    // unidadesArr: [ { id, unidade, escola, cidade, coordenador, competencias }, … ]
-
-    // 3) Mapeia unidade_id → competencias
-    const competenciasMap = new Map(
-      unidadesArr.map(u => [u.id.toString(), u.competencias])
-    );
-
-    // 4) Filtra e monta o dropdown
-    const nomeUsuario = localStorage.getItem("nomeUsuario");
-    if (!nomeUsuario) throw new Error("Nome do usuário não encontrado");
+    // 4) Agora FILTRA só pelas turmas dessa unidade
+    const entradas = Object.entries(turmasObj)
+      .filter(([nome, t]) => t.unidade_id === unidadeId);
+    console.log("⚙️ Turmas da unidade:", entradas.map(([n]) => n));
 
     const select = document.getElementById("turma-select");
     select.innerHTML = "";
@@ -68,31 +39,86 @@ async function carregarTurmas() {
     defOpt.selected = true;
     select.appendChild(defOpt);
 
-    // Cria o Map global de turmas
     window.turmasMap = new Map();
 
-    Object.entries(turmasObj)
-      .filter(([nome, t]) => t.instrutor === nomeUsuario)
-      .forEach(([nome, t]) => {
-        const compFlag = competenciasMap.get(String(t.unidade_id)) || 0;
-        // adiciona option com data-mode
-        const opt = document.createElement("option");
-        opt.value = nome;
-        opt.textContent = nome;
-        opt.dataset.mode = compFlag;  // "0" ou "1"
-        select.appendChild(opt);
-        // guarda no map
-        window.turmasMap.set(nome, {
-          instrutor: t.instrutor,
-          unidade_id: t.unidade_id,
-          alunos: t.alunos,
-          competencias: compFlag
-        });
+    // 5) Preenche o dropdown
+    entradas.forEach(([nome, t]) => {
+      const compFlag = competenciasMap.get(String(t.unidade_id)) || 0;
+      const opt = document.createElement("option");
+      opt.value = nome;
+      opt.textContent = nome;
+      opt.dataset.mode = compFlag;
+      select.appendChild(opt);
+      window.turmasMap.set(nome, {
+        instrutor: t.instrutor,
+        unidade_id: t.unidade_id,
+        alunos: t.alunos,
+        competencias: compFlag
       });
+    });
+
   } catch (err) {
     console.error("carregarTurmas():", err);
   }
 }
+
+
+// … outras funções (ajustarDataParaLocal, obterNomeUsuario, etc.)
+
+// DECLARAÇÃO GLOBAL de carregarPerfil
+async function carregarPerfil() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Você precisa estar logado para acessar esta página.");
+    window.location.href = "/Login/login.html";
+    return;
+  }
+  //🚭Como era na Vercel
+  const res = await fetch("https://hub-orcin.vercel.app/perfil", {
+  //🚭Como é localmente
+  // const res = await fetch("http://localhost:3000/perfil", {
+    headers: { Authorization: token },
+  });
+  if (!res.ok) {
+    console.error("Erro ao carregar perfil:", res.statusText);
+    return;
+  }
+  const data = await res.json();
+  document.getElementById("profile-photo").src = data.photo || "/Imagens/perfil.png";
+  const unidade = data.unit ?? data.unidade_id;
+  if (unidade) {
+    localStorage.setItem("unit", String(unidade));
+  }
+  if (data.tipo) {
+    localStorage.setItem("tipoUsuario", data.tipo);
+  }
+}
+
+
+function ajustarDataParaLocal(dateString) {
+  const date = new Date(dateString + "T00:00:00"); // Garante meia-noite no local
+  date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // Ajusta o fuso horário
+  return date.toISOString().split("T")[0]; // Retorna no formato YYYY-MM-DD
+}
+
+async function obterNomeUsuario() {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token não encontrado");
+    //🚭Como era na Vercel
+    const res = await fetch("https://hub-orcin.vercel.app/usuario-logado", {
+    //🚭Como é localmente
+    // const res = await fetch("http://localhost:3000/usuario-logado", {
+      headers: { Authorization: token }
+    });
+    if (!res.ok) throw new Error("Não foi possível obter usuário");
+    const { name } = await res.json();
+    localStorage.setItem("nomeUsuario", name);
+  } catch (e) {
+    console.error("obterNomeUsuario():", e);
+  }
+}
+
 
 function obterListaDeAlunos(turmaSelecionada) {
   const t = window.turmasMap.get(turmaSelecionada);
@@ -216,8 +242,8 @@ async function salvarDados() {
 
     //🚭Como era na Vercel
     const response = await fetch("https://hub-orcin.vercel.app/salvar-presenca", {
-      //🚭Como é localmente
-      // const response = await fetch("http://localhost:3000/salvar-presenca", { 
+    //🚭Como é localmente
+    // const response = await fetch("http://localhost:3000/salvar-presenca", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dados),
@@ -459,77 +485,6 @@ document.getElementById("data-chamada").addEventListener("change", async () => {
   // }
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Pega a foto de usuário logado
-  // Função para obter token do cookie
-  function getTokenFromCookie() {
-    const cookies = document.cookie.split("; ");
-    for (const cookie of cookies) {
-      const [key, value] = cookie.split("=");
-      if (key === "token") {
-        return value;
-      }
-    }
-    return null;
-  }
-
-  const token = localStorage.getItem('token');
-  //const token = getTokenFromCookie();
-
-  if (!token) {
-    alert("Você precisa estar logado para acessar esta página.");
-    window.location.href = "/login.html";
-    return;
-  }
-
-  // Função para carregar perfil do usuário logado
-  async function carregarPerfil() {
-    try {
-      //🚭Como era na Vercel
-      const response = await fetch("https://hub-orcin.vercel.app/perfil",
-        //🚭Como é localmente
-        // const response = await fetch("http://localhost:3000/perfil",
-        {
-          headers: { Authorization: token },
-        });
-
-      if (!response.ok) {
-        throw new Error("Erro ao carregar os dados do perfil");
-      }
-
-      const data = await response.json();
-
-      // Atualiza os elementos do HTML com os dados do usuário
-      document.getElementById("profile-photo").src =
-        data.photo || "/Imagens/perfil.png";
-    } catch (error) {
-    }
-  }
-
-  carregarPerfil();
-
-  function getUserType() {
-    return localStorage.getItem("tipoUsuario");
-  }
-
-  async function verificarAcessoRestrito() {
-    try {
-      const tipoUsuario = getUserType();
-
-      if (!tipoUsuario) {
-
-      }
-
-      // Verifica se é um Coordenador e bloqueia o acesso
-      if (tipoUsuario === 'Coordenador') {
-        window.location.href = "/Err o/erro.html"; // Redireciona para a página de erro
-      }
-    } catch (error) {
-
-    }
-  }
-  verificarAcessoRestrito();
-});
 
 function toggleMudarPerfil() {
   const mudarPerfil = document.getElementById("mudarPerfil");
@@ -559,12 +514,14 @@ document.addEventListener("click", (event) => {
 
 // Chamar a função ao carregar a página
 window.onload = async function () {
-  await obterNomeUsuario();
-  await carregarTurmas();
-
-  // Ao mudar a turma, mostra o formulário correto (notas ou competências)
-  document
-    .getElementById("turma-select")
-    .addEventListener("change", mostrarAlunosSelecionados);
+  try {
+    await obterNomeUsuario();   // armazena `nomeUsuario`
+    await carregarPerfil();     // armazena `unit` e mostra foto
+    await carregarTurmas();     // filtra por unidade já existente em localStorage
+    document
+      .getElementById("turma-select")
+      .addEventListener("change", mostrarAlunosSelecionados);
+  } catch (e) {
+    console.error("Erro na inicialização da página:", e);
+  }
 };
-
