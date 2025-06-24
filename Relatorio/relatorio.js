@@ -66,12 +66,12 @@ async function carregarTurmas(instrutorFiltrado = null) {
 // 2) Carrega todas as unidades, mas filtra se usuário for Instrutor ou Coordenador
 async function carregarUnidades() {
   try {
-    //Como era na Vercel
+    // Como era na Vercel
     const resp = await fetch("https://hub-orcin.vercel.app/listar-unidades");
     // Como é localmente
-    // const respUnidades = await fetch("http://localhost:3000/listar-unidades");
-    if (!respUnidades.ok) throw new Error("Erro ao buscar unidades");
-    const unidadesArray = await respUnidades.json();
+    // const resp = await fetch("http://localhost:3000/listar-unidades");
+    if (!resp.ok) throw new Error("Erro ao buscar unidades");
+    const unidadesArray = await resp.json();
 
     let unidadesFiltradas = unidadesArray;
     if (usuarioTipo === "Coordenador") {
