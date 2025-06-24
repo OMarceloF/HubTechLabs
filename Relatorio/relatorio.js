@@ -1849,7 +1849,7 @@ async function gerarPdfCompetenciasAlunoParaZip(turmaNome, alunoNome, dataInicio
 async function gerarPdfNotasAlunoParaZip(turmaNome, alunoNome, dataInicioRaw, dataFimRaw) {
   const { jsPDF } = window.jspdf;
 
-  const formatoPDF = async () => {
+  async function formatoPDF() {
     // Formata “YYYY-MM-DD” para “DD/MM/YYYY”
     function formatarBR(s) {
       if (!s || s === "-") return "-";
@@ -1857,7 +1857,7 @@ async function gerarPdfNotasAlunoParaZip(turmaNome, alunoNome, dataInicioRaw, da
       return `${d}/${m}/${y}`;
     }
     const inicioBR = dataInicioRaw !== "-" ? formatarBR(dataInicioRaw) : "-";
-    const fimBR = dataFimRaw !== "-" ? formatarBR(dataFimRaw) : "-";
+    const fimBR    = dataFimRaw   !== "-" ? formatarBR(dataFimRaw)   : "-";
 
     const doc = new jsPDF("p", "mm", "a4");
     let yOffset = 10;
@@ -1879,18 +1879,10 @@ async function gerarPdfNotasAlunoParaZip(turmaNome, alunoNome, dataInicioRaw, da
       notasResponse,
       unidadesResponse,
     ] = await Promise.all([
-      // Como era na Vercel
       fetch("https://hub-orcin.vercel.app/dados"),
       fetch(`https://hub-orcin.vercel.app/dados-presenca?turma=${encodeURIComponent(turmaNome)}`),
       fetch(`https://hub-orcin.vercel.app/notasavaliacoes?turma=${encodeURIComponent(turmaNome)}`),
       fetch("https://hub-orcin.vercel.app/listar-unidades"),
-
-      // Como é localmente
-      // fetch("http://localhost:3000/dados"),
-      // fetch(`http://localhost:3000/dados-presenca?turma=${encodeURIComponent(turmaNome)}`),
-      // fetch(`http://localhost:3000/notasavaliacoes?turma=${encodeURIComponent(turmaNome)}`),
-      // fetch("http://localhost:3000/listar-unidades"),
-
     ]);
     if (
       !turmasResponse.ok ||
@@ -1901,26 +1893,25 @@ async function gerarPdfNotasAlunoParaZip(turmaNome, alunoNome, dataInicioRaw, da
       throw new Error("Erro ao buscar os dados do backend.");
     }
 
-    const turmasData = await turmasResponse.json();
+    const turmasData   = await turmasResponse.json();
     const presencaData = await presencaResponse.json();
-    const notasData = await notasResponse.json();
-    const unidadesArray = await unidadesResponse.json();
+    const notasData    = await notasResponse.json();
+    const unidades     = await unidadesResponse.json();
 
-    // Filtrar apenas registros de presença do aluno e dentro do período
+    // Filtrar registros de presença
     const todosPresenca = Array.isArray(presencaData)
       ? presencaData
       : presencaData[turmaNome] || [];
     const registrosPresenca = todosPresenca
       .filter(r => r.aluno === alunoNome)
       .filter(r => {
-        const dataStr = r.data.split("T")[0];
-        const dt = new Date(dataStr);
+        const dt = new Date(r.data.split("T")[0]);
         if (dataInicioRaw !== "-" && dt < new Date(dataInicioRaw)) return false;
-        if (dataFimRaw !== "-" && dt > new Date(dataFimRaw)) return false;
+        if (dataFimRaw    !== "-" && dt > new Date(dataFimRaw))    return false;
         return true;
       });
 
-    // Filtrar apenas notas do aluno
+    // Filtrar registros de notas
     const todasNotas = Array.isArray(notasData)
       ? notasData
       : notasData[turmaNome] || [];
@@ -1938,7 +1929,12 @@ async function gerarPdfNotasAlunoParaZip(turmaNome, alunoNome, dataInicioRaw, da
         body: tabelaNotas,
         theme: "grid",
         styles: { fontSize: 10 },
-        columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 30 } },
+        columnStyles: {
+          0: { cellWidth: 80 },
+          1: { cellWidth: 30 },
+        },
+        margin: { left: 10, right: 10 },
+        tableWidth: "wrap",
       });
       yOffset = doc.lastAutoTable.finalY + 10;
     }
@@ -1969,7 +1965,12 @@ async function gerarPdfNotasAlunoParaZip(turmaNome, alunoNome, dataInicioRaw, da
         ],
         theme: "grid",
         styles: { fontSize: 10 },
-        columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 30 } },
+        columnStyles: {
+          0: { cellWidth: 80 },
+          1: { cellWidth: 30 },
+        },
+        margin: { left: 10, right: 10 },
+        tableWidth: "wrap",
       });
       yOffset = doc.lastAutoTable.finalY + 10;
     }
@@ -1977,8 +1978,6 @@ async function gerarPdfNotasAlunoParaZip(turmaNome, alunoNome, dataInicioRaw, da
     // 3) Detalhamento por data
     if (registrosPresenca.length > 0) {
       const detalhes = registrosPresenca.map(r => {
-        const partes = r.data.split("T")[0].split("-");
-        const d = new Date(+partes[0], +partes[1] - 1, +partes[2]);
         return [
           formatarBR(r.data.split("T")[0]),
           r.presenca,
@@ -1995,12 +1994,19 @@ async function gerarPdfNotasAlunoParaZip(turmaNome, alunoNome, dataInicioRaw, da
         body: detalhes,
         theme: "grid",
         styles: { fontSize: 10, cellPadding: 2 },
-        columnStyles: { 0: { cellWidth: 30 }, 1: { cellWidth: 20 }, 2: { cellWidth: 20 }, 3: { cellWidth: 80 } },
+        columnStyles: {
+          0: { cellWidth: 30 },
+          1: { cellWidth: 20 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 100 },
+        },
+        margin: { left: 10, right: 10 },
+        tableWidth: "wrap",
       });
     }
 
     return new Blob([doc.output("arraybuffer")], { type: "application/pdf" });
-  };
+  }
 
   return await formatoPDF();
 }
@@ -2933,111 +2939,88 @@ function esconderLoading() {
 // =======================================================================
 
 async function exportarRelatoriosIndividuaisTurma() {
-  const turmaNome = document.getElementById("turma-select-turma").value.trim();
-  const dataInicio = document.getElementById("data-inicio-turma").value;
-  const dataFim = document.getElementById("data-fim-turma").value;
+  const turmaNome   = document.getElementById("turma-select-turma").value.trim();
+  const dataInicio  = document.getElementById("data-inicio-turma").value;
+  const dataFim     = document.getElementById("data-fim-turma").value;
 
-  // Botões que disparam a exportação (notas e competências usam a mesma função)
   const btnNotas = document.getElementById("exportar-relatorios-individuais-turma-notas");
-  const btnComp = document.getElementById("exportar-relatorios-individuais-turma-competencias");
+  const btnComp  = document.getElementById("exportar-relatorios-individuais-turma-competencias");
+  const btnClicked = document.activeElement === btnComp ? btnComp : btnNotas;
+  const originalText = btnClicked.innerText;
 
-  // Se nenhum botão existir (não deveria acontecer), saia
-  if (!btnNotas && !btnComp) {
-    alert("Botão de exportar não encontrado.");
-    return;
-  }
+  // Overlay e botão “Gerando…”
+  mostrarLoading();
+  btnClicked.disabled = true;
+  btnClicked.innerText = "Gerando…";
 
-  // Determinar qual botão foi clicado (o handler está registrado em ambos)
-  // e guardar seu texto original para restaurar depois
-  // (caso queira usar o mesmo texto para os dois, basta duplicar abaixo)
-  let btnClicked, originalText;
-  if (document.activeElement === btnNotas) {
-    btnClicked = btnNotas;
-  } else if (document.activeElement === btnComp) {
-    btnClicked = btnComp;
-  } else {
-    // fallback: escolha o primeiro que exista
-    btnClicked = btnNotas || btnComp;
-  }
-  originalText = btnClicked.innerText;
-
-  // Carrega o mapa de competências para saber se a turma está em modo Comp ou Notas
+  // Mapa de competências
   let mapa = {};
-  try {
-    mapa = await carregarMapaCompetencias();
-  } catch (err) {
-    console.error("Erro ao carregar mapa de competências:", err);
-  }
+  try { mapa = await carregarMapaCompetencias(); }
+  catch (e) { console.error(e); }
   const isComp = mapa[turmaNome] === 1;
 
-  // 1) Obter lista de alunos da turma
+  // Lista de alunos
   let dadosTurmas = {};
   try {
-    // Como era na Vercel
-    const respTurmas = await fetch("https://hub-orcin.vercel.app/dados");
-    // Como é localmente
-    // const respTurmas = await fetch("http://localhost:3000/dados");
-
-    if (!respTurmas.ok) throw new Error("Erro ao buscar dados de turmas.");
-    dadosTurmas = await respTurmas.json();
-  } catch (err) {
-    console.error("Erro ao buscar dados de turmas:", err);
+    const resp = await fetch("https://hub-orcin.vercel.app/dados");
+    if (!resp.ok) throw new Error("Erro ao buscar dados de turmas.");
+    dadosTurmas = await resp.json();
+  } catch (e) {
+    console.error(e);
     alert("Não foi possível obter a lista de alunos.");
-    return;
-  }
-  const alunosLista = (dadosTurmas[turmaNome]?.alunos || []).slice().sort((a, b) => a.localeCompare(b));
-
-  if (alunosLista.length === 0) {
-    alert("Não há alunos cadastrados nesta turma.");
-    return;
-  }
-
-  // 2) Escolher a função certa de geração de PDF para cada aluno
-  let gerarPdfParaAluno;
-  if (isComp) {
-    gerarPdfParaAluno = (alunoNome) =>
-      gerarPdfCompetenciasAlunoParaZip(turmaNome, alunoNome, dataInicio, dataFim);
-  } else {
-    gerarPdfParaAluno = (alunoNome) =>
-      gerarPdfNotasAlunoParaZip(turmaNome, alunoNome, dataInicio, dataFim);
-  }
-
-  try {
-    // Mostra overlay (se você ainda quiser)
-    mostrarLoading();
-
-    // Desabilita o botão e altera texto para indicar carregamento
-    btnClicked.disabled = true;
-    btnClicked.innerText = "Gerando…";
-
-    // 3) Gerar todos os PDFs EM PARALELO e montar o ZIP
-    //    Promise.all gera TODOS os blobs em paralelo
-    const blobs = await Promise.all(
-      alunosLista.map((alunoNome) => gerarPdfParaAluno(alunoNome))
-    );
-
-    // Agora adiciona cada Blob ao ZIP
-    const zip = new JSZip();
-    alunosLista.forEach((alunoNome, idx) => {
-      const safeName = alunoNome.replace(/\s+/g, "_");
-      zip.file(`${safeName}.pdf`, blobs[idx]);
-    });
-
-    // Gera o arquivo ZIP como Blob e inicia o download
-    const content = await zip.generateAsync({ type: "blob" });
-    const zipName = `Relatorios_Turma_${turmaNome.replace(/\s+/g, "_")}.zip`;
-    saveAs(content, zipName);
-  } catch (err) {
-    console.error("Erro ao gerar relatórios individuais:", err);
-    alert("Ocorreu um erro ao gerar o ZIP de relatórios.");
-  } finally {
-    // Reabilita o botão e restaura o texto original
     btnClicked.disabled = false;
     btnClicked.innerText = originalText;
-
-    // Esconde overlay
     esconderLoading();
+    return;
   }
+  const alunosLista = (dadosTurmas[turmaNome]?.alunos || [])
+    .slice().sort((a, b) => a.localeCompare(b));
+  if (!alunosLista.length) {
+    alert("Não há alunos cadastrados nesta turma.");
+    btnClicked.disabled = false;
+    btnClicked.innerText = originalText;
+    esconderLoading();
+    return;
+  }
+
+  // Seleciona gerador de PDF
+  const gerarPdfParaAluno = isComp
+    ? aluno => gerarPdfCompetenciasAlunoParaZip(turmaNome, aluno, dataInicio, dataFim)
+    : aluno => gerarPdfNotasAlunoParaZip(turmaNome, aluno, dataInicio, dataFim);
+
+  // Gera todos os PDFs em paralelo, mas não falha tudo se um der erro
+  const resultados = await Promise.allSettled(
+    alunosLista.map(aluno => gerarPdfParaAluno(aluno).then(blob => ({ aluno, blob })))
+  );
+
+  // Filtra somente os que deram certo
+  const blobs = resultados
+    .filter(r => r.status === "fulfilled")
+    .map(r => r.value.blob);
+
+  if (!blobs.length) {
+    alert("Nenhum PDF foi gerado.");
+    btnClicked.disabled = false;
+    btnClicked.innerText = originalText;
+    esconderLoading();
+    return;
+  }
+
+  // Monta e baixa o ZIP
+  const zip = new JSZip();
+  alunosLista.forEach((aluno, i) => {
+    if (i < blobs.length) {
+      const nomeSeguro = aluno.replace(/\s+/g, "_");
+      zip.file(`${nomeSeguro}.pdf`, blobs[i]);
+    }
+  });
+  const content = await zip.generateAsync({ type: "blob" });
+  saveAs(content, `Relatorios_Turma_${turmaNome.replace(/\s+/g, "_")}.zip`);
+
+  // Restaura estado
+  btnClicked.disabled = false;
+  btnClicked.innerText = originalText;
+  esconderLoading();
 }
 
 // -------------------------------
