@@ -988,7 +988,7 @@ async function exportarRelatorioNotasAluno() {
           0: { cellWidth: 80 },
           1: { cellWidth: 30 },
         },
-        tableWidth: "auto",
+        tableWidth: "wrap"
       });
       yOffset = doc.lastAutoTable.finalY + 10;
     }
@@ -1026,7 +1026,7 @@ async function exportarRelatorioNotasAluno() {
           0: { cellWidth: 80 },
           1: { cellWidth: 30 },
         },
-        tableWidth: "auto",
+        tableWidth: "wrap"
       });
       yOffset = doc.lastAutoTable.finalY + 10;
     }
@@ -1064,7 +1064,7 @@ async function exportarRelatorioNotasAluno() {
           2: { cellWidth: 20 },
           3: { cellWidth: 80 },
         },
-        tableWidth: "auto",
+        tableWidth: "wrap"
       });
     }
 
@@ -1705,7 +1705,7 @@ async function gerarPdfCompetenciasAlunoParaZip(turmaNome, alunoNome, dataInicio
         0: { cellWidth: 80, halign: "left" },
         1: { cellWidth: 30, halign: "center" },
       },
-      tableWidth: "auto",
+      tableWidth: "wrap",
       margin: { left: margemEsquerda, right: margemEsquerda },
     });
 
