@@ -1108,7 +1108,7 @@ async function exportarRelatorioCompetenciasAluno() {
 
     // Função auxiliar para criar o PDF
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF("p", "mm", "a4");
+    const doc = new jsPDF("l", "mm", "a4");
     const larguraPagina = 210;    // largura A4 em mm
     const margemEsquerda = 14;    // margem esquerda em mm
     let y = 15;                   // posição vertical inicial
@@ -1154,11 +1154,11 @@ async function exportarRelatorioCompetenciasAluno() {
         halign: "center",
       },
       columnStyles: {
-        0: { cellWidth: 80, halign: "left" }, // coluna "Competência" mais larga
-        1: { cellWidth: 30, halign: "center" }, // coluna "Valor Médio"
+        0: { cellWidth: 40, halign: "left" },  // coluna 0 um pouco mais larga
+        // você pode definir larguras fixas ou percentuais para as demais
       },
-      tableWidth: "auto",
-      margin: { left: margemEsquerda, right: margemEsquerda },
+      tableWidth: "wrap",            // auto-ajusta para caber na página
+      margin: { left: 10, right: 10 }, // margens estreitas
     });
 
     // Depois que a tabela for desenhada, posicionamos o cursor na última linha
@@ -2058,7 +2058,7 @@ async function exportarRelatorioNotasTurma() {
       fetch(`https://hub-orcin.vercel.app/dados-presenca?turma=${encodeURIComponent(turmaNome)}`),
       fetch(`https://hub-orcin.vercel.app/notasavaliacoes?turma=${encodeURIComponent(turmaNome)}`),
       fetch("https://hub-orcin.vercel.app/listar-unidades"),
-      
+
       // Como é localmente
       // fetch("http://localhost:3000/dados"),
       // fetch(`http://localhost:3000/dados-presenca?turma=${encodeURIComponent(turmaNome)}`),
@@ -2977,7 +2977,7 @@ async function exportarRelatoriosIndividuaisTurma() {
     const respTurmas = await fetch("https://hub-orcin.vercel.app/dados");
     // Como é localmente
     // const respTurmas = await fetch("http://localhost:3000/dados");
-    
+
     if (!respTurmas.ok) throw new Error("Erro ao buscar dados de turmas.");
     dadosTurmas = await respTurmas.json();
   } catch (err) {
